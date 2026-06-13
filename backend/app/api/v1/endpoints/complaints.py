@@ -53,7 +53,7 @@ class LegacyComplaintRequest(BaseModel):
 #  GET  /
 # ─────────────────────────────────────────────────────────────────────────────
 @router.get("/")
-async def list_complaints():
+async def list_complaints(skip: int = 0, limit: int = 100):
     """Retrieve all complaints from the intelligence registry."""
     try:
         _ensure_csv_exists()
@@ -67,7 +67,7 @@ async def list_complaints():
         if not df.empty and "timestamp" in df.columns:
             df = df.sort_values(by="timestamp", ascending=False)
             
-        return df.to_dict(orient="records")
+        return df.iloc[skip:skip+limit].to_dict(orient="records")
     except Exception as e:
         print(f"Error listing complaints: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -220,6 +220,18 @@ async def resolve_complaint(doc_id: int):
         elif "status" in df.columns:
             df.loc[mask, "status"] = "Resolved"
         df.to_csv(COMPLAINTS_CSV, index=False)
+
+        # Update Neo4j graph and re-run booth metrics
+        try:
+            query = "MATCH (i:Issue {complaint_id: $id}) SET i.status = 'Resolved'"
+            neo4j_client.run_query(query, {"id": doc_id})
+            
+            from app.domain.services.graph_enrichment import update_booth_metrics
+            from app.domain.services.risk_engine import update_risk_scores
+            update_booth_metrics()
+            update_risk_scores()
+        except Exception as graph_exc:
+            print(f"⚠ Graph sync failed during resolve (non-fatal): {graph_exc}")
 
         # Send the resolution SMS
         sms_result = notify_by_doc_id(doc_id)
