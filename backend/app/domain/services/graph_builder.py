@@ -12,49 +12,24 @@ def clear_database():
 
 def process_voters(df):
     count = 0
+    BATCH_SIZE = 1000
 
-    for _, row in df.iterrows():
-        epic_val = str(row["epic"]).strip()
-        if not epic_val or epic_val.upper() == "UNKNOWN" or epic_val.lower() == "nan":
-            epic_val = f"UNKNOWN_{uuid.uuid4().hex[:8]}"
+    for i in range(0, len(df), BATCH_SIZE):
+        chunk = df.iloc[i:i+BATCH_SIZE]
+        batch = []
+        for _, row in chunk.iterrows():
+            epic_val = str(row["epic"]).strip()
+            if not epic_val or epic_val.upper() == "UNKNOWN" or epic_val.lower() == "nan":
+                epic_val = f"UNKNOWN_{uuid.uuid4().hex[:8]}"
 
-        house_no = str(row["house_no"]).strip()
-        booth_id = str(row["booth_id"]).strip()
-        area = str(row["section"]).strip()
+            house_no = str(row["house_no"]).strip()
+            booth_id = str(row["booth_id"]).strip()
+            area = str(row["section"]).strip()
 
-        #  FIX: unique house
-        house_id = f"{booth_id}_{area}_{house_no}"
+            #  FIX: unique house
+            house_id = f"{booth_id}_{area}_{house_no}"
 
-        
-
-        query = """
-        MERGE (b:Booth {booth_id: $booth_id})
-
-        MERGE (a:Area {name: $area, booth_id: $booth_id})
-        MERGE (b)-[:HAS_AREA]->(a)
-
-        MERGE (h:House {house_id: $house_id})
-        SET h.house_no = $house_no,
-            h.area = $area,
-            h.booth_id = $booth_id
-
-        MERGE (a)-[:HAS_HOUSE]->(h)
-
-        MERGE (p:Person {epic_id: $epic})
-        SET p.name = $name,
-            p.age = $age,
-            p.gender = $gender,
-            p.relation_name = $relation_name,
-            p.relation_type = $relation_type,
-            p.assembly = $assembly,
-            p.section = $section
-
-        MERGE (h)-[:HAS_MEMBER]->(p)
-        """
-
-        neo4j_client.run_query(
-            query,
-            {
+            batch.append({
                 "epic": epic_val,
                 "name": str(row["name"]).strip(),
                 "age": int(row["age"]) if str(row["age"]).strip().isdigit() else -1,
@@ -67,10 +42,39 @@ def process_voters(df):
                 "booth_id": booth_id,
                 "area": area,
                 "house_id": house_id,
-            },
-        )
+            })
 
-        count += 1
+        if not batch:
+            continue
+
+        query = """
+        UNWIND $batch AS row
+        MERGE (b:Booth {booth_id: row.booth_id})
+
+        MERGE (a:Area {name: row.area, booth_id: row.booth_id})
+        MERGE (b)-[:HAS_AREA]->(a)
+
+        MERGE (h:House {house_id: row.house_id})
+        SET h.house_no = row.house_no,
+            h.area = row.area,
+            h.booth_id = row.booth_id
+
+        MERGE (a)-[:HAS_HOUSE]->(h)
+
+        MERGE (p:Person {epic_id: row.epic})
+        SET p.name = row.name,
+            p.age = row.age,
+            p.gender = row.gender,
+            p.relation_name = row.relation_name,
+            p.relation_type = row.relation_type,
+            p.assembly = row.assembly,
+            p.section = row.section
+
+        MERGE (h)-[:HAS_MEMBER]->(p)
+        """
+
+        neo4j_client.run_query(query, {"batch": batch})
+        count += len(batch)
 
     return {"voters_processed": count}
 
@@ -79,59 +83,65 @@ def process_complaints(df):
     df.columns = df.columns.str.lower().str.strip()
 
     count = 0
+    BATCH_SIZE = 1000
 
-    for _, row in df.iterrows():
+    for i in range(0, len(df), BATCH_SIZE):
+        chunk = df.iloc[i:i+BATCH_SIZE]
+        batch = []
+        for _, row in chunk.iterrows():
 
-        epic = str(row.get("epic") or row.get("voter_epic") or "").strip()
-        phone = str(row.get("contact_no") or row.get("phone_number") or "").strip()
-        issue_type = str(row.get("issue_type") or "").strip()
-        status = str(row.get("status") or "").strip()
-        timestamp = str(row.get("timestamp") or "").strip()
+            epic = str(row.get("epic") or row.get("voter_epic") or "").strip()
+            phone = str(row.get("contact_no") or row.get("phone_number") or "").strip()
+            issue_type = str(row.get("issue_type") or "").strip()
+            status = str(row.get("status") or "").strip()
+            timestamp = str(row.get("timestamp") or "").strip()
 
-        if not epic:
+            if not epic:
+                continue
+
+            batch.append({
+                "complaint_id": int(row.get("complaint_id", 0)),
+                "epic": epic,
+                "phone_number": phone,
+                "issue_type": issue_type,
+                "timestamp": timestamp if timestamp else "2026-03-24T12:00:00",
+                "status": status,
+                "booth_id": str(row.get("booth_id", "UNKNOWN")).strip(),
+            })
+
+        if not batch:
             continue
 
         query = """
-        MATCH (p:Person {epic_id: $epic})
-        WITH p
+        UNWIND $batch AS row
+        MATCH (p:Person {epic_id: row.epic})
+        WITH p, row
         WHERE p IS NOT NULL
-        SET p.phone_number = $phone_number
+        SET p.phone_number = row.phone_number
 
-        MERGE (i:Issue {complaint_id: $complaint_id})
-        SET i.type = $issue_type,
-            i.status = $status,
-            i.timestamp = $timestamp,
-            i.booth_id = $booth_id
+        MERGE (i:Issue {complaint_id: row.complaint_id})
+        SET i.type = row.issue_type,
+            i.status = row.status,
+            i.timestamp = row.timestamp,
+            i.booth_id = row.booth_id
 
         MERGE (p)-[:REPORTED]->(i)
 
-        WITH i, p
+        WITH i, p, row
         MATCH (p)<-[:HAS_MEMBER]-(h:House)
         MERGE (i)-[:BELONGS_TO]->(h)
 
-        WITH i, h
+        WITH i, h, row
         MATCH (h)<-[:HAS_HOUSE]-(a:Area)
         MERGE (i)-[:LOCATED_IN]->(a)
 
-        WITH i, a
+        WITH i, a, row
         MATCH (a)<-[:HAS_AREA]-(b:Booth)
         MERGE (i)-[:IN_BOOTH]->(b)
         """
 
-        neo4j_client.run_query(
-            query,
-            {
-                "complaint_id": int(row.get("complaint_id", 0)),
-                "epic": str(row.get("EPIC", row.get("epic", row.get("voter_epic", "")))).strip(),
-                "phone_number": str(row.get("Contact_no", row.get("phone_number", ""))).strip(),
-                "issue_type": str(row.get("Issue_Type", row.get("issue_type", ""))).strip(),
-                "timestamp": str(row.get("timestamp", "2026-03-24T12:00:00")).strip(),
-                "status": str(row.get("Status", row.get("status", ""))).strip(),
-                "booth_id": str(row.get("booth_id", "UNKNOWN")).strip(),
-            },
-        )
-
-        count += 1
+        neo4j_client.run_query(query, {"batch": batch})
+        count += len(batch)
 
     update_booth_metrics()
 

@@ -8,6 +8,10 @@ class Neo4jClient:
         self.driver = GraphDatabase.driver(
             settings.NEO4J_URI,
             auth=(settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD),
+            max_connection_pool_size=50,
+            connection_timeout=30,
+            max_transaction_retry_time=15,
+            keep_alive=True,
         )
 
     def close(self):
@@ -18,6 +22,29 @@ class Neo4jClient:
         with self.driver.session() as session:
             result = session.run(query, parameters)
             return [record.data() for record in result]
+
+    def ensure_indexes(self):
+        """Create constraints and indexes if they don't exist (idempotent)."""
+        constraints = [
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Person) REQUIRE p.epic_id IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (b:Booth) REQUIRE b.booth_id IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (h:House) REQUIRE h.house_id IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (i:Issue) REQUIRE i.complaint_id IS UNIQUE",
+        ]
+        indexes = [
+            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.section)",
+            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.name)",
+            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.gender)",
+            "CREATE INDEX IF NOT EXISTS FOR (i:Issue) ON (i.status)",
+            "CREATE INDEX IF NOT EXISTS FOR (i:Issue) ON (i.type)",
+            "CREATE INDEX IF NOT EXISTS FOR (b:Booth) ON (b.risk_level)",
+            "CREATE INDEX IF NOT EXISTS FOR (a:Area) ON (a.name)",
+        ]
+        for stmt in constraints + indexes:
+            try:
+                self.run_query(stmt)
+            except Exception as e:
+                print(f"Warning: Failed to create index/constraint: {e}")
 
     # ---- Schema introspection ----
 

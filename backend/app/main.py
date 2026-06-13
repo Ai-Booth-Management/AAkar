@@ -13,6 +13,7 @@ from app.api.v1.endpoints.auth import router as auth_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
+from app.infrastructure.db.neo4j_client import neo4j_client
 
 
 async def auto_update_csv():
@@ -101,6 +102,8 @@ async def auto_update_csv():
 async def lifespan(app: FastAPI):
     # Initialize SQLite tables
     init_db()
+    # Ensure Neo4j indexes exist
+    neo4j_client.ensure_indexes()
     # Seed initially if needed, and start watcher
     task = asyncio.create_task(auto_update_csv())
     yield
