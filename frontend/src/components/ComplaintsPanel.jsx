@@ -71,7 +71,7 @@ const ComplaintsPanel = () => {
         const idMatch = String(c.complaint_id).toLowerCase().includes(q);
         const epicMatch = String(c.voter_epic || c.epic || c.EPIC || '').toLowerCase().includes(q);
         const boothMatch = String(c.booth_id || '').toLowerCase().includes(q);
-        const typeMatch = String(c.issue_type || c.Issue_Type || '').toLowerCase().includes(q);
+        const typeMatch = String(c.type || c.issue_type || c.Issue_Type || '').toLowerCase().includes(q);
         return idMatch || epicMatch || boothMatch || typeMatch;
     });
 
@@ -171,7 +171,7 @@ const ComplaintsPanel = () => {
                                     <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Booth ID</th>
                                     <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Voter EPIC</th>
                                     <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contact</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Issue Type</th>
+                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Complaint Type</th>
                                     <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</th>
                                     <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Action</th>
                                 </tr>
@@ -195,14 +195,14 @@ const ComplaintsPanel = () => {
                                                     <td style={{ padding: '16px 24px', color: gray600, fontSize: '12px', fontWeight: '600' }}>{new Date(c.timestamp).toLocaleDateString()}</td>
                                                     <td style={{ padding: '16px 24px', fontWeight: '800', color: gray600, fontSize: '12px' }}>{c.booth_id || 'UNKNOWN'}</td>
                                                     <td style={{ padding: '16px 24px', fontWeight: '700', color: navy, fontFamily: 'monospace', fontSize: '12px' }}>{c.voter_epic || c.epic || c.EPIC}</td>
-                                                    <td style={{ padding: '16px 24px', color: gray600, fontSize: '12px' }}>{c.phone_number || c.Contact_no || 'N/A'}</td>
+                                                    <td style={{ padding: '16px 24px', color: gray600, fontSize: '12px' }}>{c.phone || c.phone_number || c.Contact_no || 'N/A'}</td>
                                                     <td style={{ padding: '16px 24px' }}>
                                                         <span style={{ 
                                                             fontSize: '9px', fontWeight: '900', padding: '4px 8px',
                                                             backgroundColor: '#f0f9ff', color: '#0369a1',
                                                             border: '1px solid #bae6fd', textTransform: 'uppercase'
                                                         }}>
-                                                            {c.issue_type || c.Issue_Type}
+                                                            {c.type || c.issue_type || c.Issue_Type}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '16px 24px' }}>

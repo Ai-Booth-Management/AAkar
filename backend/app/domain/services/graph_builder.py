@@ -61,16 +61,16 @@ def process_voters(df):
 
         MERGE (a)-[:HAS_HOUSE]->(h)
 
-        MERGE (p:Person {epic_id: row.epic})
-        SET p.name = row.name,
-            p.age = row.age,
-            p.gender = row.gender,
-            p.relation_name = row.relation_name,
-            p.relation_type = row.relation_type,
-            p.assembly = row.assembly,
-            p.section = row.section
+        MERGE (v:Voter {epic: row.epic})
+        SET v.name = row.name,
+            v.age = row.age,
+            v.gender = row.gender,
+            v.relation_name = row.relation_name,
+            v.relation_type = row.relation_type,
+            v.assembly = row.assembly,
+            v.section = row.section
 
-        MERGE (h)-[:HAS_MEMBER]->(p)
+        MERGE (h)-[:HAS_MEMBER]->(v)
         """
 
         neo4j_client.run_query(query, {"batch": batch})
@@ -92,7 +92,7 @@ def process_complaints(df):
 
             epic = str(row.get("epic") or row.get("voter_epic") or "").strip()
             phone = str(row.get("contact_no") or row.get("phone_number") or "").strip()
-            issue_type = str(row.get("issue_type") or "").strip()
+            type_val = str(row.get("issue_type") or row.get("type") or "").strip()
             status = str(row.get("status") or "").strip()
             timestamp = str(row.get("timestamp") or "").strip()
 
@@ -102,8 +102,8 @@ def process_complaints(df):
             batch.append({
                 "complaint_id": int(row.get("complaint_id", 0)),
                 "epic": epic,
-                "phone_number": phone,
-                "issue_type": issue_type,
+                "phone": phone,
+                "type": type_val,
                 "timestamp": timestamp if timestamp else "2026-03-24T12:00:00",
                 "status": status,
                 "booth_id": str(row.get("booth_id", "UNKNOWN")).strip(),
@@ -114,30 +114,32 @@ def process_complaints(df):
 
         query = """
         UNWIND $batch AS row
-        MATCH (p:Person {epic_id: row.epic})
-        WITH p, row
-        WHERE p IS NOT NULL
-        SET p.phone_number = row.phone_number
+        MATCH (v:Voter {epic: row.epic})
+        WITH v, row
+        WHERE v IS NOT NULL
+        SET v.phone = row.phone
 
-        MERGE (i:Issue {complaint_id: row.complaint_id})
-        SET i.type = row.issue_type,
-            i.status = row.status,
-            i.timestamp = row.timestamp,
-            i.booth_id = row.booth_id
+        MERGE (c:Complaint {complaint_id: row.complaint_id})
+        SET c.type = row.type,
+            c.status = row.status,
+            c.timestamp = row.timestamp,
+            c.booth_id = row.booth_id,
+            c.phone = row.phone,
+            c.epic = row.epic
 
-        MERGE (p)-[:REPORTED]->(i)
+        MERGE (v)-[:REPORTED]->(c)
 
-        WITH i, p, row
-        MATCH (p)<-[:HAS_MEMBER]-(h:House)
-        MERGE (i)-[:BELONGS_TO]->(h)
+        WITH c, v, row
+        MATCH (v)<-[:HAS_MEMBER]-(h:House)
+        MERGE (c)-[:BELONGS_TO]->(h)
 
-        WITH i, h, row
+        WITH c, h, row
         MATCH (h)<-[:HAS_HOUSE]-(a:Area)
-        MERGE (i)-[:LOCATED_IN]->(a)
+        MERGE (c)-[:LOCATED_IN]->(a)
 
-        WITH i, a, row
+        WITH c, a, row
         MATCH (a)<-[:HAS_AREA]-(b:Booth)
-        MERGE (i)-[:IN_BOOTH]->(b)
+        MERGE (c)-[:IN_BOOTH]->(b)
         """
 
         neo4j_client.run_query(query, {"batch": batch})

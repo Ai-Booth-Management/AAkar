@@ -26,17 +26,17 @@ class Neo4jClient:
     def ensure_indexes(self):
         """Create constraints and indexes if they don't exist (idempotent)."""
         constraints = [
-            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Person) REQUIRE p.epic_id IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (v:Voter) REQUIRE v.epic IS UNIQUE",
             "CREATE CONSTRAINT IF NOT EXISTS FOR (b:Booth) REQUIRE b.booth_id IS UNIQUE",
             "CREATE CONSTRAINT IF NOT EXISTS FOR (h:House) REQUIRE h.house_id IS UNIQUE",
-            "CREATE CONSTRAINT IF NOT EXISTS FOR (i:Issue) REQUIRE i.complaint_id IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (c:Complaint) REQUIRE c.complaint_id IS UNIQUE",
         ]
         indexes = [
-            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.section)",
-            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.name)",
-            "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.gender)",
-            "CREATE INDEX IF NOT EXISTS FOR (i:Issue) ON (i.status)",
-            "CREATE INDEX IF NOT EXISTS FOR (i:Issue) ON (i.type)",
+            "CREATE INDEX IF NOT EXISTS FOR (v:Voter) ON (v.section)",
+            "CREATE INDEX IF NOT EXISTS FOR (v:Voter) ON (v.name)",
+            "CREATE INDEX IF NOT EXISTS FOR (v:Voter) ON (v.gender)",
+            "CREATE INDEX IF NOT EXISTS FOR (c:Complaint) ON (c.status)",
+            "CREATE INDEX IF NOT EXISTS FOR (c:Complaint) ON (c.type)",
             "CREATE INDEX IF NOT EXISTS FOR (b:Booth) ON (b.risk_level)",
             "CREATE INDEX IF NOT EXISTS FOR (a:Area) ON (a.name)",
         ]
@@ -53,17 +53,16 @@ class Neo4jClient:
         and return a human-readable schema string for the LLM prompt."""
         return """
 Nodes and their Properties:
-- Voter: epic, name, age, gender, relation_name, relation_type, assembly, section, category
+- Voter: epic, name, age, gender, relation_name, relation_type, assembly, section, phone, category
 - House: house_no, booth_id
 - Booth: booth_id, risk_level, complaint_count, resolved_count, recommendation, open_count
-- Complaint: complaint_id, issue_type, timestamp, status
-- Issue: name
+- Complaint: complaint_id, type, timestamp, status, phone, description
 
 Relationships:
 - (Voter)-[:LIVES_IN]->(House)
 - (House)-[:PART_OF]->(Booth)
 - (Voter)-[:REPORTED]->(Complaint)
-- (Complaint)-[:BELONGS_TO]->(Issue)
+- (Complaint)-[:IN_BOOTH]->(Booth)
 """
 
     # ---- Raw record query (for graph extraction) ----

@@ -3,7 +3,7 @@ import logo from '../assets/logo.png';
 
 const LodgeComplaintPanel = ({ boothId }) => {
   const [epic, setEpic] = useState('');
-  const [issueType, setIssueType] = useState('Water Supply');
+  const [type, setType] = useState('Water Supply');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -44,8 +44,8 @@ const LodgeComplaintPanel = ({ boothId }) => {
         body: JSON.stringify({
           booth_id: boothId || "MH_201_003",
           epic: epic,
-          contact_no: phone,
-          issue_type: issueType,
+          phone: phone,
+          type: type,
           description: description
         }),
       });
@@ -179,11 +179,11 @@ const LodgeComplaintPanel = ({ boothId }) => {
 
               <div className="form-group">
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: '900', color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Issue Classification
+                  Complaint Classification
                 </label>
                 <select
-                  value={issueType}
-                  onChange={(e) => setIssueType(e.target.value)}
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
                   style={{ 
                     width: '100%', 
                     padding: '14px', 

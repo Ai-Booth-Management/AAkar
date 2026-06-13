@@ -21,15 +21,15 @@ def sweep_phantom_issues():
     print(f"Valid IDs in CSV: {valid_ids}")
     
     query = """
-    MATCH (i:Issue)
-    WHERE NOT i.complaint_id IN $valid_ids
-    DETACH DELETE i
-    RETURN count(i) AS deleted_count
+    MATCH (c:Complaint)
+    WHERE NOT c.complaint_id IN $valid_ids
+    DETACH DELETE c
+    RETURN count(c) AS deleted_count
     """
     
     result = neo4j_client.run_query(query, {"valid_ids": valid_ids})
     deleted = result[0]['deleted_count'] if result else 0
-    print(f"Deleted {deleted} phantom Issue nodes.")
+    print(f"Deleted {deleted} phantom Complaint nodes.")
     
     # Update booth tallies after deletion
     update_booth_metrics()
