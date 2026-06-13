@@ -161,8 +161,9 @@ def get_admin_overview():
 
 
 @router.get("/booths")
-def get_booths():
-    return _compute_booth_stats()
+def get_booths(skip: int = 0, limit: int = 100):
+    booths = _compute_booth_stats()
+    return booths[skip : skip + limit]
 
 
 @router.get("/recommendations")
