@@ -27,18 +27,16 @@ def ask_question(question=None, shortcut=None):
 
             STRICT RULES:
 
-            - The term "voter" refers to ALL Person nodes
-            - DO NOT filter using p.category = 'voter'
-            - "voter" is NOT a category — it means Person
-
-            - NEVER generate:
-            p.category = 'voter'
+            - The term "voter" refers to ALL Voter nodes
+            - "voter" is the primary person entity
+            - "complaint" is the primary issue entity
 
             - ALWAYS interpret:
-            "voters" → Person nodes
+            "voters" → Voter nodes
+            "complaints" → Complaint nodes
 
             - Use ONLY:
-            Person, Issue, Booth, Area, House, Family
+            Voter, Complaint, Booth, Area, House, Drive
 
             Graph Schema:
 
@@ -46,24 +44,18 @@ def ask_question(question=None, shortcut=None):
             - Booth (booth_id, complaint_count, open_count, resolved_count)
             - Area (name)
             - House (house_no)
-            - 
-            - Person (epic_id, name, age, gender, category)
-            - Issue (complaint_id, type, status, timestamp)
+            - Voter (epic, name, age, gender, category, phone)
+            - Complaint (complaint_id, type, status, timestamp, phone)
 
             Relationships:
             - Booth -[:HAS_AREA]-> Area
             - Area -[:HAS_HOUSE]-> House
-
-
-            - Person -[:REPORTED]-> Issue
-            - Issue -[:BELONGS_TO]-> House
-            - Issue -[:LOCATED_IN]-> Area
-            - Issue -[:IN_BOOTH]-> Booth
-
-            Rules:
-            - Use ONLY MATCH and RETURN
-            - Do NOT use CREATE, DELETE, MERGE, SET
-            - Return ONLY Cypher query
+            - Voter -[:LIVES_IN]-> House
+            - Voter -[:REPORTED]-> Complaint
+            - Complaint -[:BELONGS_TO]-> House
+            - Complaint -[:LOCATED_IN]-> Area
+            - Complaint -[:IN_BOOTH]-> Booth
+            - Booth -[:HAS_DRIVE]-> Drive
             """
         schema = custom_schema + "\n\n" + db_schema
 
@@ -77,10 +69,6 @@ def ask_question(question=None, shortcut=None):
             cypher = PREDEFINED_QUERIES[output]
         else:
             cypher = output
-
-    # 🔥 3. AUTO-CORRECT (CRITICAL FIX)
-    cypher = cypher.replace("Voter", "Person")
-    cypher = cypher.replace("Complaint", "Issue")
 
     # 4. Safety check
     if BLOCKED_KEYWORDS.search(cypher):

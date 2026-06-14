@@ -34,8 +34,8 @@ CSV_COLUMNS = [
 # ── Request Models ──────────────────────────────────────────────────────────
 class LodgeComplaintRequest(BaseModel):
     epic: str
-    contact_no: str
-    issue_type: str
+    phone: str
+    type: str
     description: str
     booth_id: str = ""
 
@@ -62,8 +62,8 @@ def _next_complaint_id() -> int:
     """Return the next sequential complaint ID from Neo4j (fallback: CSV)."""
     try:
         query = """
-        MATCH (i:Issue)
-        RETURN coalesce(max(i.complaint_id), 1000) + 1 AS next_id
+        MATCH (c:Complaint)
+        RETURN coalesce(max(c.complaint_id), 1000) + 1 AS next_id
         """
         result = neo4j_client.run_query(query)
         return result[0]["next_id"]
@@ -92,9 +92,9 @@ def _get_booth_id_for_epic(epic: str) -> str:
 
 
 def _check_voter_exists(epic: str) -> bool:
-    """Verify if the EPIC exists in the Neo4j Person registry."""
+    """Verify if the EPIC exists in the Neo4j Voter registry."""
     try:
-        query = "MATCH (p:Person {epic_id: $epic}) RETURN count(p) > 0 AS exists"
+        query = "MATCH (v:Voter {epic: $epic}) RETURN count(v) > 0 AS exists"
         result = neo4j_client.run_query(query, {"epic": epic})
         return result[0].get("exists") if result else False
     except Exception as e:
@@ -103,28 +103,28 @@ def _check_voter_exists(epic: str) -> bool:
 
 
 LODGE_CYPHER = """
-CREATE (i:Issue {
+CREATE (c:Complaint {
   complaint_id: $complaint_id,
   epic: $epic,
-  type: $issue_type,
+  type: $type,
   status: $status,
   timestamp: $timestamp,
   booth_id: $booth_id,
   phone: $phone,
   description: $description
 })
-WITH i
-MATCH (p:Person {epic_id: $epic})
-CREATE (p)-[:REPORTED]->(i)
-WITH i, p
-MATCH (p)<-[:HAS_MEMBER]-(h:House)
-CREATE (i)-[:BELONGS_TO]->(h)
-WITH i, h
+WITH c
+MATCH (v:Voter {epic: $epic})
+CREATE (v)-[:REPORTED]->(c)
+WITH c, v
+MATCH (v)<-[:HAS_MEMBER]-(h:House)
+CREATE (c)-[:BELONGS_TO]->(h)
+WITH c, h
 MATCH (h)<-[:HAS_HOUSE]-(a:Area)
-CREATE (i)-[:LOCATED_IN]->(a)
-WITH i, a
+CREATE (c)-[:LOCATED_IN]->(a)
+WITH c, a
 MATCH (a)<-[:HAS_AREA]-(b:Booth)
-CREATE (i)-[:IN_BOOTH]->(b)
+CREATE (c)-[:IN_BOOTH]->(b)
 """
 
 
@@ -133,11 +133,12 @@ def _write_csv_backup(row: dict) -> None:
     try:
         _ensure_csv_exists()
         existing_df = pd.read_csv(COMPLAINTS_CSV)
-        for col in CSV_COLUMNS:
-            if col not in existing_df.columns:
-                existing_df[col] = ""
+        # Standardize CSV columns to lowercase if they aren't already
+        existing_df.columns = existing_df.columns.str.lower()
+        
+        new_row = {k.lower(): v for k, v in row.items()}
         new_df = pd.concat(
-            [existing_df, pd.DataFrame([row])], ignore_index=True
+            [existing_df, pd.DataFrame([new_row])], ignore_index=True
         )
         new_df.to_csv(COMPLAINTS_CSV, index=False)
     except Exception as exc:
@@ -152,18 +153,18 @@ async def list_complaints(skip: int = 0, limit: int = 100):
     """Retrieve complaints from Neo4j (falls back to CSV)."""
     try:
         query = """
-        MATCH (i:Issue)
-        OPTIONAL MATCH (p:Person)-[:REPORTED]->(i)
+        MATCH (c:Complaint)
+        OPTIONAL MATCH (v:Voter)-[:REPORTED]->(c)
         RETURN
-          i.complaint_id AS complaint_id,
-          i.timestamp        AS timestamp,
-          COALESCE(i.booth_id,   '') AS booth_id,
-          COALESCE(i.epic,   p.epic_id,    '') AS EPIC,
-          COALESCE(i.phone,  p.phone_number,'') AS Contact_no,
-          COALESCE(i.type,   '') AS Issue_Type,
-          COALESCE(i.status, '') AS Status,
-          COALESCE(i.description, '') AS Description
-        ORDER BY i.complaint_id DESC
+          c.complaint_id AS complaint_id,
+          c.timestamp        AS timestamp,
+          COALESCE(c.booth_id,   '') AS booth_id,
+          COALESCE(c.epic,   v.epic,    '') AS epic,
+          COALESCE(c.phone,  v.phone, '') AS phone,
+          COALESCE(c.type,   '') AS type,
+          COALESCE(c.status, '') AS status,
+          COALESCE(c.description, '') AS description
+        ORDER BY c.complaint_id DESC
         SKIP $skip
         LIMIT $limit
         """
@@ -173,9 +174,7 @@ async def list_complaints(skip: int = 0, limit: int = 100):
         print(f"Neo4j unavailable, falling back to CSV: {e}")
         _ensure_csv_exists()
         df = pd.read_csv(COMPLAINTS_CSV)
-        for col in CSV_COLUMNS:
-            if col not in df.columns:
-                df[col] = ""
+        df.columns = df.columns.str.lower()
         if not df.empty and "timestamp" in df.columns:
             df = df.sort_values(by="timestamp", ascending=False)
         return df.iloc[skip : skip + limit].to_dict(orient="records")
@@ -213,11 +212,11 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
             {
                 "complaint_id": next_id,
                 "epic": request.epic,
-                "issue_type": request.issue_type,
+                "type": request.type,
                 "status": "Open",
                 "timestamp": timestamp,
                 "booth_id": booth_id,
-                "phone": request.contact_no,
+                "phone": request.phone,
                 "description": request.description,
             },
         )
@@ -229,8 +228,8 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
                 "timestamp": timestamp,
                 "booth_id": booth_id,
                 "EPIC": request.epic,
-                "Contact_no": request.contact_no,
-                "Issue_Type": request.issue_type,
+                "Contact_no": request.phone,
+                "Issue_Type": request.type,
                 "Status": "Open",
                 "Description": request.description,
             }
@@ -239,10 +238,10 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
         # ── SMS notification ──
         sms_message = (
             f"AAkar: Your complaint (Ref: {next_id}) regarding "
-            f"'{request.issue_type}' has been REGISTERED successfully. "
+            f"'{request.type}' has been REGISTERED successfully. "
             f"We will keep you updated. - Govt Secretariat"
         )
-        sms_result = send_sms(request.contact_no, sms_message)
+        sms_result = send_sms(request.phone, sms_message)
 
         return {
             "status": "success",
@@ -284,7 +283,7 @@ async def lodge_complaint_legacy(request: LegacyComplaintRequest):
             {
                 "complaint_id": next_id,
                 "epic": request.epic,
-                "issue_type": request.issue_type,
+                "type": request.issue_type,
                 "status": "Open",
                 "timestamp": timestamp,
                 "booth_id": booth_id,
@@ -330,10 +329,10 @@ async def resolve_complaint(doc_id: int):
 
         # ── Update Neo4j (primary) ──
         cypher = """
-        MATCH (i:Issue {complaint_id: $id})
-        SET i.status = 'Resolved',
-            i.resolved_at = $timestamp
-        RETURN i
+        MATCH (c:Complaint {complaint_id: $id})
+        SET c.status = 'Resolved',
+            c.resolved_at = $timestamp
+        RETURN c
         """
         result = neo4j_client.run_query(
             cypher, {"id": doc_id, "timestamp": timestamp}

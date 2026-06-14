@@ -6,11 +6,11 @@ const API_URL = 'http://localhost:8000/api/v1/ask';
 
 
 const COLORS = {
-  Person: { bg: '#d4d4d8', border: '#a1a1aa' },
+  Voter: { bg: '#d4d4d8', border: '#a1a1aa' },
   Booth: { bg: '#1a2744', border: '#0d1b37' },
   House: { bg: '#22c55e', border: '#16a34a' },
   Area: { bg: '#D4A843', border: '#B8860B' },
-  Issue: { bg: '#a855f7', border: '#9333ea' },
+  Complaint: { bg: '#a855f7', border: '#9333ea' },
   Default: { bg: '#71717a', border: '#52525b' },
 };
 
@@ -22,8 +22,8 @@ const getColor = (label) => {
     case "Area": return { background: "#D4A843", border: "#B8860B", fontColor: "#18181b" };
     case "House": return { background: "#22c55e", border: "#16a34a", fontColor: "#150909ff" };
     case "Family": return { background: "#d4d4d8", border: "#a1a1aa", fontColor: "#18181b" };
-    case "Person": return { background: "#f4f4f5", border: "#d4d4d8", fontColor: "#18181b" };
-    case "Issue": return { background: "#a855f7", border: "#9333ea", fontColor: "#070000ff" };
+    case "Voter": return { background: "#f4f4f5", border: "#d4d4d8", fontColor: "#18181b" };
+    case "Complaint": return { background: "#a855f7", border: "#9333ea", fontColor: "#070000ff" };
     default: return { background: "#71717a", border: "#52525b", fontColor: "#ffffff" };
   }
 };
@@ -251,7 +251,7 @@ const AskPanel = () => {
             { label: "GENDER RATIO", key: "HOUSE_MEMBERS" },
             { label: "SENIOR CITIZENS", key: "SENIOR_VOTERS" },
             { label: "YOUTH SEGMENT", key: "YOUTH_VOTERS" },
-            { label: "ISSUE CORRELATION", key: "VOTERS_BY_ISSUE" },
+            { label: "COMPLAINT CORRELATION", key: "VOTERS_BY_COMPLAINT" },
           ].map((q, i) => (
             <button
               key={i}

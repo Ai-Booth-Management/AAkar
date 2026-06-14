@@ -6,9 +6,9 @@ def generate_booth_messages():
     MATCH (b:Booth)
     WHERE b.recommendation IS NOT NULL AND b.recommendation <> "No action required"
 
-    OPTIONAL MATCH (b)<-[:IN_BOOTH]-(i:Issue)
-    WITH b, b.recommendation AS recommendation, count(i) AS total_issues,
-         sum(CASE WHEN i.status = "Open" THEN 1 ELSE 0 END) AS open_issues
+    OPTIONAL MATCH (b)<-[:IN_BOOTH]-(c:Complaint)
+    WITH b, b.recommendation AS recommendation, count(c) AS total_issues,
+         sum(CASE WHEN c.status = "Open" THEN 1 ELSE 0 END) AS open_issues
 
     RETURN 
         b.booth_id AS booth_id,

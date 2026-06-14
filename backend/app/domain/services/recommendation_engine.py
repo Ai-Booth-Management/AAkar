@@ -4,9 +4,9 @@ from app.infrastructure.db.neo4j_client import neo4j_client
 def generate_recommendations():
     # Set recommendation based on most frequent issue_type per Booth
     query = """
-    MATCH (b:Booth)<-[:IN_BOOTH]-(i:Issue)
+    MATCH (b:Booth)<-[:IN_BOOTH]-(c:Complaint)
 
-    WITH b, i.type AS issue_type, count(i) AS cnt
+    WITH b, c.type AS issue_type, count(c) AS cnt
     ORDER BY b, cnt DESC
 
     WITH b, collect({issue: issue_type, count: cnt})[0] AS main_issue

@@ -127,7 +127,7 @@ def _compute_booth_stats() -> list[dict]:
             bid_col = next((c for c in df_c.columns if c.lower() == "booth_id"), None)
             status_col = next((c for c in df_c.columns if c.lower() == "status"), None)
             issue_col = next(
-                (c for c in df_c.columns if c.lower() in ("issue_type", "issue")), None
+                (c for c in df_c.columns if c.lower() in ("type", "issue_type", "issue")), None
             )
 
             if bid_col:

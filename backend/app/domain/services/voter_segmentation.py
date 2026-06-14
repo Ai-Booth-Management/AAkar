@@ -3,12 +3,12 @@ from app.infrastructure.db.neo4j_client import neo4j_client
 
 def categorize_voters():
     query = """
-    MATCH (p:Person)
-    OPTIONAL MATCH (p)-[:REPORTED]->(i:Issue)
+    MATCH (v:Voter)
+    OPTIONAL MATCH (v)-[:REPORTED]->(c:Complaint)
 
-    WITH p, count(i) AS issue_count
+    WITH v, count(c) AS issue_count
 
-    SET p.category = 
+    SET v.category = 
         CASE 
             WHEN issue_count >= 3 THEN "Active"
             WHEN issue_count > 0 THEN "Occasional"

@@ -22,8 +22,8 @@ def get_network_analytics():
             WHEN n:Area THEN n.name
             WHEN n:House THEN n.house_no
             
-            WHEN n:Person THEN n.name
-            WHEN n:Issue THEN n.type
+            WHEN n:Voter THEN n.name
+            WHEN n:Complaint THEN n.type
             ELSE "Node_" + toString(id(n))
         END AS name,
 
