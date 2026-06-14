@@ -60,6 +60,7 @@ Thumbs.db
 # =========================
 neo4j/data/
 neo4j/logs/
+*.db
 
 # =========================
 # Coverage Reports
