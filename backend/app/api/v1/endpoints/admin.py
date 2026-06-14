@@ -1,3 +1,4 @@
+from collections import Counter
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -22,8 +23,90 @@ _ISSUE_RECOMMENDATIONS = {
 
 
 def _compute_booth_stats() -> list[dict]:
-    """Build per-booth stats purely from CSVs."""
-    # Collect all known booth_ids from voters CSV
+    """Build per-booth stats from Neo4j (falls back to CSV)."""
+    try:
+        # Collect all known booth_ids from voters CSV (for Neo4j booths that may have 0 issues)
+        booth_ids: set[str] = set()
+        if VOTERS_CSV.exists():
+            try:
+                df_v = pd.read_csv(VOTERS_CSV)
+                col = "booth_id" if "booth_id" in df_v.columns else "Booth_id"
+                if col in df_v.columns:
+                    booth_ids = set(df_v[col].dropna().astype(str).str.strip().unique())
+            except Exception:
+                pass
+
+        query = """
+        MATCH (b:Booth)
+        OPTIONAL MATCH (b)<-[:IN_BOOTH]-(i:Issue)
+        WITH b, i
+        WITH b,
+             count(i) AS complaint_count,
+             sum(CASE WHEN i.status = 'Open' THEN 1 ELSE 0 END) AS open_count,
+             sum(CASE WHEN i.status = 'Resolved' THEN 1 ELSE 0 END) AS resolved_count,
+             collect(DISTINCT i.type) AS raw_types
+        RETURN b.booth_id AS booth_id,
+               complaint_count,
+               open_count,
+               resolved_count,
+               [t IN raw_types WHERE t IS NOT NULL] AS issue_types
+        ORDER BY b.booth_id
+        """
+        rows = neo4j_client.run_query(query)
+
+        booth_map: dict[str, dict] = {}
+        for row in rows:
+            bid = row["booth_id"]
+            total = row["complaint_count"]
+            open_n = row["open_count"]
+            resolved_n = row["resolved_count"]
+            issue_types = row.get("issue_types", [])
+
+            prevalent_issue = Counter(issue_types).most_common(1)[0][0] if issue_types else None
+
+            open_ratio = open_n / total if total > 0 else 0.0
+            risk_level = (
+                "High" if open_ratio > 0.7
+                else "Medium" if open_ratio > 0.4
+                else "Low"
+            )
+
+            if prevalent_issue and prevalent_issue in _ISSUE_RECOMMENDATIONS:
+                recommendation = _ISSUE_RECOMMENDATIONS[prevalent_issue]
+            elif open_n > 10:
+                recommendation = "Deploy general grievance team"
+            elif total > 0:
+                recommendation = "Monitor situation"
+            else:
+                recommendation = "No action required"
+
+            booth_map[bid] = {
+                "booth_id": bid,
+                "complaint_count": total,
+                "open_count": open_n,
+                "resolved_count": resolved_n,
+                "risk_level": risk_level,
+                "recommendation": recommendation,
+            }
+
+        # Include booths from voters CSV that had zero complaints (not yet in Neo4j)
+        for bid in booth_ids:
+            if bid not in booth_map:
+                booth_map[bid] = {
+                    "booth_id": bid,
+                    "complaint_count": 0,
+                    "open_count": 0,
+                    "resolved_count": 0,
+                    "risk_level": "Low",
+                    "recommendation": "No action required",
+                }
+
+        return sorted(booth_map.values(), key=lambda b: b["booth_id"])
+
+    except Exception:
+        pass
+
+    # ── Fallback: CSV approach ──
     booth_ids: set[str] = set()
     if VOTERS_CSV.exists():
         try:
@@ -34,7 +117,6 @@ def _compute_booth_stats() -> list[dict]:
         except Exception:
             pass
 
-    # Per-booth complaint aggregation
     booth_map: dict[str, dict] = {}
 
     if COMPLAINTS_CSV.exists():
@@ -60,7 +142,6 @@ def _compute_booth_stats() -> list[dict]:
                         open_n = int((s == "Open").sum())
                         resolved_n = int((s == "Resolved").sum())
 
-                    # Most frequent issue type for recommendation
                     prevalent_issue = None
                     if issue_col:
                         issue_counts = (
@@ -99,7 +180,6 @@ def _compute_booth_stats() -> list[dict]:
         except Exception:
             pass
 
-    # Booths from voters CSV that had zero complaints
     for bid in booth_ids:
         if bid not in booth_map:
             booth_map[bid] = {
@@ -119,38 +199,28 @@ def get_admin_overview():
     try:
         booths = _compute_booth_stats()
         total_booths = len(booths)
-
-        # ── Complaint stats from CSV (single source of truth) ──
-        total_complaints = 0
-        total_open = 0
-        total_resolved = 0
-
-        if COMPLAINTS_CSV.exists():
-            df = pd.read_csv(COMPLAINTS_CSV)
-            total_complaints = len(df)
-            status_col = "Status" if "Status" in df.columns else "status"
-            if status_col in df.columns:
-                total_open = int((df[status_col] == "Open").sum())
-                total_resolved = int((df[status_col] == "Resolved").sum())
-
-        avg_open_ratio = 0
-        if total_complaints > 0:
-            avg_open_ratio = total_open / total_complaints
+        total_complaints = sum(b["complaint_count"] for b in booths)
+        total_open = sum(b["open_count"] for b in booths)
+        total_resolved = sum(b["resolved_count"] for b in booths)
+        avg_open_ratio = round(total_open / total_complaints, 2) if total_complaints > 0 else 0
 
         total_voters = 0
-        if VOTERS_CSV.exists():
-            try:
-                df_voters = pd.read_csv(VOTERS_CSV)
-                total_voters = len(df_voters)
-            except Exception:
-                total_voters = 0
+        try:
+            result = neo4j_client.run_query("MATCH (p:Person) RETURN count(p) AS c")
+            total_voters = result[0]["c"]
+        except Exception:
+            if VOTERS_CSV.exists():
+                try:
+                    total_voters = len(pd.read_csv(VOTERS_CSV))
+                except Exception:
+                    pass
 
         return {
             "total_booths": total_booths,
             "total_complaints": total_complaints,
             "total_open_complaints": total_open,
             "total_resolved_complaints": total_resolved,
-            "avg_open_ratio": round(avg_open_ratio, 2),
+            "avg_open_ratio": avg_open_ratio,
             "total_voters": total_voters,
         }
 
