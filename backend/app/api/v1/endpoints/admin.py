@@ -38,13 +38,13 @@ def _compute_booth_stats() -> list[dict]:
 
         query = """
         MATCH (b:Booth)
-        OPTIONAL MATCH (b)<-[:IN_BOOTH]-(i:Issue)
-        WITH b, i
+        OPTIONAL MATCH (b)<-[:IN_BOOTH]-(c:Complaint)
+        WITH b, c
         WITH b,
-             count(i) AS complaint_count,
-             sum(CASE WHEN i.status = 'Open' THEN 1 ELSE 0 END) AS open_count,
-             sum(CASE WHEN i.status = 'Resolved' THEN 1 ELSE 0 END) AS resolved_count,
-             collect(DISTINCT i.type) AS raw_types
+             count(c) AS complaint_count,
+             sum(CASE WHEN c.status = 'Open' THEN 1 ELSE 0 END) AS open_count,
+             sum(CASE WHEN c.status = 'Resolved' THEN 1 ELSE 0 END) AS resolved_count,
+             collect(DISTINCT c.type) AS raw_types
         RETURN b.booth_id AS booth_id,
                complaint_count,
                open_count,
@@ -206,7 +206,7 @@ def get_admin_overview():
 
         total_voters = 0
         try:
-            result = neo4j_client.run_query("MATCH (p:Person) RETURN count(p) AS c")
+            result = neo4j_client.run_query("MATCH (v:Voter) RETURN count(v) AS c")
             total_voters = result[0]["c"]
         except Exception:
             if VOTERS_CSV.exists():

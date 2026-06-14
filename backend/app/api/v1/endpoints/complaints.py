@@ -23,11 +23,11 @@ CSV_COLUMNS = [
     "complaint_id",
     "timestamp",
     "booth_id",
-    "EPIC",
-    "Contact_no",
-    "Issue_Type",
-    "Status",
-    "Description",
+    "epic",
+    "phone",
+    "type",
+    "status",
+    "description",
 ]
 
 
@@ -227,11 +227,11 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
                 "complaint_id": next_id,
                 "timestamp": timestamp,
                 "booth_id": booth_id,
-                "EPIC": request.epic,
-                "Contact_no": request.phone,
-                "Issue_Type": request.type,
-                "Status": "Open",
-                "Description": request.description,
+                "epic": request.epic,
+                "phone": request.phone,
+                "type": request.type,
+                "status": "Open",
+                "description": request.description,
             }
         )
 
@@ -298,11 +298,11 @@ async def lodge_complaint_legacy(request: LegacyComplaintRequest):
                 "complaint_id": next_id,
                 "timestamp": timestamp,
                 "booth_id": booth_id,
-                "EPIC": request.epic,
-                "Contact_no": "N/A",
-                "Issue_Type": request.issue_type,
-                "Status": "Open",
-                "Description": request.description,
+                "epic": request.epic,
+                "phone": "N/A",
+                "type": request.issue_type,
+                "status": "Open",
+                "description": request.description,
             }
         )
 
@@ -330,11 +330,9 @@ async def resolve_complaint(doc_id: int):
         # ── Update Neo4j (primary) ──
         cypher = """
         MATCH (c:Complaint {complaint_id: $id})
-db-optimisation
-        SET i.status = 'Resolved',
-            i.resolved_at = $timestamp
-        RETURN i
-
+        SET c.status = 'Resolved',
+            c.resolved_at = $timestamp
+        RETURN c
         """
         result = neo4j_client.run_query(
             cypher, {"id": doc_id, "timestamp": timestamp}
@@ -353,9 +351,7 @@ db-optimisation
                     status_code=404,
                     detail=f"Complaint with ID {doc_id} not found.",
                 )
-            if "Status" in df.columns:
-                df.loc[mask, "Status"] = "Resolved"
-            elif "status" in df.columns:
+            if "status" in df.columns:
                 df.loc[mask, "status"] = "Resolved"
             df.to_csv(COMPLAINTS_CSV, index=False)
         else:
@@ -365,9 +361,7 @@ db-optimisation
                     df = pd.read_csv(COMPLAINTS_CSV)
                     mask = df["complaint_id"] == doc_id
                     if mask.any():
-                        if "Status" in df.columns:
-                            df.loc[mask, "Status"] = "Resolved"
-                        elif "status" in df.columns:
+                        if "status" in df.columns:
                             df.loc[mask, "status"] = "Resolved"
                         df.to_csv(COMPLAINTS_CSV, index=False)
             except Exception as csv_exc:
