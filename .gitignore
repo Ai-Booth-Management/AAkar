@@ -59,6 +59,7 @@ Thumbs.db
 # Neo4j Local Data (if any)
 # =========================
 neo4j/
+*.db
 
 # =========================
 # Coverage Reports

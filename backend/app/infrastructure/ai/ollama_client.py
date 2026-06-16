@@ -7,7 +7,7 @@ class OllamaClient:
 
     def __init__(self):
         self.base_url = settings.OLLAMA_URL
-        self.model = "qwen2.5:7b"
+        self.model = settings.OLLAMA_MODEL
 
     def generate_cypher(self, schema: str, question: str) -> str:
         """Prompt the LLM with graph schema + user question → read-only Cypher."""

@@ -19,7 +19,7 @@ print("Missing in Neo4j:", missing)
 if missing:
     cid = list(missing)[0]
     row = df[df['complaint_id'] == cid].iloc[0]
-    epic = str(row['EPIC']).strip()
+    epic = str(row['epic']).strip()
     print(f"Missing complaint {cid} has EPIC {epic}. Checking Voter node...")
     pres = neo4j_client.run_query("MATCH (v:Voter {epic: $epic}) RETURN v.epic AS epic", {"epic": epic})
     print(f"Voter query result: {pres}")

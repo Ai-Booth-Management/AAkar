@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     NEO4J_USERNAME: str
     NEO4J_PASSWORD: str
     OLLAMA_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "qwen2.5:7b"
 
     # JWT / Auth
     JWT_SECRET_KEY: str = "change-me-to-a-real-secret-key-32chars!"
