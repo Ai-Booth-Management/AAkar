@@ -6,11 +6,11 @@ The presentation layer of **AAkar**. Built with speed, reactivity, and a premium
 
 ## Tech Stack
 
-- **Framework**: React 19 + Vite
+- **Framework**: Next.js 16 + React 19 (App Router)
 - **Styling**: Vanilla CSS (Dark Theme + Glassmorphism)
 - **Authentication**: Fully local JWT-based `AuthContext` (No external Firebase dependency)
 - **Graph Visualization**: `vis-network` & `vis-data` (Louvain Community clustering & PageRank)
-- **Tooling**: ESLint, Node.js
+- **Tooling**: TypeScript, ESLint, Node.js
 
 ---
 
@@ -20,19 +20,20 @@ The presentation layer of **AAkar**. Built with speed, reactivity, and a premium
 frontend/
  ├── public/             # Static Assets
  ├── src/
- │   ├── components/     # Reusable UI Blocks
- │   │   ├── LoginPage.jsx         # Local JWT Authentication Gateway
- │   │   ├── Dashboard.jsx         # Main Metrics & Risk Overview
- │   │   ├── AskPanel.jsx          # Chat UI for Natural Language Cypher Queries
- │   │   ├── UploadPanel.jsx       # CSV & PDF File Dropzone with OCR status
- │   │   ├── GraphAnalyticsPanel.jsx # Threat Intelligence Network mapping
- │   │   └── AboutPanel.jsx        # System Architecture diagrams
- │   ├── App.jsx         # Main React Component & Routing
- │   ├── index.css       # Global Styles, Glassmorphic Theming & Animations
- │   └── main.jsx        # React DOM Entry Point
- ├── eslint.config.js    # Modern flat-config ESLint rules
- ├── package.json        # Dependencies and Scripts
- ├── vite.config.js      # Vite Configurations
+ │   ├── app/            # Next.js App Router Pages & Layouts
+ │   │   ├── layout.tsx  # Root Layout
+ │   │   ├── page.tsx    # Portal Gateway
+ │   │   ├── login/      # User Login
+ │   │   └── dashboard/  # Admin/DM Dashboard
+ │   └── components/     # Reusable Dashboard panels
+ │       ├── LoginPage.jsx
+ │       ├── MapPanel.jsx
+ │       ├── OverviewPanel.jsx
+ │       ├── AskPanel.jsx
+ │       └── ...
+ ├── next.config.ts      # Next.js configurations
+ ├── tsconfig.json       # TypeScript configuration
+ ├── package.json        # Dependencies & Scripts
  └── README.md           # Frontend Documentation
 ```
 
@@ -55,13 +56,13 @@ npm install
 
 ### 3. Running the Development Server
 
-Fire up the Vite server with Hot Module Replacement (HMR) capabilities:
+Fire up the Next.js development server:
 
 ```bash
 npm run dev
 ```
 
-The frontend will be instantly accessible, normally at: `http://localhost:5173`
+The frontend will be instantly accessible, normally at: `http://localhost:3000`
 
 *(Note: Make sure the FastAPI backend is concurrently running on port 8000 so the frontend can successfully retrieve and display the graph data!)*
 
@@ -79,7 +80,7 @@ The UI of AAkar is built around the concept of a **Living Dashboard**:
 
 ## Scripts Available
 
-- `npm run dev`: Starts the development server.
-- `npm run build`: Bundles the application for production.
-- `npm run preview`: Locally previews the production build.
-- `npx eslint src/`: Runs the linter to verify code quality.
+- `npm run dev`: Starts the Next.js development server.
+- `npm run build`: Builds the application for production.
+- `npm run start`: Starts the Next.js production server.
+- `npm run lint`: Runs ESLint to verify code quality.

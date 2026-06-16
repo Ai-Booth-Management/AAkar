@@ -8,7 +8,7 @@
 [![Neo4j](https://img.shields.io/badge/Neo4j-018bff?style=for-the-badge&logo=neo4j&logoColor=white)](https://neo4j.com/)
 [![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.ai/)
 [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 
 Transforming static civic data into a **predictive, booth-level Living Knowledge Graph**.
 
@@ -86,8 +86,10 @@ AAkar/
  │   ├── requirements.txt
  │   └── README.md       # Backend-specific instructions
  │
- ├── frontend/           # React + Vite application
- │   ├── src/            # Components, pages, charts & interactive network graphs
+ ├── frontend/           # Next.js App Router Application
+ │   ├── src/
+ │   │   ├── app/        # Next.js Pages & Routes
+ │   │   └── components/ # Reusable UI components
  │   ├── package.json
  │   └── README.md       # Frontend-specific instructions
  │
@@ -120,7 +122,7 @@ uvicorn app.main:app --reload
 cd frontend
 npm install
 
-# Start the Vite development server
+# Start the Next.js development server
 npm run dev
 ```
 *For more frontend details, see the [Frontend README](./frontend/README.md).*
