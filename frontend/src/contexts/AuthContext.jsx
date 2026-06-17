@@ -16,14 +16,20 @@ export function AuthProvider({ children }) {
 
   // Hydrate user from stored JWT on mount — only if session marker exists
   useEffect(() => {
+    const token = localStorage.getItem('praja_token');
     // Skip /me if we know there's no session (avoids red 401 in console)
-    if (!localStorage.getItem('praja_session')) {
+    if (!token) {
       setLoading(false);
       return;
     }
-    fetch(`${API_BASE}/me`)
+    fetch(`${API_BASE}/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then((res) => {
         if (!res.ok) {
+          localStorage.removeItem('praja_token');
           localStorage.removeItem('praja_session');
           return Promise.reject(new Error('Token expired'));
         }
@@ -69,6 +75,7 @@ export function AuthProvider({ children }) {
       displayName: data.user.displayName || data.user.display_name || data.user.role,
       role: data.user.role,
     };
+    localStorage.setItem('praja_token', data.access_token);
     localStorage.setItem('praja_session', '1');
     setCurrentUser(user);
     return { user };
@@ -95,6 +102,7 @@ export function AuthProvider({ children }) {
       displayName: data.user.displayName || data.user.display_name || data.user.role,
       role: data.user.role,
     };
+    localStorage.setItem('praja_token', data.access_token);
     localStorage.setItem('praja_session', '1');
     setCurrentUser(user);
     return { user };
@@ -106,6 +114,7 @@ export function AuthProvider({ children }) {
     } catch (e) {
       console.error("Logout request failed", e);
     }
+    localStorage.removeItem('praja_token');
     localStorage.removeItem('praja_session');
     setCurrentUser(null);
   }

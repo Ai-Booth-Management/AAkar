@@ -24,7 +24,7 @@ async function handle(req: NextRequest, params: { path?: string[] }) {
   const { search } = new URL(req.url);
   
   const prefix = targetPath.startsWith("v1") ? "api" : "api/v1";
-  const backendUrl = `http://localhost:8000/${prefix}/${targetPath}${search}`;
+  const backendUrl = `http://127.0.0.1:8000/${prefix}/${targetPath}${search}`;
   
   // Forward headers (except host)
   const headers = new Headers();

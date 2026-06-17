@@ -121,6 +121,9 @@ const AskPanel = () => {
       graphRef.current,
       { nodes: visNodes, edges: visEdges },
       {
+        layout: {
+          improvedLayout: false
+        },
         physics: {
           enabled: true,
           solver: 'forceAtlas2Based',
