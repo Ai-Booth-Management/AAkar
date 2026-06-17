@@ -122,6 +122,28 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    path: '/dashboard/tasks',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'files',
+    label: 'Files',
+    path: '/dashboard/files',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
+    ),
+  },
 ];
 
 const ABOUT_ITEM = {
@@ -161,6 +183,8 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/about': 'About System',
   '/dashboard/settings': 'Settings',
   '/dashboard/drishti': 'Project Drishti',
+  '/dashboard/tasks': 'Task Management',
+  '/dashboard/files': 'File Tracking',
 };
 
 // Next.js static asset import is imported inside components.
@@ -216,7 +240,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
     if (currentUser.role === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti', 'tasks', 'files'].includes(item.id);
     }
     return true;
   });

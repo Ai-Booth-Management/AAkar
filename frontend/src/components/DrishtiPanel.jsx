@@ -1,83 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-
-const INITIAL_PROJECTS = [
-  {
-    id: 'drishti-1',
-    name: 'Smart Water Supply Metering',
-    department: 'PWD',
-    budget: '₹1.20 Cr',
-    allocated: 12000000,
-    released: 8000000,
-    utilized: 6000000,
-    remaining: 6000000,
-    deadline: '2026-12-15',
-    progress: 65,
-    officer: 'Suresh Kumar (EE)',
-    status: 'In Progress',
-    justificationHistory: []
-  },
-  {
-    id: 'drishti-2',
-    name: 'Government School Solarization',
-    department: 'Education',
-    budget: '₹45.00 L',
-    allocated: 4500000,
-    released: 3000000,
-    utilized: 2000000,
-    remaining: 2500000,
-    deadline: '2026-08-20',
-    progress: 40,
-    officer: 'Amit Verma (AE)',
-    status: 'In Progress',
-    justificationHistory: []
-  },
-  {
-    id: 'drishti-3',
-    name: 'Primary Health Center Upgrade',
-    department: 'Health',
-    budget: '₹2.40 Cr',
-    allocated: 24000000,
-    released: 20000000,
-    utilized: 18000000,
-    remaining: 6000000,
-    deadline: '2026-11-01',
-    progress: 90,
-    officer: 'Dr. Rakesh Sharma (CMO)',
-    status: 'Pending Approval',
-    justificationHistory: []
-  },
-  {
-    id: 'drishti-4',
-    name: 'Micro-Irrigation Solar Pumps',
-    department: 'Agriculture',
-    budget: '₹85.00 L',
-    allocated: 8500000,
-    released: 5000000,
-    utilized: 1500000,
-    remaining: 7000000,
-    deadline: '2026-07-30',
-    progress: 15,
-    officer: 'Priya Sen (DCP)',
-    status: 'In Progress',
-    justificationHistory: []
-  },
-  {
-    id: 'drishti-5',
-    name: 'Drainage Desilting Phase 2',
-    department: 'PWD',
-    budget: '₹60.00 L',
-    allocated: 6000000,
-    released: 4000000,
-    utilized: 3000000,
-    remaining: 3000000,
-    deadline: '2026-06-25',
-    progress: 50,
-    officer: 'Vinod Rawat (SE)',
-    status: 'Delayed',
-    justificationHistory: []
-  }
-];
 
 const DEPARTMENTS = ['Health', 'Education', 'PWD', 'Agriculture'];
 
@@ -92,13 +14,50 @@ const formatCurrency = (value) => {
 
 const DrishtiPanel = () => {
   const { currentUser } = useAuth();
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
-  const [selectedProject, setSelectedProject] = useState(INITIAL_PROJECTS[0]);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [justification, setJustification] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [auditLog, setAuditLog] = useState([]);
   const [activeTab, setActiveTab] = useState('projects'); // 'projects' | 'funds'
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('praja_token');
+      const res = await fetch('/api/v1/drishti/projects', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch projects');
+      }
+      const data = await res.json();
+      setProjects(data);
+      if (data.length > 0) {
+        setSelectedProject(prev => {
+          if (prev) {
+            const found = data.find(p => p.id === prev.id);
+            return found || data[0];
+          }
+          return data[0];
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      setError('Failed to fetch projects. Please verify backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, [currentUser]);
 
   // Calculate Aggregates
   const totalAllocated = projects.reduce((sum, p) => sum + (p.allocated || 0), 0);
@@ -123,7 +82,7 @@ const DrishtiPanel = () => {
     };
   });
 
-  const handleAction = (actionType) => {
+  const handleAction = async (actionType) => {
     setError(null);
     setSuccess(null);
 
@@ -138,69 +97,46 @@ const DrishtiPanel = () => {
       return;
     }
 
-    // Determine new status and progress
-    let newStatus = selectedProject.status;
-    let newProgress = selectedProject.progress;
+    try {
+      const token = localStorage.getItem('praja_token');
+      const res = await fetch(`/api/v1/drishti/projects/${selectedProject.id}/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: actionType,
+          justification: justification.trim()
+        })
+      });
 
-    switch (actionType) {
-      case 'Approve':
-        newStatus = 'Approved';
-        newProgress = 100;
-        break;
-      case 'Reject':
-        newStatus = 'Rejected';
-        break;
-      case 'Escalate':
-        newStatus = 'Escalated';
-        break;
-      case 'Request Inspection':
-        newStatus = 'Inspection Requested';
-        break;
-      case 'Mark Delayed':
-        newStatus = 'Delayed';
-        break;
-      default:
-        break;
-    }
-
-    // Update Project State
-    const updatedProjects = projects.map(p => {
-      if (p.id === selectedProject.id) {
-        const updated = {
-          ...p,
-          status: newStatus,
-          progress: newProgress,
-          justificationHistory: [
-            {
-              action: actionType,
-              user: currentUser?.displayName || currentUser?.role || 'DM',
-              text: justification,
-              timestamp: new Date().toLocaleTimeString()
-            },
-            ...p.justificationHistory
-          ]
-        };
-        setSelectedProject(updated);
-        return updated;
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || 'Failed to submit action');
       }
-      return p;
-    });
 
-    setProjects(updatedProjects);
+      const updatedProject = await res.json();
+      setSuccess(`Successfully executed action "${actionType}" for project: ${updatedProject.name}`);
+      setJustification('');
 
-    // Add to audit log
-    const logEntry = {
-      id: Date.now(),
-      project: selectedProject.name,
-      action: actionType,
-      user: currentUser?.displayName || currentUser?.role || 'DM',
-      justification: justification,
-      timestamp: new Date().toLocaleTimeString()
-    };
-    setAuditLog([logEntry, ...auditLog]);
+      setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+      setSelectedProject(updatedProject);
 
-    setSuccess(`Successfully executed action "${actionType}" for project: ${selectedProject.name}`);
-    setJustification('');
+      // Add to audit log
+      const logEntry = {
+        id: Date.now(),
+        project: updatedProject.name,
+        action: actionType,
+        user: currentUser?.displayName || currentUser?.role || 'DM',
+        justification: justification,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setAuditLog(prev => [logEntry, ...prev]);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Failed to execute project action.');
+    }
   };
 
   const getStatusBadgeClass = (status) => {
@@ -426,11 +362,11 @@ const DrishtiPanel = () => {
                 </div>
 
                 {/* ── Justification History ── */}
-                {selectedProject.justificationHistory && selectedProject.justificationHistory.length > 0 && (
+                {selectedProject.justifications && selectedProject.justifications.length > 0 && (
                   <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: 14 }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>History Log</span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                      {selectedProject.justificationHistory.map((h, index) => (
+                      {selectedProject.justifications.map((h, index) => (
                         <div key={index} style={{ background: 'var(--gray-50)', padding: 10, borderLeft: '3px solid var(--blue-600)', fontSize: 11 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                             <span style={{ fontWeight: 700, color: 'var(--blue-600)' }}>{h.action}</span>

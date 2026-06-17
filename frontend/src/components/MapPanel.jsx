@@ -2,185 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
 
-// Comprehensive mock Delhi District Civic Metrics with alert nodes and project status
-const DISTRICT_METRICS = {
-    "North West": {
-        status: "STABLE",
-        complaints: { Total: 48, Sanitation: 15, Water: 12, Roads: 14, Electricity: 7 },
-        solved: { Total: 38, Sanitation: 12, Water: 10, Roads: 11, Electricity: 5 },
-        active: { Total: 10, Sanitation: 3, Water: 2, Roads: 3, Electricity: 2 },
-        avgResponse: "24h",
-        escalations: 1,
-        alerts: { health: 1, education: 2 },
-        project: { name: "Outer Ring Drainage", status: "Active" },
-        details: {
-            "Sanitation": { who: "Mr. Rajeev Kumar (MCD Sanitation Division)" },
-            "Water": { who: "Mr. S. K. Dwivedi (Delhi Jal Board - West)" },
-            "Roads": { who: "Mr. Vinod Prasad (PWD NW Zone)" },
-            "Electricity": { who: "Mr. Ramesh Saxena (Tata Power DDL)" }
-        }
-    },
-    "North": {
-        status: "STABLE",
-        complaints: { Total: 12, Sanitation: 3, Water: 4, Roads: 3, Electricity: 2 },
-        solved: { Total: 10, Sanitation: 3, Water: 3, Roads: 2, Electricity: 2 },
-        active: { Total: 2, Sanitation: 0, Water: 1, Roads: 1, Electricity: 0 },
-        avgResponse: "12h",
-        escalations: 0,
-        alerts: { health: 0, education: 0 },
-        project: { name: "Heritage Wall Conservation", status: "Completed" },
-        details: {
-            "Sanitation": { who: "Mrs. Anjali Roy (MCD North Zone)" },
-            "Water": { who: "Mr. S. K. Bose (DJB North Zone)" },
-            "Roads": { who: "Mr. P. K. Singh (PWD North)" },
-            "Electricity": { who: "Mr. Sanjay Dutt (Tata Power)" }
-        }
-    },
-    "North East": {
-        status: "STABLE",
-        complaints: { Total: 35, Sanitation: 12, Water: 8, Roads: 10, Electricity: 5 },
-        solved: { Total: 28, Sanitation: 10, Water: 6, Roads: 8, Electricity: 4 },
-        active: { Total: 7, Sanitation: 2, Water: 2, Roads: 2, Electricity: 1 },
-        avgResponse: "36h",
-        escalations: 1,
-        alerts: { health: 1, education: 1 },
-        project: { name: "Yamuna East Embankment", status: "Active" },
-        details: {
-            "Sanitation": { who: "Mr. Satish Pal (MCD NE Zone)" },
-            "Water": { who: "Mr. V. K. Jain (DJB East)" },
-            "Roads": { who: "Mr. S. C. Verma (MCD Works Dept)" },
-            "Electricity": { who: "Mr. J. K. Gupta (BSES Yamuna)" }
-        }
-    },
-    "Shahdara": {
-        status: "STABLE",
-        complaints: { Total: 29, Sanitation: 9, Water: 7, Roads: 8, Electricity: 5 },
-        solved: { Total: 22, Sanitation: 7, Water: 5, Roads: 6, Electricity: 4 },
-        active: { Total: 7, Sanitation: 2, Water: 2, Roads: 2, Electricity: 1 },
-        avgResponse: "28h",
-        escalations: 0,
-        alerts: { health: 0, education: 1 },
-        project: { name: "N/A", status: "None" },
-        details: {
-            "Sanitation": { who: "Mr. Amit Sharma (MCD Shahdara)" },
-            "Water": { who: "Mr. R. K. Mishra (DJB Shahdara)" },
-            "Roads": { who: "Mr. L. N. Rao (MCD Works)" },
-            "Electricity": { who: "Mr. Naveen Lal (BSES Yamuna)" }
-        }
-    },
-    "East": {
-        status: "STABLE",
-        complaints: { Total: 41, Sanitation: 14, Water: 10, Roads: 12, Electricity: 5 },
-        solved: { Total: 32, Sanitation: 11, Water: 8, Roads: 9, Electricity: 4 },
-        active: { Total: 9, Sanitation: 3, Water: 2, Roads: 3, Electricity: 1 },
-        avgResponse: "30h",
-        escalations: 1,
-        alerts: { health: 2, education: 1 },
-        project: { name: "Mayur Vihar Flyover Expansion", status: "Active" },
-        details: {
-            "Sanitation": { who: "Ms. Neha Gupta (MCD East Zone)" },
-            "Water": { who: "Mr. H. S. Rawat (DJB East)" },
-            "Roads": { who: "Mr. P. R. Chawla (PWD East)" },
-            "Electricity": { who: "Mr. A. K. Joshi (BSES Yamuna)" }
-        }
-    },
-    "West": {
-        status: "STABLE",
-        complaints: { Total: 52, Sanitation: 18, Water: 14, Roads: 12, Electricity: 8 },
-        solved: { Total: 40, Sanitation: 14, Water: 11, Roads: 9, Electricity: 6 },
-        active: { Total: 12, Sanitation: 4, Water: 3, Roads: 3, Electricity: 2 },
-        avgResponse: "26h",
-        escalations: 2,
-        alerts: { health: 1, education: 3 },
-        project: { name: "Janakpuri Community Park", status: "Completed" },
-        details: {
-            "Sanitation": { who: "Mr. Vinay Yadav (MCD West Zone)" },
-            "Water": { who: "Mr. Anil Nair (DJB West)" },
-            "Roads": { who: "Mr. S. K. Grover (PWD West)" },
-            "Electricity": { who: "Mr. R. S. Negi (BSES Rajdhani)" }
-        }
-    },
-    "Central": {
-        status: "CRITICAL",
-        complaints: { Total: 138, Sanitation: 45, Water: 38, Roads: 35, Electricity: 20 },
-        solved: { Total: 92, Sanitation: 30, Water: 25, Roads: 24, Electricity: 13 },
-        active: { Total: 46, Sanitation: 15, Water: 13, Roads: 11, Electricity: 7 },
-        avgResponse: "48h",
-        escalations: 8,
-        alerts: { health: 7, education: 4 },
-        project: { name: "Walled City Sanitation Drive", status: "Active" },
-        details: {
-            "Sanitation": { who: "Mr. Manoj Dwivedi (Executive Engineer, MCD Central Zone)" },
-            "Water": { who: "Mr. Rajesh Saxena (Superintendent Engineer, DJB Central)" },
-            "Roads": { who: "Mr. P. S. Oberoi (Executive Engineer, PWD Central)" },
-            "Electricity": { who: "Mr. V. K. Aggarwal (General Manager, BSES Yamuna)" }
-        }
-    },
-    "New Delhi": {
-        status: "STABLE",
-        complaints: { Total: 67, Sanitation: 20, Water: 18, Roads: 15, Electricity: 14 },
-        solved: { Total: 52, Sanitation: 16, Water: 14, Roads: 12, Electricity: 10 },
-        active: { Total: 15, Sanitation: 4, Water: 4, Roads: 3, Electricity: 4 },
-        avgResponse: "18h",
-        escalations: 2,
-        alerts: { health: 2, education: 1 },
-        project: { name: "Kartavya Path Landscaping", status: "Active" },
-        details: {
-            "Sanitation": { who: "Mr. Sanjay Malhotra (Director of Health, NDMC)" },
-            "Water": { who: "Mr. Ramesh Lal (Chief Civil Engineer, NDMC)" },
-            "Roads": { who: "Mr. Amit Sen (Chief Road Engineer, NDMC)" },
-            "Electricity": { who: "Mr. Anil Mehta (Director of Power, NDMC)" }
-        }
-    },
-    "South West": {
-        status: "STABLE",
-        complaints: { Total: 33, Sanitation: 10, Water: 9, Roads: 9, Electricity: 5 },
-        solved: { Total: 27, Sanitation: 8, Water: 8, Roads: 7, Electricity: 4 },
-        active: { Total: 6, Sanitation: 2, Water: 1, Roads: 2, Electricity: 1 },
-        avgResponse: "22h",
-        escalations: 0,
-        alerts: { health: 1, education: 0 },
-        project: { name: "Dwarka Sector 21 School", status: "Pending" },
-        details: {
-            "Sanitation": { who: "Mr. K. S. Rao (MCD SW Zone Director)" },
-            "Water": { who: "Mr. T. C. Sharma (DJB SW Executive)" },
-            "Roads": { who: "Mr. Rohit Gupta (MCD Works SW)" },
-            "Electricity": { who: "Mr. Devendra Pal (BSES Rajdhani)" }
-        }
-    },
-    "South": {
-        status: "CRITICAL",
-        complaints: { Total: 92, Sanitation: 30, Water: 24, Roads: 23, Electricity: 15 },
-        solved: { Total: 66, Sanitation: 22, Water: 16, Roads: 17, Electricity: 11 },
-        active: { Total: 26, Sanitation: 8, Water: 8, Roads: 6, Electricity: 4 },
-        avgResponse: "38h",
-        escalations: 4,
-        alerts: { health: 4, education: 2 },
-        project: { name: "Saket Smart Hub Integration", status: "Active" },
-        details: {
-            "Sanitation": { who: "Ms. Aarti Sharma (Executive Engineer, MCD South)" },
-            "Water": { who: "Mr. S. K. Nair (Superintendent Engineer, DJB South)" },
-            "Roads": { who: "Mr. Manoj Rawat (Executive Engineer, PWD South)" },
-            "Electricity": { who: "Mr. Amit Bhatia (General Manager, BSES Rajdhani)" }
-        }
-    },
-    "South East": {
-        status: "STABLE",
-        complaints: { Total: 44, Sanitation: 15, Water: 11, Roads: 12, Electricity: 6 },
-        solved: { Total: 34, Sanitation: 12, Water: 8, Roads: 9, Electricity: 5 },
-        active: { Total: 10, Sanitation: 3, Water: 3, Roads: 3, Electricity: 1 },
-        avgResponse: "32h",
-        escalations: 1,
-        alerts: { health: 2, education: 0 },
-        project: { name: "Okhla STP Upgradation", status: "Pending" },
-        details: {
-            "Sanitation": { who: "Mr. Rajesh Tiwari (MCD SE Zone)" },
-            "Water": { who: "Mr. K. K. Sharma (DJB SE Executive)" },
-            "Roads": { who: "Mr. S. P. Yadav (PWD SE)" },
-            "Electricity": { who: "Mr. R. K. Mittal (BSES Rajdhani)" }
-        }
-    }
-};
+// DISTRICT_METRICS dictionary has been migrated to the SQLite Relational Database (RDB)
 
 const COLOR_MAP = {
     "Very High": { fill: "#ef4444", border: "#b91c1c" },
@@ -198,10 +20,9 @@ const getDensityLevel = (activeCount) => {
     return "Very Low";
 };
 
-// Generates a data-rich informational report to the DM for a specific district
-const getReportForDistrict = (districtName, category) => {
-    const d = DISTRICT_METRICS[districtName];
-    if (!d) return getAggregateReport(category);
+const getReportForDistrict = (districtMetrics, districtName, category) => {
+    const d = districtMetrics[districtName];
+    if (!d) return getAggregateReport(districtMetrics, category);
     const lookupKey = category === "All" ? "Total" : category;
     const total = d.complaints[lookupKey] || 0;
     const active = d.active[lookupKey] || 0;
@@ -249,7 +70,7 @@ const getReportForDistrict = (districtName, category) => {
 };
 
 // Generates an aggregate report for NCT of Delhi overall
-const getAggregateReport = (category) => {
+const getAggregateReport = (districtMetrics, category) => {
     let total = 0;
     let solved = 0;
     let active = 0;
@@ -258,12 +79,12 @@ const getAggregateReport = (category) => {
 
     const lookupKey = category === "All" ? "Total" : category;
 
-    Object.values(DISTRICT_METRICS).forEach(d => {
-        total += d.complaints[lookupKey];
-        solved += d.solved[lookupKey];
-        active += d.active[lookupKey];
-        sanitation += d.complaints.Sanitation;
-        water += d.complaints.Water;
+    Object.values(districtMetrics).forEach(d => {
+        total += d.complaints[lookupKey] || 0;
+        solved += d.solved[lookupKey] || 0;
+        active += d.active[lookupKey] || 0;
+        sanitation += d.complaints.Sanitation || 0;
+        water += d.complaints.Water || 0;
     });
 
     const categoryReports = {
@@ -326,6 +147,80 @@ const getDistrictFromEmail = (email) => {
 
 const MapPanel = () => {
     const { currentUser } = useAuth();
+    const [districtMetrics, setDistrictMetrics] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const fetchMetrics = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('praja_token');
+            const res = await fetch('/api/v1/heatmap/metrics', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!res.ok) {
+                throw new Error('Failed to fetch heatmap metrics');
+            }
+            const data = await res.json();
+            const metricsDict = {};
+            data.forEach(m => {
+                metricsDict[m.name] = {
+                    status: m.status,
+                    complaints: {
+                        Total: m.complaints_total,
+                        Sanitation: m.complaints_sanitation,
+                        Water: m.complaints_water,
+                        Roads: m.complaints_roads,
+                        Electricity: m.complaints_electricity
+                    },
+                    solved: {
+                        Total: m.solved_total,
+                        Sanitation: m.solved_sanitation,
+                        Water: m.solved_water,
+                        Roads: m.solved_roads,
+                        Electricity: m.solved_electricity
+                    },
+                    active: {
+                        Total: m.active_total,
+                        Sanitation: m.active_sanitation,
+                        Water: m.active_water,
+                        Roads: m.active_roads,
+                        Electricity: m.active_electricity
+                    },
+                    avgResponse: m.avg_response,
+                    escalations: m.escalations,
+                    alerts: {
+                        health: m.alerts_health,
+                        education: m.alerts_education
+                    },
+                    project: {
+                        name: m.project_name,
+                        status: m.project_status
+                    },
+                    details: {
+                        Sanitation: { who: m.officer_sanitation },
+                        Water: { who: m.officer_water },
+                        Roads: { who: m.officer_roads },
+                        Electricity: { who: m.officer_electricity }
+                    }
+                };
+            });
+            setDistrictMetrics(metricsDict);
+        } catch (e) {
+            console.error(e);
+            setError('Failed to load district metrics.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMetrics();
+    }, [currentUser]);
+
     const mapRef = useRef(null);
     const mapContainerRef = useRef(null);
     const geojsonLayerRef = useRef(null);
@@ -436,7 +331,7 @@ const MapPanel = () => {
         const layer = L.geoJSON(geojsonData, {
             style: (feature) => {
                 const dtName = feature.properties.dtname;
-                const d = DISTRICT_METRICS[dtName];
+                const d = districtMetrics[dtName];
                 const lookupKey = activeCategory === "All" ? "Total" : activeCategory;
                 const activeCount = d ? d.active[lookupKey] : 0;
                 const density = getDensityLevel(activeCount);
@@ -473,7 +368,7 @@ const MapPanel = () => {
             },
             onEachFeature: (feature, layer) => {
                 const dtName = feature.properties.dtname;
-                const d = DISTRICT_METRICS[dtName];
+                const d = districtMetrics[dtName];
                 if (!d) return;
 
                 layer.on({
@@ -608,7 +503,7 @@ const MapPanel = () => {
             }
         });
 
-    }, [geojsonData, activeCategory, selectedDistrict, overlays]);
+    }, [geojsonData, activeCategory, selectedDistrict, overlays, districtMetrics]);
 
         // Aggregate statistics helper
     const getAggregateStats = () => {
@@ -619,14 +514,14 @@ const MapPanel = () => {
 
         const lookupKey = activeCategory === "All" ? "Total" : activeCategory;
 
-        if (selectedDistrict && DISTRICT_METRICS[selectedDistrict]) {
-            const d = DISTRICT_METRICS[selectedDistrict];
+        if (selectedDistrict && districtMetrics[selectedDistrict]) {
+            const d = districtMetrics[selectedDistrict];
             total = d.complaints[lookupKey] || 0;
             solved = d.solved[lookupKey] || 0;
             active = d.active[lookupKey] || 0;
             escalations = d.escalations || 0;
         } else {
-            Object.values(DISTRICT_METRICS).forEach(d => {
+            Object.values(districtMetrics).forEach(d => {
                 total += d.complaints[lookupKey] || 0;
                 solved += d.solved[lookupKey] || 0;
                 active += d.active[lookupKey] || 0;
@@ -644,11 +539,11 @@ const MapPanel = () => {
 
     // Accountability reports
     const details = selectedDistrict
-        ? getReportForDistrict(selectedDistrict, activeCategory)
-        : getAggregateReport(activeCategory);
+        ? getReportForDistrict(districtMetrics, selectedDistrict, activeCategory)
+        : getAggregateReport(districtMetrics, activeCategory);
 
-    const statusBadge = (selectedDistrict && DISTRICT_METRICS[selectedDistrict])
-        ? DISTRICT_METRICS[selectedDistrict].status
+    const statusBadge = (selectedDistrict && districtMetrics[selectedDistrict])
+        ? districtMetrics[selectedDistrict].status
         : "OVERVIEW";
 
     // Dynamic category progress bars builder
@@ -658,18 +553,18 @@ const MapPanel = () => {
         let roads = 0;
         let electricity = 0;
 
-        if (selectedDistrict && DISTRICT_METRICS[selectedDistrict]) {
-            const d = DISTRICT_METRICS[selectedDistrict];
+        if (selectedDistrict && districtMetrics[selectedDistrict]) {
+            const d = districtMetrics[selectedDistrict];
             sanitation = d.complaints.Sanitation || 0;
             water = d.complaints.Water || 0;
             roads = d.complaints.Roads || 0;
             electricity = d.complaints.Electricity || 0;
         } else {
-            Object.values(DISTRICT_METRICS).forEach(d => {
-                sanitation += d.complaints.Sanitation;
-                water += d.complaints.Water;
-                roads += d.complaints.Roads;
-                electricity += d.complaints.Electricity;
+            Object.values(districtMetrics).forEach(d => {
+                sanitation += d.complaints.Sanitation || 0;
+                water += d.complaints.Water || 0;
+                roads += d.complaints.Roads || 0;
+                electricity += d.complaints.Electricity || 0;
             });
         }
 
@@ -867,7 +762,7 @@ const MapPanel = () => {
 
                         {/* Response Time & Escalations */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: 8 }}>
-                            <div>Avg. Response: <span style={{ color: navy }}>{(selectedDistrict && DISTRICT_METRICS[selectedDistrict]) ? DISTRICT_METRICS[selectedDistrict].avgResponse : "24h"}</span></div>
+                            <div>Avg. Response: <span style={{ color: navy }}>{(selectedDistrict && districtMetrics[selectedDistrict]) ? districtMetrics[selectedDistrict].avgResponse : "24h"}</span></div>
                             <div>Escalations: <span style={{ color: '#ef4444' }}>{stats.escalations} Active</span></div>
                         </div>
                     </div>

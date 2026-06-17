@@ -123,3 +123,9 @@ def me(current_user: User = Depends(get_current_user)):
         role=current_user.role,
         display_name=current_user.display_name,
     )
+
+
+@router.post("/logout")
+def logout():
+    """Stateless logout handler."""
+    return {"status": "success", "message": "Logged out successfully"}
