@@ -20,6 +20,7 @@ from app.domain.models.project import Project, ProjectJustification  # noqa: F40
 from app.domain.models.district_metric import DistrictMetric  # noqa: F401 - ensure table is registered
 from app.domain.models.task import Task  # noqa: F401 - ensure table is registered
 from app.domain.models.file_tracker import FileTracker, FileTimelineEntry  # noqa: F401 - ensure tables are registered
+from app.domain.models.system_config import SystemConfig  # noqa: F401 - ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 
@@ -513,14 +514,38 @@ def seed_files():
 async def lifespan(app: FastAPI):
     # Initialize SQLite tables
     init_db()
-    # Seed projects
-    seed_projects()
-    # Seed district metrics
-    seed_district_metrics()
-    # Seed tasks
-    seed_tasks()
-    # Seed files
-    seed_files()
+
+    # Check if database is already seeded via persistent SystemConfig table
+    from sqlmodel import Session, select
+    from app.infrastructure.db.sqlite_client import engine
+    from app.domain.models.system_config import SystemConfig
+
+    is_seeded = False
+    with Session(engine) as session:
+        statement = select(SystemConfig).where(SystemConfig.key == "seeded")
+        config = session.exec(statement).first()
+        if config and config.value == "true":
+            is_seeded = True
+
+    if not is_seeded:
+        print("🌱 Seeding database for the first time...")
+        # Seed projects
+        seed_projects()
+        # Seed district metrics
+        seed_district_metrics()
+        # Seed tasks
+        seed_tasks()
+        # Seed files
+        seed_files()
+        
+        # Mark as seeded persistently in SQLite
+        with Session(engine) as session:
+            session.add(SystemConfig(key="seeded", value="true"))
+            session.commit()
+        print("✅ Seeding complete!")
+    else:
+        print("⏭️ Database already seeded. Skipping setup.")
+
     # Ensure Neo4j indexes exist
     neo4j_client.ensure_indexes()
     # Seed initially if needed, and start watcher
