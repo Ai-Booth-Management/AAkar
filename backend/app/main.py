@@ -528,7 +528,7 @@ async def lifespan(app: FastAPI):
             is_seeded = True
 
     if not is_seeded:
-        print("🌱 Seeding database for the first time...")
+        print("Seeding database for the first time...")
         # Seed projects
         seed_projects()
         # Seed district metrics
@@ -542,9 +542,9 @@ async def lifespan(app: FastAPI):
         with Session(engine) as session:
             session.add(SystemConfig(key="seeded", value="true"))
             session.commit()
-        print("✅ Seeding complete!")
+        print("Seeding complete!")
     else:
-        print("⏭️ Database already seeded. Skipping setup.")
+        print("Database already seeded. Skipping setup.")
 
     # Ensure Neo4j indexes exist
     neo4j_client.ensure_indexes()
