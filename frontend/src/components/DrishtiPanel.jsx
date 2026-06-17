@@ -170,7 +170,7 @@ const DrishtiPanel = () => {
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* ── Header Card ── */}
-      <div className="card" style={{ background: 'linear-gradient(135deg, var(--blue-900) 0%, var(--blue-800) 100%)', border: '1px solid var(--blue-700)' }}>
+      <div className="card card-dark" style={{ background: 'linear-gradient(135deg, var(--blue-700) 0%, var(--blue-600) 100%)', border: '1px solid var(--blue-700)' }}>
         <h2 style={{ color: 'var(--white)', margin: '0 0 8px 0' }}>Project Drishti</h2>
         <p style={{ color: 'var(--blue-100)', margin: 0, opacity: 0.8, fontSize: 13 }}>
           District Project Monitoring & Action Portal. Review active initiatives, allocate checks, and approve developmental milestones.
@@ -184,7 +184,7 @@ const DrishtiPanel = () => {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <tr style={{ borderBottom: '1px solid var(--gray-200)', color: 'var(--gray-500)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   <th style={{ padding: '12px 8px' }}>Project Name</th>
                   <th style={{ padding: '12px 8px' }}>Department</th>
                   <th style={{ padding: '12px 8px' }}>Budget</th>
@@ -204,21 +204,21 @@ const DrishtiPanel = () => {
                     }}
                     style={{
                       cursor: 'pointer',
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
-                      background: selectedProject?.id === p.id ? 'rgba(255,255,255,0.04)' : 'transparent',
+                      borderBottom: '1px solid var(--gray-100)',
+                      background: selectedProject?.id === p.id ? 'var(--gray-100)' : 'transparent',
                       transition: 'background 0.2s'
                     }}
                     className="hover-row"
                   >
-                    <td style={{ padding: '14px 8px', fontWeight: 600, fontSize: 13 }}>{p.name}</td>
-                    <td style={{ padding: '14px 8px', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>{p.department}</td>
-                    <td style={{ padding: '14px 8px', fontWeight: 500, fontSize: 12 }}>{p.budget}</td>
+                    <td style={{ padding: '14px 8px', fontWeight: 600, fontSize: 13, color: 'var(--gray-900)' }}>{p.name}</td>
+                    <td style={{ padding: '14px 8px', color: 'var(--gray-600)', fontSize: 12 }}>{p.department}</td>
+                    <td style={{ padding: '14px 8px', fontWeight: 500, fontSize: 12, color: 'var(--gray-800)' }}>{p.budget}</td>
                     <td style={{ padding: '14px 8px', width: 100 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 0, overflow: 'hidden' }}>
+                        <div style={{ flex: 1, height: 6, background: 'var(--gray-200)', borderRadius: 0, overflow: 'hidden' }}>
                           <div style={{ width: `${p.progress}%`, height: '100%', background: 'var(--blue-500)' }} />
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 700 }}>{p.progress}%</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-800)' }}>{p.progress}%</span>
                       </div>
                     </td>
                     <td style={{ padding: '14px 8px' }}>
@@ -236,37 +236,37 @@ const DrishtiPanel = () => {
           {selectedProject ? (
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--blue-400)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Selected Project</span>
-                <h3 style={{ margin: '4px 0 8px 0' }}>{selectedProject.name}</h3>
+                <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--blue-600)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Selected Project</span>
+                <h3 style={{ margin: '4px 0 8px 0', color: 'var(--gray-900)' }}>{selectedProject.name}</h3>
                 <span className={`badge ${getStatusBadgeClass(selectedProject.status)}`}>{selectedProject.status}</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid var(--gray-200)', paddingTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>Department:</span>
-                  <span style={{ fontWeight: 600 }}>{selectedProject.department}</span>
+                  <span style={{ color: 'var(--gray-500)' }}>Department:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--gray-800)' }}>{selectedProject.department}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>Budget:</span>
-                  <span style={{ fontWeight: 600 }}>{selectedProject.budget}</span>
+                  <span style={{ color: 'var(--gray-500)' }}>Budget:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--gray-800)' }}>{selectedProject.budget}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>Deadline:</span>
-                  <span style={{ fontWeight: 600 }}>{selectedProject.deadline}</span>
+                  <span style={{ color: 'var(--gray-500)' }}>Deadline:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--gray-800)' }}>{selectedProject.deadline}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>Current Officer:</span>
-                  <span style={{ fontWeight: 600 }}>{selectedProject.officer}</span>
+                  <span style={{ color: 'var(--gray-500)' }}>Current Officer:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--gray-800)' }}>{selectedProject.officer}</span>
                 </div>
               </div>
 
               {/* ── Feedback Message ── */}
               {error && <div className="error-msg" style={{ margin: 0, padding: '10px 12px', borderRadius: 0, fontSize: 12 }}>{error}</div>}
-              {success && <div className="success-msg" style={{ margin: 0, padding: '10px 12px', borderRadius: 0, fontSize: 12, background: 'rgba(16,185,129,0.1)', color: 'var(--green-400)', border: '1px solid rgba(16,185,129,0.2)' }}>{success}</div>}
+              {success && <div className="success-msg" style={{ margin: 0, padding: '10px 12px', borderRadius: 0, fontSize: 12, background: 'rgba(16,185,129,0.1)', color: 'var(--green-600)', border: '1px solid rgba(16,185,129,0.2)' }}>{success}</div>}
 
               {/* ── DM Action justification inputs ── */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid var(--gray-200)', paddingTop: 14 }}>
+                <label style={{ fontSize: 11, fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Decision Justification <span style={{ color: 'var(--high-risk)' }}>*</span>
                 </label>
                 <textarea
@@ -276,10 +276,10 @@ const DrishtiPanel = () => {
                   style={{
                     width: '100%',
                     height: 80,
-                    background: 'rgba(0,0,0,0.2)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'var(--white)',
+                    border: '1px solid var(--gray-300)',
                     borderRadius: 0,
-                    color: 'var(--white)',
+                    color: 'var(--gray-900)',
                     padding: '10px 12px',
                     fontSize: 12,
                     fontFamily: 'inherit',
@@ -294,14 +294,14 @@ const DrishtiPanel = () => {
                   <button
                     className="btn"
                     onClick={() => handleAction('Approve')}
-                    style={{ background: 'var(--green-600)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
+                    style={{ background: 'var(--green-500)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
                   >
                     Approve
                   </button>
                   <button
                     className="btn"
                     onClick={() => handleAction('Reject')}
-                    style={{ background: 'var(--high-risk)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
+                    style={{ background: 'var(--red-500)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
                   >
                     Reject
                   </button>
@@ -309,21 +309,21 @@ const DrishtiPanel = () => {
                 <button
                   className="btn"
                   onClick={() => handleAction('Escalate')}
-                  style={{ background: 'var(--amber-600)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
+                  style={{ background: 'var(--amber-500)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
                 >
                   Escalate
                 </button>
                 <button
                   className="btn"
                   onClick={() => handleAction('Request Inspection')}
-                  style={{ background: 'var(--blue-600)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
+                  style={{ background: 'var(--blue-500)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
                 >
                   Request Inspection
                 </button>
                 <button
                   className="btn"
                   onClick={() => handleAction('Mark Delayed')}
-                  style={{ background: 'var(--gray-600)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
+                  style={{ background: 'var(--gray-500)', color: 'var(--white)', border: 'none', fontSize: 12, justifyContent: 'center' }}
                 >
                   Mark Delayed
                 </button>
@@ -331,17 +331,17 @@ const DrishtiPanel = () => {
 
               {/* ── Justification History ── */}
               {selectedProject.justificationHistory && selectedProject.justificationHistory.length > 0 && (
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>History Log</span>
+                <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: 14 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>History Log</span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
                     {selectedProject.justificationHistory.map((h, index) => (
-                      <div key={index} style={{ background: 'rgba(255,255,255,0.02)', padding: 10, borderLeft: '3px solid var(--blue-500)', fontSize: 11 }}>
+                      <div key={index} style={{ background: 'var(--gray-50)', padding: 10, borderLeft: '3px solid var(--blue-600)', fontSize: 11 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ fontWeight: 700, color: 'var(--blue-300)' }}>{h.action}</span>
-                          <span style={{ color: 'rgba(255,255,255,0.4)' }}>{h.timestamp}</span>
+                          <span style={{ fontWeight: 700, color: 'var(--blue-600)' }}>{h.action}</span>
+                          <span style={{ color: 'var(--gray-500)' }}>{h.timestamp}</span>
                         </div>
-                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)' }}>{h.text}</p>
-                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: 4 }}>By: {h.user}</span>
+                        <p style={{ margin: 0, color: 'var(--gray-800)' }}>{h.text}</p>
+                        <span style={{ fontSize: 9, color: 'var(--gray-500)', display: 'block', marginTop: 4 }}>By: {h.user}</span>
                       </div>
                     ))}
                   </div>
@@ -349,7 +349,7 @@ const DrishtiPanel = () => {
               )}
             </div>
           ) : (
-            <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'rgba(255,255,255,0.4)' }}>
+            <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--gray-400)' }}>
               Select a project from the left to view details and take actions.
             </div>
           )}
@@ -357,15 +357,15 @@ const DrishtiPanel = () => {
           {/* ── Session Audit Log ── */}
           {auditLog.length > 0 && (
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <h4 style={{ margin: 0 }}>Session Audit Log</h4>
+              <h4 style={{ margin: 0, color: 'var(--gray-900)' }}>Session Audit Log</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 150, overflowY: 'auto' }}>
                 {auditLog.map((log) => (
-                  <div key={log.id} style={{ fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: 6 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
+                  <div key={log.id} style={{ fontSize: 11, borderBottom: '1px solid var(--gray-100)', paddingBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, color: 'var(--gray-800)' }}>
                       <span>{log.action} - {log.project}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>{log.timestamp}</span>
+                      <span style={{ color: 'var(--gray-500)' }}>{log.timestamp}</span>
                     </div>
-                    <p style={{ margin: '2px 0 0 0', color: 'rgba(255,255,255,0.6)' }}>Justification: {log.justification}</p>
+                    <p style={{ margin: '2px 0 0 0', color: 'var(--gray-600)' }}>Justification: {log.justification}</p>
                   </div>
                 ))}
               </div>
@@ -375,7 +375,7 @@ const DrishtiPanel = () => {
       </div>
       <style>{`
         .hover-row:hover {
-          background: rgba(255,255,255,0.02) !important;
+          background: var(--gray-50) !important;
         }
       `}</style>
     </div>
