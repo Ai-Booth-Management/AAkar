@@ -26,8 +26,16 @@ const GraphAnalyticsPanel = () => {
 
   useEffect(() => {
     fetch(`${API_BASE}/analytics/network`)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch intelligence graph');
+      .then(async res => {
+        if (!res.ok) {
+          const errText = await res.text();
+          let msg = 'Failed to fetch intelligence graph';
+          try {
+            const parsed = JSON.parse(errText);
+            if (parsed.detail) msg = parsed.detail;
+          } catch (e) {}
+          return Promise.reject(new Error(msg));
+        }
         return res.json();
       })
       .then(data => {

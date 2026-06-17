@@ -265,7 +265,7 @@ const MapPanel = () => {
     useEffect(() => {
         fetch('/delhi_districts.geojson')
             .then(res => {
-                if (!res.ok) throw new Error("Failed to load Delhi GeoJSON file");
+                if (!res.ok) return Promise.reject(new Error("Failed to load Delhi GeoJSON file"));
                 return res.json();
             })
             .then(data => setGeojsonData(data))
