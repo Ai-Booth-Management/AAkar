@@ -111,6 +111,17 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    id: 'drishti',
+    label: 'Project Drishti',
+    path: '/dashboard/drishti',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    ),
+  },
 ];
 
 const ABOUT_ITEM = {
@@ -149,6 +160,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/heatmap': 'District Heatmap Analysis',
   '/dashboard/about': 'About System',
   '/dashboard/settings': 'Settings',
+  '/dashboard/drishti': 'Project Drishti',
 };
 
 // Next.js static asset import is imported inside components.
@@ -204,7 +216,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
     if (currentUser.role === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti'].includes(item.id);
     }
     return true;
   });
