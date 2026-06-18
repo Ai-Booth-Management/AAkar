@@ -23,20 +23,11 @@ export default function AICopilot({ hierarchy }) {
 
         setTimeout(() => {
             setIsThinking(false);
-            const query = userText.toLowerCase();
-            let aiResponse = { id: Date.now() + 1, role: 'ai' };
-
-            if (query.includes('weakest') || query.includes('weak')) {
-                aiResponse.text = "Here are the booths requiring immediate intervention based on current data:";
-                aiResponse.card = 'weak_booths';
-            } else if (query.includes('summary') || query.includes('district')) {
-                aiResponse.text = "Aggregated summary of your jurisdiction:";
-                aiResponse.card = 'summary';
-            } else {
-                aiResponse.text = "Current data indicates stable operations. I recommend focusing volunteer drives in low-engagement sectors to boost pre-poll sentiment.";
-            }
-
-            setMessages(prev => [...prev, aiResponse]);
+            setMessages(prev => [...prev, { 
+                id: Date.now() + 1, 
+                role: 'ai', 
+                text: "No data available to analyze. Please ensure the system is connected to a data source." 
+            }]);
         }, 1500);
     };
 
@@ -130,11 +121,6 @@ export default function AICopilot({ hierarchy }) {
                         }}>
                             {msg.text}
                         </div>
-                        {msg.card && (
-                            <div style={{ marginTop: '12px', width: '100%', maxWidth: '90%' }}>
-                                <AICard type={msg.card} />
-                            </div>
-                        )}
                     </div>
                 ))}
                 {isThinking && (
@@ -143,13 +129,6 @@ export default function AICopilot({ hierarchy }) {
                             <Bot size={12} />
                         </div>
                         <span className="pulse">Synthesizing strategy...</span>
-                    </div>
-                )}
-                {/* Suggestions */}
-                {messages.length === 1 && (
-                    <div style={{ display: 'flex', gap: '10px', marginTop: 'auto', flexWrap: 'wrap', padding: '10px 0' }}>
-                        <SuggestionButton text="Analyze booth performance" onClick={() => setInput("Show weak booths")} />
-                        <SuggestionButton text="Generate jurisdiction summary" onClick={() => setInput("Generate summary")} />
                     </div>
                 )}
             </div>
@@ -203,73 +182,4 @@ export default function AICopilot({ hierarchy }) {
             `}} />
         </div>
     );
-}
-
-function SuggestionButton({ text, onClick }) {
-    return (
-        <button 
-            onClick={onClick}
-            style={{ 
-                padding: '10px 18px', 
-                background: 'white', 
-                border: '1.5px solid var(--gray-200)', 
-                borderRadius: '10px', 
-                fontSize: '13px', 
-                fontWeight: 700, 
-                color: 'var(--blue-600)', 
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = 'var(--blue-600)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = 'var(--gray-200)'; }}
-        >
-            {text}
-        </button>
-    );
-}
-
-function AICard({ type }) {
-    if (type === 'weak_booths') {
-        return (
-            <div style={{ background: 'white', border: '1px solid #fecaca', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: '#dc2626', fontWeight: 900, fontSize: '14px', textTransform: 'uppercase' }}>
-                    <AlertTriangle size={18} /> High Vulnerability Nodes
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#fef2f2', borderRadius: '10px' }}>
-                        <div><strong style={{ color: '#991b1b' }}>Booth B104</strong><div style={{ fontSize: '12px', color: '#b91c1c' }}>Turnout Trend: -12%</div></div>
-                        <div style={{ fontWeight: 900, color: '#dc2626' }}>38% Est</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#fef2f2', borderRadius: '10px' }}>
-                        <div><strong style={{ color: '#991b1b' }}>Booth B156</strong><div style={{ fontSize: '12px', color: '#b91c1c' }}>Personnel Shortage</div></div>
-                        <div style={{ fontWeight: 900, color: '#dc2626' }}>45% Est</div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (type === 'summary') {
-        return (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div style={{ background: 'white', border: '1px solid var(--slate-200)', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: 'var(--navy)', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase' }}>
-                        <Users size={16} /> Total Readiness
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--navy)' }}>82%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--slate-400)', marginTop: '4px' }}>Optimal Threshold Met</div>
-                </div>
-                <div style={{ background: 'white', border: '1px solid var(--slate-200)', borderRadius: '16px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', color: 'var(--gold)', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase' }}>
-                        <TrendingUp size={16} /> Turnout Projection
-                    </div>
-                    <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--navy)' }}>64.5%</div>
-                    <div style={{ fontSize: '12px', color: '#10b981', marginTop: '4px', fontWeight: 800 }}>+2.1% YoY</div>
-                </div>
-            </div>
-        );
-    }
-
-    return null;
 }

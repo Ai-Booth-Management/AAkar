@@ -22,35 +22,29 @@ export default function VolunteerDashboard({ tab }) {
 }
 
 function DailyTasks() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Visit 20 households in Block A', sub: 'Priority: High', done: false },
-    { id: 2, title: 'Conduct local meeting at Chowk', sub: 'Time: 05:00 PM', done: true },
-    { id: 3, title: 'Verify 5 new voter applications', sub: 'Deadline: Today', done: false },
-    { id: 4, title: 'Check water supply status Zone 2', sub: 'Quick Update', done: false },
-    { id: 5, title: 'Submit evening field report', sub: 'Time: 07:00 PM', done: false },
-  ]);
+  const [tasks, setTasks] = useState([]);
 
   const toggleTask = (id) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
   };
 
   const completedCount = tasks.filter(t => t.done).length;
-  const progress = Math.round((completedCount / tasks.length) * 100);
+  const progress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   return (
     <>
       <div className="dash-page-header">
         <div className="dash-page-title">Daily Tasks</div>
-        <span className="pill pill-blue">Jun 17, 2026</span>
+        <span className="pill pill-blue">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
       </div>
       <div className="dash-stats">
         <div className="dash-stat"><div className="ds-value">{completedCount}/{tasks.length}</div><div className="ds-label">Completed</div></div>
         <div className="dash-stat-dark"><div className="ds-value">{progress}%</div><div className="ds-label">Progress</div></div>
       </div>
       <div className="dash-section">
-        <div className="dash-section-head"><h3>Assigned Tasks — Sector 4</h3></div>
+        <div className="dash-section-head"><h3>Assigned Tasks</h3></div>
         <div className="dash-section-body">
-          {tasks.map((t) => (
+          {tasks.length > 0 ? tasks.map((t) => (
             <div key={t.id} className="task-item" onClick={() => toggleTask(t.id)} style={{ cursor: 'pointer' }}>
               <div className={`task-check ${t.done ? 'task-check-done' : ''}`}>
                 {t.done && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -60,7 +54,9 @@ function DailyTasks() {
                 <div className="task-sub">{t.sub}</div>
               </div>
             </div>
-          ))}
+          )) : (
+            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No tasks assigned</div>
+          )}
         </div>
       </div>
     </>
@@ -69,11 +65,7 @@ function DailyTasks() {
 
 function CheckIn() {
   const [checkedIn, setCheckedIn] = useState(false);
-  const [history] = useState([
-    { date: 'Jun 16', time: '08:45 AM', loc: 'Sector 3' },
-    { date: 'Jun 15', time: '09:10 AM', loc: 'Sector 4' },
-    { date: 'Jun 14', time: '08:55 AM', loc: 'Sector 4' },
-  ]);
+  const [history] = useState([]);
 
   return (
     <>
@@ -82,8 +74,7 @@ function CheckIn() {
         <div className="dash-section-head"><h3>GPS-Verified Presence</h3></div>
         <div className="checkin-block">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={checkedIn ? "var(--green-500)" : "var(--blue-500)"} strokeWidth="2" style={{ margin: '0 auto', transition: 'stroke 0.3s' }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <div className="ci-location">Sector 4, Booth B102</div>
-          <div className="ci-sub">Mandal: CENTRAL · Constituency: LC-01</div>
+          <div className="ci-location">Location pending</div>
           <div className="ci-time-block">
             <div className="ci-time-label">Current Time</div>
             <div className="ci-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
@@ -102,12 +93,7 @@ function CheckIn() {
       <div className="dash-section">
         <div className="dash-section-head"><h3>Recent Log</h3></div>
         <div className="dash-section-body" style={{ padding: 0 }}>
-          {history.map((h, i) => (
-            <div key={i} className="summary-row" style={{ padding: '12px 16px', borderBottom: i < history.length - 1 ? '1px solid var(--gray-100)' : 'none' }}>
-              <span className="summary-label">{h.date} · {h.loc}</span>
-              <span className="summary-value" style={{ color: 'var(--green-500)' }}>{h.time}</span>
-            </div>
-          ))}
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No check-in history</div>
         </div>
       </div>
     </>
@@ -118,10 +104,7 @@ function Surveys() {
   const [activeSurvey, setActiveSurvey] = useState(null);
   const [step, setStep] = useState(0);
 
-  const surveys = [
-    { id: 1, title: 'Voter Feedback Survey', q: 12, mins: 5, questions: ['How satisfied are you with local water supply?', 'Rate the road conditions in your block.', 'Is the street lighting adequate?'] },
-    { id: 2, title: 'Irrigation Issue Assessment', q: 8, mins: 3, questions: ['Are you receiving canal water on time?', 'Is the groundwater level sufficient?', 'Condition of minor distributaries?'] },
-  ];
+  const surveys = [];
 
   if (activeSurvey) {
     const q = activeSurvey.questions[step] || 'Survey Complete. Thank you!';
@@ -165,15 +148,7 @@ function Surveys() {
       <div className="dash-section">
         <div className="dash-section-head"><h3>Active Surveys</h3></div>
         <div className="dash-section-body">
-          {surveys.map(s => (
-            <div key={s.id} className="meeting-item">
-              <div style={{ flex: 1 }}>
-                <div className="meeting-title">{s.title}</div>
-                <div className="meeting-meta">{s.q} Questions · ~{s.mins} mins</div>
-              </div>
-              <button className="btn btn-primary" style={{ padding: '6px 14px', fontSize: 11 }} onClick={() => setActiveSurvey(s)}>START</button>
-            </div>
-          ))}
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No surveys available</div>
         </div>
       </div>
     </>
@@ -228,30 +203,16 @@ function MyImpact() {
     <>
       <div className="dash-page-header"><div className="dash-page-title">My Impact</div></div>
       <div className="dash-stats">
-        <div className="dash-stat"><div className="ds-value">42</div><div className="ds-label">Households Today</div></div>
-        <div className="dash-stat"><div className="ds-value">8</div><div className="ds-label">Tasks Done</div></div>
-        <div className="dash-stat-dark"><div className="ds-value">1,240</div><div className="ds-label">Points Earned</div></div>
+        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Households Today</div></div>
+        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Tasks Done</div></div>
+        <div className="dash-stat-dark"><div className="ds-value">0</div><div className="ds-label">Points Earned</div></div>
       </div>
       <div className="dash-section">
         <div className="dash-section-head"><h3>Today's Activity Log</h3></div>
         <div className="dash-section-body">
-          {[
-            ['12:40 PM', 'Visited Household H-22, H-23, H-24', true],
-            ['11:15 AM', 'Logged Water Issue — Zone 4', false],
-            ['10:30 AM', 'Survey submitted — 3 responses', false],
-            ['09:00 AM', 'Mandal Check-in Complete', true],
-          ].map(([time, action, active]) => (
-            <div key={time} className="timeline-item">
-              <span className="tl-time">{time}</span>
-              <div className={`tl-dot ${active ? 'tl-dot-active' : ''}`} />
-              <div className="tl-content">
-                <div className="tl-title">{action}</div>
-              </div>
-            </div>
-          ))}
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No activity recorded</div>
         </div>
       </div>
     </>
   );
 }
-
