@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
 
 // Comprehensive mock Delhi District Civic Metrics with alert nodes and project status

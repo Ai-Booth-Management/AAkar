@@ -3,7 +3,7 @@
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import LoginPage from "../../components/LoginPage";
+import LoginPage from "../../components/shared/LoginPage";
 
 export default function LoginPageWrapper() {
   const { currentUser, loading } = useAuth();

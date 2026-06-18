@@ -6,7 +6,7 @@ import BoothDashboard from '../../components/dashboards/BoothDashboard';
 import VolunteerDashboard from '../../components/dashboards/VolunteerDashboard';
 import logo from '../../assets/logo.png';
 import { useRouter } from 'next/navigation';
-import LodgeComplaintPanel from '../../components/LodgeComplaintPanel';
+import LodgeComplaintPanel from '../../components/shared/LodgeComplaintPanel';
 
 export default function BoothUserPortal() {
   const { currentUser, logout, loading } = useAuth();

@@ -11,7 +11,7 @@ import MandalDashboard from '../../components/dashboards/MandalDashboard';
 import BoothDashboard from '../../components/dashboards/BoothDashboard';
 import VolunteerDashboard from '../../components/dashboards/VolunteerDashboard';
 
-import AICopilot from '../../components/AICopilot';
+import AICopilot from '../../components/shared/AICopilot';
 
 export default function ElectionPage() {
   const { currentUser } = useAuth();

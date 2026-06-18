@@ -5,8 +5,8 @@ import {
     ShieldCheck, User, Lock, Building2, MapPin,
     ArrowRight, Globe, BadgeCheck, LayoutDashboard, Flag
 } from 'lucide-react';
-import logo from '../assets/logo.png';
-import { useAuth } from '../contexts/AuthContext';
+import logo from '../../assets/logo.png';
+import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
