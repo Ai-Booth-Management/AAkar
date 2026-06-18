@@ -11,9 +11,13 @@ export default function LoginPageWrapper() {
 
   useEffect(() => {
     if (!loading && currentUser) {
-      if (currentUser.role === 'official' || currentUser.role === 'cm' || currentUser.role === 'dm') {
+      const role = (currentUser.role || '').toUpperCase();
+      const electionRoles = ['STATE_ADMIN', 'DISTRICT_ADMIN', 'CONSTITUENCY_MGR', 'MANDAL_MGR', 'BOOTH_PRESIDENT', 'VOLUNTEER'];
+      if (electionRoles.includes(role)) {
+        router.push("/election");
+      } else if (role === 'OFFICIAL' || role === 'CM' || role === 'DM') {
         router.push("/dashboard");
-      } else if (currentUser.role === 'booth') {
+      } else if (role === 'BOOTH') {
         router.push("/portal");
       }
     }

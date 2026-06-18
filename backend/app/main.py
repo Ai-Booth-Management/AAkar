@@ -10,6 +10,7 @@ from app.api.v1.endpoints.ask import router as ask_router
 from app.api.v1.endpoints.complaints import router as complaints_router
 from app.api.v1.endpoints.drives import router as drives_router
 from app.api.v1.endpoints.auth import router as auth_router
+from app.api.v1.endpoints.broadcasts import router as broadcasts_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
@@ -111,11 +112,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AAkar Backend", lifespan=lifespan)
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -127,6 +126,7 @@ app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(ask_router, prefix="/api/v1", tags=["Ask"])
 app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"])
 app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"])
+app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"])
 
 
 @app.get("/")
