@@ -29,6 +29,10 @@ const FileTrackingPanel = () => {
   const [filterDept, setFilterDept] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
 
+  // Local file upload preview states
+  const [selectedUploadFile, setSelectedUploadFile] = useState(null);
+  const [filePreviews, setFilePreviews] = useState({});
+
   const fetchFiles = async () => {
     setLoading(true);
     setError(null);
@@ -97,12 +101,24 @@ const FileTrackingPanel = () => {
 
       const newFile = await res.json();
       setSuccess(`File "${newFile.title}" registered successfully.`);
+      
+      // Store local object URL for preview if file was attached
+      if (selectedUploadFile) {
+        const objectUrl = URL.createObjectURL(selectedUploadFile);
+        setFilePreviews(prev => ({ ...prev, [newFile.id]: objectUrl }));
+      }
+
       setForm({
         title: '',
         department: 'PWD',
         current_holder: '',
         days_pending: 0
       });
+      setSelectedUploadFile(null);
+      // Reset file input element
+      const fileInput = document.getElementById('file-upload-input');
+      if (fileInput) fileInput.value = '';
+
       setFiles(prev => [newFile, ...prev]);
       setSelectedFile(newFile);
     } catch (e) {
@@ -184,7 +200,7 @@ const FileTrackingPanel = () => {
   };
 
   return (
-    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20, overflow: 'hidden', minWidth: 0 }}>
       {/* Header Card */}
       <div className="card card-dark" style={{ background: 'linear-gradient(135deg, var(--blue-700) 0%, var(--blue-600) 100%)', border: '1px solid var(--blue-700)' }}>
         <h2 style={{ color: 'var(--white)', margin: '0 0 8px 0' }}>File Tracking</h2>
@@ -228,7 +244,7 @@ const FileTrackingPanel = () => {
       )}
 
       {/* Main Grid Layout */}
-      <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20 }}>
+      <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)', gap: 20, minWidth: 0 }}>
         {/* Left Column: File List */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
@@ -256,15 +272,15 @@ const FileTrackingPanel = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div style={{ overflowX: 'auto', minWidth: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--gray-200)', color: 'var(--gray-500)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  <th style={{ padding: '12px' }}>File Title</th>
-                  <th style={{ padding: '12px' }}>Department</th>
-                  <th style={{ padding: '12px' }}>Current Holder</th>
-                  <th style={{ padding: '12px' }}>Status</th>
-                  <th style={{ padding: '12px', textAlign: 'center' }}>Days Pending</th>
+                  <th style={{ padding: '12px', width: '35%', wordBreak: 'break-word' }}>File Title</th>
+                  <th style={{ padding: '12px', width: '15%' }}>Dept</th>
+                  <th style={{ padding: '12px', width: '25%', wordBreak: 'break-word' }}>Holder</th>
+                  <th style={{ padding: '12px', width: '15%' }}>Status</th>
+                  <th style={{ padding: '12px', width: '10%', textAlign: 'center' }}>Days</th>
                 </tr>
               </thead>
               <tbody>
@@ -289,14 +305,14 @@ const FileTrackingPanel = () => {
                         fontWeight: selectedFile?.id === file.id ? '600' : 'normal'
                       }}
                     >
-                      <td style={{ padding: '14px 12px', color: 'var(--gray-900)' }}>{file.title}</td>
-                      <td style={{ padding: '14px 12px', fontSize: 12 }}>{file.department}</td>
-                      <td style={{ padding: '14px 12px', fontSize: 12 }}>{file.current_holder}</td>
-                      <td style={{ padding: '14px 12px' }}>
+                      <td style={{ padding: '14px 12px', color: 'var(--gray-900)', wordBreak: 'break-word', overflow: 'hidden' }}>{file.title}</td>
+                      <td style={{ padding: '14px 12px', fontSize: 12, overflow: 'hidden' }}>{file.department}</td>
+                      <td style={{ padding: '14px 12px', fontSize: 12, wordBreak: 'break-word', overflow: 'hidden' }}>{file.current_holder}</td>
+                      <td style={{ padding: '14px 12px', overflow: 'hidden' }}>
                         <span className={`badge ${getStatusBadgeClass(file.status)}`}>{file.status}</span>
                       </td>
                       <td style={{ padding: '14px 12px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: file.days_pending > 10 ? 'var(--red-600)' : 'var(--gray-800)' }}>
-                        {file.days_pending} d
+                        {file.days_pending}d
                       </td>
                     </tr>
                   ))
@@ -310,7 +326,7 @@ const FileTrackingPanel = () => {
           {/* Inline registration form */}
           <div>
             <h4 style={{ margin: '0 0 16px 0', textTransform: 'uppercase', fontSize: 11, letterSpacing: '0.05em', color: 'var(--gray-500)' }}>Register New File</h4>
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 80px 140px', gap: 12, alignItems: 'end' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, alignItems: 'end' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--gray-500)' }}>File Title</label>
                 <input
@@ -355,7 +371,18 @@ const FileTrackingPanel = () => {
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ padding: '9px', fontSize: 12, fontWeight: 700 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--gray-500)' }}>Attach PDF File</label>
+                <input
+                  type="file"
+                  id="file-upload-input"
+                  accept=".pdf"
+                  onChange={(e) => setSelectedUploadFile(e.target.files ? e.target.files[0] : null)}
+                  style={{ padding: '6px', borderRadius: 4, border: '1px solid var(--gray-300)', fontSize: 11, background: 'var(--white)', cursor: 'pointer' }}
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ padding: '9px', fontSize: 12, fontWeight: 700, gridColumn: '3 / 4', alignSelf: 'end' }}>
                 Register File
               </button>
             </form>
@@ -532,6 +559,34 @@ const FileTrackingPanel = () => {
                       </div>
                     ))
                   )}
+                </div>
+              </div>
+
+              {/* Document Preview Card */}
+              <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <h3 style={{ margin: 0 }}>Document Preview</h3>
+                <div style={{ border: '1px solid var(--gray-200)', borderRadius: '4px', overflow: 'hidden', background: 'var(--gray-50)' }}>
+                  <div style={{ background: 'var(--gray-900)', color: 'var(--white)', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, flexWrap: 'wrap', gap: 8 }}>
+                    <span style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
+                      {selectedFile.title.toLowerCase().replace(/\s+/g, '_')}.pdf
+                    </span>
+                    <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
+                      <a href={filePreviews[selectedFile.id] || "/sample.pdf"} target="_blank" rel="noreferrer" style={{ color: 'var(--white)', textDecoration: 'underline', fontWeight: 700, fontSize: 11 }}>Open</a>
+                      <a href={filePreviews[selectedFile.id] || "/sample.pdf"} target="_blank" rel="noreferrer" style={{ color: 'var(--white)', textDecoration: 'underline', fontWeight: 700, fontSize: 11 }}>Fullscreen</a>
+                    </div>
+                  </div>
+                  <object
+                    data={`${filePreviews[selectedFile.id] || "/sample.pdf"}`}
+                    type="application/pdf"
+                    width="100%"
+                    height="340px"
+                    style={{ border: 'none', display: 'block' }}
+                  >
+                    <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-500)', fontSize: 12 }}>
+                      <p>PDF preview not supported in this browser.</p>
+                      <a href={filePreviews[selectedFile.id] || "/sample.pdf"} target="_blank" rel="noreferrer" style={{ color: 'var(--blue-600)', fontWeight: 700 }}>Open PDF directly</a>
+                    </div>
+                  </object>
                 </div>
               </div>
             </>

@@ -7,6 +7,7 @@ from app.domain.models.task import Task
 from app.infrastructure.db.sqlite_client import get_session
 from app.core.security import get_current_user
 from app.domain.models.user import User
+from app.domain.services.audit_service import log_event
 
 router = APIRouter()
 
@@ -109,6 +110,14 @@ def create_task(
         assigned_to=body.assigned_to
     )
     session.add(db_task)
+    log_event(
+        session=session,
+        action_type="Task Creation",
+        project_name=None,
+        department=None,
+        officer=db_task.assigned_to,
+        details=f"Task '{db_task.title}' created. Assigned to: {db_task.assigned_to}. Priority: {db_task.priority}."
+    )
     session.commit()
     session.refresh(db_task)
     return db_task

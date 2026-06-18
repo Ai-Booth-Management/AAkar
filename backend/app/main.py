@@ -14,6 +14,9 @@ from app.api.v1.endpoints.drishti import router as drishti_router
 from app.api.v1.endpoints.heatmap import router as heatmap_router
 from app.api.v1.endpoints.tasks import router as tasks_router
 from app.api.v1.endpoints.files import router as files_router
+from app.api.v1.endpoints.audit import router as audit_router
+from app.api.v1.endpoints.action_tracker import router as action_tracker_router
+from app.api.v1.endpoints.summary import router as summary_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.domain.models.project import Project, ProjectJustification  # noqa: F401 – ensure table is registered
@@ -21,6 +24,9 @@ from app.domain.models.district_metric import DistrictMetric  # noqa: F401 - ens
 from app.domain.models.task import Task  # noqa: F401 - ensure table is registered
 from app.domain.models.file_tracker import FileTracker, FileTimelineEntry  # noqa: F401 - ensure tables are registered
 from app.domain.models.system_config import SystemConfig  # noqa: F401 - ensure table is registered
+from app.domain.models.audit_log import AuditLog  # noqa: F401 - ensure table is registered
+from app.domain.models.cm_instruction import CmInstruction  # noqa: F401 - ensure table is registered
+from app.domain.models.ai_summary import AiSummary  # noqa: F401 - ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 
@@ -510,10 +516,63 @@ def seed_files():
             print("Files seeded successfully!")
 
 
+def seed_instructions():
+    from sqlmodel import Session, select
+    from app.infrastructure.db.sqlite_client import engine
+    from app.domain.models.cm_instruction import CmInstruction
+    
+    with Session(engine) as session:
+        statement = select(CmInstruction)
+        existing = session.exec(statement).first()
+        if not existing:
+            instructions = [
+                CmInstruction(
+                    title="North West PWD Drainage Clearance",
+                    description="Clear all clogged storm drains along outer ring road sectors immediately before monsoon onset.",
+                    deadline="2026-06-25",
+                    priority="High",
+                    status="Assigned",
+                    created_at="2026-06-18 10:00:00"
+                ),
+                CmInstruction(
+                    title="Critical Health Infrastructure Solarization",
+                    description="Ensure solar backup batteries at PHC Najafgarh are installed and fully operational.",
+                    deadline="2026-07-02",
+                    priority="High",
+                    status="Accepted",
+                    created_at="2026-06-17 11:30:00",
+                    action_taken="Procurement orders cleared by DM. Installation team dispatched."
+                ),
+                CmInstruction(
+                    title="Voter Registry Data Sync Verification",
+                    description="Verify that the newly uploaded voter registry CSV synchronizes completely to Neo4j graph nodes.",
+                    deadline="2026-06-28",
+                    priority="Medium",
+                    status="In Progress",
+                    created_at="2026-06-18 12:15:00",
+                    action_taken="Data ingestion completed. Running automated validation test cases."
+                ),
+                CmInstruction(
+                    title="Emergency Solar Pump Distribution",
+                    description="Distribute solar irrigation pumps to critical agricultural cooperatives in West Zone.",
+                    deadline="2026-06-15",
+                    priority="High",
+                    status="Completed",
+                    created_at="2026-06-10 09:00:00",
+                    action_taken="50 pumps distributed and signed receipts collected from coop heads."
+                )
+            ]
+            session.add_all(instructions)
+            session.commit()
+            print("CM Instructions seeded successfully!")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize SQLite tables
     init_db()
+    # Seed new instructions table if empty
+    seed_instructions()
 
     # Check if database is already seeded via persistent SystemConfig table
     from sqlmodel import Session, select
@@ -568,6 +627,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(upload_router, prefix="/api/v1/upload", tags=["Upload"])
 app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(summary_router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(ask_router, prefix="/api/v1", tags=["Ask"])
 app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"])
 app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"])
@@ -575,6 +635,8 @@ app.include_router(drishti_router, prefix="/api/v1/drishti", tags=["Project Dris
 app.include_router(heatmap_router, prefix="/api/v1/heatmap", tags=["Heatmap"])
 app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["Tasks"])
 app.include_router(files_router, prefix="/api/v1/files", tags=["Files"])
+app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit Logs"])
+app.include_router(action_tracker_router, prefix="/api/v1/actions", tags=["Action Tracker"])
 
 
 @app.get("/")

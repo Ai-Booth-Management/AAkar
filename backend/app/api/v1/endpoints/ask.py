@@ -26,6 +26,16 @@ class AskRequest(BaseModel):
 
 @router.post("/ask")
 def ask(request: AskRequest):
+    if request.question is not None and not request.question.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty"
+        )
+    if request.question is None and request.shortcut is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Either 'question' or 'shortcut' field is required"
+        )
 
     try:
         result = ask_question(

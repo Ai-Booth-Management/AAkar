@@ -14,15 +14,23 @@ def _make_email(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:8]}@innovateindia.gov"
 
 
+@patch("app.api.v1.endpoints.auth.pd.read_csv")
 @patch("app.domain.services.seed_graph.seed")
 @patch("app.infrastructure.db.neo4j_client.GraphDatabase")
-def test_register_and_login(mock_gdb, mock_seed):
+def test_register_and_login(mock_gdb, mock_seed, mock_read_csv):
     """Register a new user, then login with same credentials."""
     mock_gdb.driver.return_value = MagicMock()
 
+    import pandas as pd
+    import re
+
     from app.main import app
     email = _make_email("booth")
-    client = TestClient(app)
+    booth_id = re.match(r'^booth_(.*)@', email).group(1)
+    mock_read_csv.return_value = pd.DataFrame({"booth_id": [booth_id]})
+
+    with patch("app.api.v1.endpoints.auth.Path.exists", return_value=True):
+        client = TestClient(app)
 
     # ── Register ──
     res = client.post("/api/v1/auth/register", json={

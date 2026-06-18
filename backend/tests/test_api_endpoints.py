@@ -50,12 +50,22 @@ def test_admin_overview(mock_gdb, mock_seed, mock_client):
 # ─── Admin booths endpoint ─────────────────────────────────────────────
 
 
+@patch("app.api.v1.endpoints.admin.neo4j_client")
 @patch("app.api.v1.endpoints.admin.COMPLAINTS_CSV")
 @patch("app.api.v1.endpoints.admin.VOTERS_CSV")
 @patch("app.domain.services.seed_graph.seed")
 @patch("app.infrastructure.db.neo4j_client.GraphDatabase")
-def test_admin_booths(mock_gdb, mock_seed, mock_voters, mock_complaints):
+def test_admin_booths(mock_gdb, mock_seed, mock_voters, mock_complaints, mock_neo4j):
     """GET /api/v1/admin/booths should return booth list from CSV data."""
+    mock_neo4j.run_query.return_value = [
+        {
+            "booth_id": "B001",
+            "complaint_count": 2,
+            "open_count": 1,
+            "resolved_count": 1,
+            "issue_types": ["Water Supply", "Water Supply"]
+        }
+    ]
     import tempfile, os
 
     # Create a temp complaints CSV

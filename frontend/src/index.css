@@ -42,8 +42,24 @@
   --green-50: #f0fdf4;
   --green-100: #bbf7d0;
   --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
   --purple-50: #faf5ff;
   --purple-500: #a855f7;
+
+  /* Emerald */
+  --emerald-50: #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-200: #a7f3d0;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+
+  /* Indigo */
+  --indigo-50: #e0e7ff;
+  --indigo-100: #c7d2fe;
+  --indigo-200: #a5b4fc;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
 
   /* Sidebar */
   --sidebar-width: 256px;
@@ -119,6 +135,8 @@ body {
   flex-direction: column;
   width: var(--sidebar-width);
   padding-top: 24px;
+  flex-grow: 1;
+  min-height: 0;
 }
 
 .sidebar-brand {
@@ -128,6 +146,7 @@ body {
   padding: 0 24px 28px;
   white-space: nowrap;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar-brand .logo {
@@ -156,6 +175,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: auto;
+  flex-grow: 1;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .nav-item {

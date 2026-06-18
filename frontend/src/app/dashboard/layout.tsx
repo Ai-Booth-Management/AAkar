@@ -144,6 +144,40 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    id: 'audit',
+    label: 'Audit Trail',
+    path: '/dashboard/audit',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+        <path d="M12 6v6l4 2" />
+      </svg>
+    ),
+  },
+  {
+    id: 'actions',
+    label: 'Action Tracker',
+    path: '/dashboard/actions',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'summary',
+    label: 'AI Summary',
+    path: '/dashboard/summary',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z" />
+        <path d="M7 21h10" />
+        <path d="M12 18v3" />
+      </svg>
+    ),
+  },
 ];
 
 const ABOUT_ITEM = {
@@ -164,10 +198,10 @@ const SETTINGS_ITEM = {
   label: 'Settings',
   path: '/dashboard/settings',
   icon: (
-    <img
-      src="https://img.icons8.com/?size=100&id=2969&format=png&color=FFFFFF"
-      alt="Settings"
-    />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   ),
 };
 
@@ -185,6 +219,9 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/drishti': 'Project Drishti',
   '/dashboard/tasks': 'Task Management',
   '/dashboard/files': 'File Tracking',
+  '/dashboard/audit': 'Audit & Decision Trail',
+  '/dashboard/actions': 'Action Tracker',
+  '/dashboard/summary': 'AI District Summary',
 };
 
 // Next.js static asset import is imported inside components.
@@ -239,8 +276,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentTitle = PAGE_TITLES[pathname] || 'Dashboard';
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
+    if (item.id === 'summary' && !['dm', 'cm'].includes(currentUser.role)) {
+      return false;
+    }
     if (currentUser.role === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti', 'tasks', 'files'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti', 'tasks', 'files', 'audit', 'actions', 'summary'].includes(item.id);
     }
     return true;
   });
@@ -256,7 +296,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <nav className="sidebar-nav">
+          <nav className="sidebar-nav" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
             {visibleNavItems.map((item) => (
               <Link
                 key={item.id}
@@ -268,20 +308,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span>{item.label}</span>
               </Link>
             ))}
-          </nav>
-        </div>
 
-        <div className="sidebar-bottom">
-          <div className="sidebar-nav" style={{ marginBottom: 12 }}>
+            {/* Push secondary navigation to the bottom */}
+            <div style={{ flexGrow: 1, minHeight: '16px' }} />
+
             <Link
+              key={ABOUT_ITEM.id}
               href={ABOUT_ITEM.path}
               className={`nav-item ${pathname === ABOUT_ITEM.path ? 'active' : ''}`}
-              style={{ textDecoration: 'none' }}
+              style={{ textDecoration: 'none', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}
             >
               {ABOUT_ITEM.icon}
               <span>{ABOUT_ITEM.label}</span>
             </Link>
             <Link
+              key={SETTINGS_ITEM.id}
               href={SETTINGS_ITEM.path}
               className={`nav-item ${pathname === SETTINGS_ITEM.path ? 'active' : ''}`}
               style={{ textDecoration: 'none' }}
@@ -289,18 +330,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {SETTINGS_ITEM.icon}
               <span>{SETTINGS_ITEM.label}</span>
             </Link>
-            {/* Logout Button */}
-            <div className="nav-item" onClick={handleLogout} style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', cursor: 'pointer' }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
+            <div className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px', marginBottom: '8px' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
               <span>Logout</span>
             </div>
-          </div>
+          </nav>
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: 'var(--blue-700)', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '0 -12px' }}>
+        <div className="sidebar-bottom" style={{ padding: '0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: 'var(--blue-700)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ width: 8, height: 8, background: 'var(--amber-500)', borderRadius: 0 }} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--white)', letterSpacing: '0.08em' }}>{officialId}</span>
