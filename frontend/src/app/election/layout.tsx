@@ -6,7 +6,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import logo from '../../assets/logo.png';
 import { ROLE_NAV, ROLE_TITLES } from '../../config/navigation';
 
-export default function ElectionLayout({ children }) {
+export default function ElectionLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -45,9 +45,9 @@ export default function ElectionLayout({ children }) {
   };
 
   const { role: scopeRole, scope: scopeName } = getScope();
-  const pageTitle = ROLE_TITLES[userRole] || 'Politix OS';
+  const pageTitle = ROLE_TITLES[userRole as keyof typeof ROLE_TITLES] || 'Politix OS';
 
-  const handleTabClick = (tabId) => {
+  const handleTabClick = (tabId: string) => {
     router.push(`/election?tab=${tabId}`);
   };
 
@@ -56,19 +56,20 @@ export default function ElectionLayout({ children }) {
     router.push('/login');
   };
 
-  const activeNavItem = (ROLE_NAV[userRole] || []).find(n => n.id === activeTab);
+  const activeNavItem = (ROLE_NAV[userRole as keyof typeof ROLE_NAV] || []).find((n: { id: string }) => n.id === activeTab);
 
   return (
     <div className="app">
+      <style>{`.sidebar:not(:hover) .sidebar-brand img { opacity: 0; visibility: hidden; }`}</style>
       {!isFieldWorker && (
         <div className="sidebar expanded">
           <div className="sidebar-top">
             <div className="sidebar-brand" style={{ padding: '16px 20px' }}>
-                <img src={logo?.src || logo} alt="Logo" style={{ height: '36px', objectFit: 'contain' }} />
+                <img src={logo.src} alt="Logo" style={{ height: '36px', objectFit: 'contain' }} />
             </div>
 
             <nav className="sidebar-nav">
-              {(ROLE_NAV[userRole] || []).map((item) => (
+              {(ROLE_NAV[userRole as keyof typeof ROLE_NAV] || []).map((item: { id: string; label: string; icon: React.ReactNode }) => (
                 <div
                   key={item.id}
                   className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
@@ -126,7 +127,7 @@ export default function ElectionLayout({ children }) {
 
         {isFieldWorker && (
           <div style={{ padding: '12px 24px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50 }}>
-             <img src={logo?.src || logo} alt="Logo" style={{ height: '24px' }} />
+             <img src={logo.src} alt="Logo" style={{ height: '24px' }} />
              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--gray-900)', lineHeight: 1 }}>WORKER NODE</div>

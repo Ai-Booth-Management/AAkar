@@ -55,7 +55,7 @@ export default function BoothUserPortal() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', paddingBottom: '70px' }}>
       <header style={{ padding: '16px 24px', backgroundColor: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <img src={logo?.src || logo} alt="Logo" style={{ height: '28px' }} />
+          <img src={logo.src} alt="Logo" style={{ height: '28px' }} />
           <div style={{ height: '20px', width: '1px', backgroundColor: '#e2e8f0' }} />
           <div>
             <div style={{ fontSize: '10px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Booth Intelligence Node</div>
@@ -83,7 +83,7 @@ export default function BoothUserPortal() {
   );
 }
 
-function NavButton({ label, active, onClick, icon }) {
+function NavButton({ label, active, onClick, icon }: { label: string; active: boolean; onClick: () => void; icon: React.ReactNode }) {
   return (
     <button onClick={onClick} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: active ? '#0f172a' : '#94a3b8', opacity: active ? 1 : 0.7 }}>
       <span style={{ fontSize: '20px' }}>{icon}</span>

@@ -47,6 +47,12 @@ USERS = [
         "role": "VOLUNTEER",
         "name": "Field Worker 01",
         "hierarchy": {"state_id": "UP", "district_id": "LUCKNOW", "constituency_id": "LC-01", "mandal_id": "CENTRAL", "booth_id": "B102"}
+    },
+    {
+        "email": "serveradmin@aakar.gov.in",
+        "role": "ELECTION_ADMIN",
+        "name": "Server Admin",
+        "hierarchy": {}
     }
 ]
 

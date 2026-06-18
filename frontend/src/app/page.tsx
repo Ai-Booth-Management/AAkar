@@ -12,7 +12,7 @@ export default function RootPage() {
     if (!loading) {
       if (currentUser) {
         const role = (currentUser.role || '').toUpperCase();
-        const electionRoles = ['STATE_ADMIN', 'DISTRICT_ADMIN', 'CONSTITUENCY_MGR', 'MANDAL_MGR', 'BOOTH_PRESIDENT', 'VOLUNTEER'];
+        const electionRoles = ['ELECTION_ADMIN', 'STATE_ADMIN', 'DISTRICT_ADMIN', 'CONSTITUENCY_MGR', 'MANDAL_MGR', 'BOOTH_PRESIDENT', 'VOLUNTEER'];
         const adminRoles = ['OFFICIAL', 'CM', 'DM', 'BOOTH'];
 
         if (electionRoles.includes(role)) {

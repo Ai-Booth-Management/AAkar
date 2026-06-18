@@ -13,6 +13,7 @@ from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.broadcasts import router as broadcasts_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
+from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 

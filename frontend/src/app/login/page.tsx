@@ -12,7 +12,7 @@ export default function LoginPageWrapper() {
   useEffect(() => {
     if (!loading && currentUser) {
       const role = (currentUser.role || '').toUpperCase();
-      const electionRoles = ['STATE_ADMIN', 'DISTRICT_ADMIN', 'CONSTITUENCY_MGR', 'MANDAL_MGR', 'BOOTH_PRESIDENT', 'VOLUNTEER'];
+      const electionRoles = ['ELECTION_ADMIN', 'STATE_ADMIN', 'DISTRICT_ADMIN', 'CONSTITUENCY_MGR', 'MANDAL_MGR', 'BOOTH_PRESIDENT', 'VOLUNTEER'];
       if (electionRoles.includes(role)) {
         router.push("/election");
       } else if (role === 'OFFICIAL' || role === 'CM' || role === 'DM') {

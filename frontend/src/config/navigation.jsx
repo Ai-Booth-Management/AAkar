@@ -4,7 +4,7 @@ import {
   LayoutDashboard, TrendingUp, BarChart3, Users, Radio,
   FileText, Map, AlertTriangle, Activity, Shield,
   CheckSquare, Camera, MessageSquare, ClipboardList,
-  Target, Globe, Zap, Search
+  Target, Globe, Zap, Search, Settings, Database, UserCog
 } from 'lucide-react';
 
 export const ROLE_NAV = {
@@ -59,6 +59,12 @@ export const ROLE_NAV = {
     { id: 'ai-suggestions', label: 'AI Suggestions', icon: <Zap size={20} /> },
     { id: 'reports', label: 'Submit Report', icon: <Camera size={20} /> },
     { id: 'summary', label: 'My Impact', icon: <Activity size={20} /> },
+  ],
+  ELECTION_ADMIN: [
+    { id: 'users', label: 'User Management', icon: <UserCog size={20} /> },
+    { id: 'data', label: 'Data Management', icon: <Database size={20} /> },
+    { id: 'constituencies', label: 'Constituency Setup', icon: <Globe size={20} /> },
+    { id: 'settings', label: 'System Settings', icon: <Settings size={20} /> },
   ]
 };
 
@@ -68,5 +74,6 @@ export const ROLE_TITLES = {
   CONSTITUENCY_MGR: 'Constituency Strategic Command',
   MANDAL_MGR: 'Mandal Operational Node',
   BOOTH_PRESIDENT: 'Booth Management OS',
-  VOLUNTEER: 'Field Worker App'
+  VOLUNTEER: 'Field Worker App',
+  ELECTION_ADMIN: 'Election Control Server'
 };

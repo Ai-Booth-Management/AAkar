@@ -215,9 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className={`sidebar ${expanded ? 'expanded' : ''}`}>
         <div className="sidebar-top">
           <div className="sidebar-brand" style={{ padding: '16px 20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <img src={logo?.src || logo} alt="Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
-            </div>
+            <img src={logo.src} alt="Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
           </div>
 
           <nav className="sidebar-nav">

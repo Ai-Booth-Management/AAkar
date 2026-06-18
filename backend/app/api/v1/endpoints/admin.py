@@ -1,13 +1,304 @@
 from collections import Counter
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
+from sqlmodel import Session, select
+from app.core.security import get_current_user, hash_password
+from app.domain.models.user import User
 from app.infrastructure.db.neo4j_client import neo4j_client
+from app.infrastructure.db.sqlite_client import get_session
 
 router = APIRouter()
+
+
+# ── Schemas ─────────────────────────────────────────────────────────
+
+class UserCreateRequest(BaseModel):
+    email: str
+    password: str
+    role: str
+    display_name: str | None = None
+    state_id: str | None = None
+    district_id: str | None = None
+    constituency_id: str | None = None
+    mandal_id: str | None = None
+    booth_id: str | None = None
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    role: str
+    display_name: str | None
+    state_id: str | None
+    district_id: str | None
+    constituency_id: str | None
+    mandal_id: str | None
+    booth_id: str | None
+    created_at: datetime
+
+
+# ── Helpers ─────────────────────────────────────────────────────────
+
+def _require_election_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role != "ELECTION_ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only server admin can manage users")
+    return current_user
+
+
+# ── User Management Endpoints ───────────────────────────────────────
+
+@router.get("/users", response_model=List[UserOut])
+def list_users(
+    role: str | None = None,
+    state_id: str | None = None,
+    district_id: str | None = None,
+    constituency_id: str | None = None,
+    skip: int = 0,
+    limit: int = 50,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    query = select(User)
+    if role:
+        query = query.where(User.role == role.upper())
+    if state_id:
+        query = query.where(User.state_id == state_id)
+    if district_id:
+        query = query.where(User.district_id == district_id)
+    if constituency_id:
+        query = query.where(User.constituency_id == constituency_id)
+    query = query.offset(skip).limit(limit).order_by(User.created_at.desc())
+    users = session.exec(query).all()
+    return [
+        UserOut(
+            id=u.id,
+            email=u.email,
+            role=u.role,
+            display_name=u.display_name,
+            state_id=u.state_id,
+            district_id=u.district_id,
+            constituency_id=u.constituency_id,
+            mandal_id=u.mandal_id,
+            booth_id=u.booth_id,
+            created_at=u.created_at,
+        )
+        for u in users
+    ]
+
+
+@router.get("/users/counts")
+def user_counts(
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    rows = session.exec(select(User.role)).all()
+    total = len(rows)
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r] = counts.get(r, 0) + 1
+    return {"total": total, "by_role": counts}
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: int,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.role == "ELECTION_ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot delete another server admin")
+    session.delete(user)
+    session.commit()
+
+
+class UserUpdateRequest(BaseModel):
+    state_id: str | None = None
+    district_id: str | None = None
+    constituency_id: str | None = None
+    mandal_id: str | None = None
+    booth_id: str | None = None
+
+
+@router.patch("/users/{user_id}", response_model=UserOut)
+def update_user(
+    user_id: int,
+    body: UserUpdateRequest,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if body.state_id is not None:
+        user.state_id = body.state_id or None
+    if body.district_id is not None:
+        user.district_id = body.district_id or None
+    if body.constituency_id is not None:
+        user.constituency_id = body.constituency_id or None
+    if body.mandal_id is not None:
+        user.mandal_id = body.mandal_id or None
+    if body.booth_id is not None:
+        user.booth_id = body.booth_id or None
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return UserOut(
+        id=user.id,
+        email=user.email,
+        role=user.role,
+        display_name=user.display_name,
+        state_id=user.state_id,
+        district_id=user.district_id,
+        constituency_id=user.constituency_id,
+        mandal_id=user.mandal_id,
+        booth_id=user.booth_id,
+        created_at=user.created_at,
+    )
+
+
+@router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def create_user(
+    body: UserCreateRequest,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    existing = session.exec(select(User).where(User.email == body.email)).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
+
+    user = User(
+        email=body.email,
+        hashed_password=hash_password(body.password),
+        role=body.role.upper(),
+        display_name=body.display_name,
+        state_id=body.state_id,
+        district_id=body.district_id,
+        constituency_id=body.constituency_id,
+        mandal_id=body.mandal_id,
+        booth_id=body.booth_id,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return UserOut(
+        id=user.id,
+        email=user.email,
+        role=user.role,
+        display_name=user.display_name,
+        state_id=user.state_id,
+        district_id=user.district_id,
+        constituency_id=user.constituency_id,
+        mandal_id=user.mandal_id,
+        booth_id=user.booth_id,
+        created_at=user.created_at,
+    )
+
+
+# ── Hierarchy Endpoint ──────────────────────────────────────────────
+
+from app.domain.models.hierarchy import HierarchyNode
+
+
+class HierarchyNodeOut(BaseModel):
+    code: str
+    name: str
+    level: str
+    children: list["HierarchyNodeOut"] = []
+
+
+def _build_tree(nodes: list[HierarchyNode], parent_id: int | None = None) -> list[HierarchyNodeOut]:
+    return [
+        HierarchyNodeOut(
+            code=n.code,
+            name=n.name,
+            level=n.level,
+            children=_build_tree(nodes, n.id),
+        )
+        for n in nodes
+        if n.parent_id == parent_id
+    ]
+
+
+@router.get("/hierarchy")
+def get_hierarchy(
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    nodes = session.exec(select(HierarchyNode).order_by(HierarchyNode.level, HierarchyNode.name)).all()
+    return _build_tree(nodes)
+
+
+@router.get("/hierarchy/flat")
+def get_hierarchy_flat(
+    level: str | None = None,
+    parent_code: str | None = None,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    query = select(HierarchyNode)
+    if level:
+        query = query.where(HierarchyNode.level == level)
+    if parent_code:
+        parent = session.exec(select(HierarchyNode).where(HierarchyNode.code == parent_code)).first()
+        if parent:
+            query = query.where(HierarchyNode.parent_id == parent.id)
+    nodes = session.exec(query.order_by(HierarchyNode.name)).all()
+    return [{"code": n.code, "name": n.name, "level": n.level} for n in nodes]
+
+
+class HierarchyCreateRequest(BaseModel):
+    code: str
+    name: str
+    level: str
+    parent_code: str | None = None
+
+
+@router.post("/hierarchy", status_code=status.HTTP_201_CREATED)
+def create_hierarchy_node(
+    body: HierarchyCreateRequest,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    existing = session.exec(select(HierarchyNode).where(HierarchyNode.code == body.code, HierarchyNode.level == body.level)).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Node with this code already exists")
+
+    parent_id = None
+    if body.parent_code:
+        parent = session.exec(select(HierarchyNode).where(HierarchyNode.code == body.parent_code)).first()
+        if not parent:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Parent node not found")
+        parent_id = parent.id
+
+    node = HierarchyNode(code=body.code, name=body.name, level=body.level, parent_id=parent_id)
+    session.add(node)
+    session.commit()
+    session.refresh(node)
+    return {"id": node.id, "code": node.code, "name": node.name, "level": node.level}
+
+
+@router.delete("/hierarchy/{node_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_hierarchy_node(
+    node_id: int,
+    session: Session = Depends(get_session),
+    _admin: User = Depends(_require_election_admin),
+):
+    node = session.get(HierarchyNode, node_id)
+    if not node:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
+    children = session.exec(select(HierarchyNode).where(HierarchyNode.parent_id == node_id)).all()
+    if children:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete node with children. Remove child nodes first.")
+    session.delete(node)
+    session.commit()
+
 
 COMPLAINTS_CSV = Path("data/uploads/complaints.csv")
 VOTERS_CSV = Path("data/uploads/voters.csv")
