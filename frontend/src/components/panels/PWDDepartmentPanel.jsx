@@ -81,6 +81,22 @@ export default function PWDDepartmentPanel() {
     tasks: []
   });
 
+  const [addProjectForm, setAddProjectForm] = useState({
+    name: '',
+    district: 'New Delhi',
+    type: 'Roads',
+    contractor: '',
+    executing_agency: '',
+    budget_allocated: 0,
+    budget_released: 0,
+    budget_utilized: 0,
+    progress: 0,
+    deadline: new Date().toISOString().substring(0, 10),
+    status: 'On Track',
+    officer: '',
+    remarks: ''
+  });
+
 
 
   /* Project Management States */
@@ -104,6 +120,12 @@ export default function PWDDepartmentPanel() {
   const [detailsApprovalApprover, setDetailsApprovalApprover] = useState('PWD Commissioner');
   const [detailsDelayReason, setDetailsDelayReason] = useState('Labour Shortage');
   const [detailsDelayRevisedDeadline, setDetailsDelayRevisedDeadline] = useState('');
+
+  useEffect(() => {
+    if (projectDistrict !== 'All') {
+      setAddProjectForm(prev => ({ ...prev, district: projectDistrict }));
+    }
+  }, [projectDistrict]);
 
 
 
@@ -720,6 +742,69 @@ export default function PWDDepartmentPanel() {
     } catch (e) {
       console.error(e);
       alert(`Failed to save project: ${e.message}`);
+    }
+  };
+
+  const handleAddProjectInline = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!addProjectForm.name) {
+      alert('Project Name is required.');
+      return;
+    }
+    if (!addProjectForm.district) {
+      alert('District is required.');
+      return;
+    }
+    try {
+      const payload = {
+        name: addProjectForm.name,
+        district: addProjectForm.district,
+        type: addProjectForm.type || 'Roads',
+        contractor: addProjectForm.contractor || '',
+        executing_agency: addProjectForm.executing_agency || '',
+        budget_allocated: parseFloat(addProjectForm.budget_allocated) || 0,
+        budget_released: parseFloat(addProjectForm.budget_released) || 0,
+        budget_utilized: parseFloat(addProjectForm.budget_utilized) || 0,
+        progress: parseInt(addProjectForm.progress, 10) || 0,
+        deadline: addProjectForm.deadline || '',
+        status: addProjectForm.status || 'On Track',
+        officer: addProjectForm.officer || '',
+        remarks: addProjectForm.remarks || '',
+        reporting_month: selectedMonth,
+        reporting_year: selectedYear
+      };
+
+      const res = await fetch(`${API_BASE}/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || `HTTP ${res.status}`);
+      }
+      alert('Project added successfully.');
+      setAddProjectForm({
+        name: '',
+        district: projectDistrict !== 'All' ? projectDistrict : 'New Delhi',
+        type: 'Roads',
+        contractor: '',
+        executing_agency: '',
+        budget_allocated: 0,
+        budget_released: 0,
+        budget_utilized: 0,
+        progress: 0,
+        deadline: new Date().toISOString().substring(0, 10),
+        status: 'On Track',
+        officer: '',
+        remarks: ''
+      });
+      fetchProjects();
+      fetchData(false, selectedMonth, selectedYear);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to add project');
     }
   };
 
@@ -1688,30 +1773,7 @@ export default function PWDDepartmentPanel() {
           <div className="dept-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3>Section 3: Project Details</h3>
             <button className="btn btn-primary" style={{ marginLeft: 'auto' }} onClick={() => {
-              setProjectForm({
-                id: '',
-                name: '',
-                district: projectDistrict !== 'All' ? projectDistrict : 'New Delhi',
-                type: 'Roads',
-                contractor: '',
-                executing_agency: '',
-                budget_allocated: 0,
-                budget_released: 0,
-                budget_utilized: 0,
-                progress: 0,
-                deadline: new Date().toISOString().substring(0, 10),
-                status: 'On Track',
-                priority: 'Medium',
-                officer: '',
-                remarks: '',
-                evidence: {
-                  photo_url: '',
-                  gps: '28.6139° N, 77.2090° E',
-                  timestamp: new Date().toISOString(),
-                  remarks: ''
-                }
-              });
-              setProjectModal({ type: 'add' });
+              document.getElementById('add-project-section')?.scrollIntoView({ behavior: 'smooth' });
             }}>
               + Add Project
             </button>
@@ -1951,6 +2013,129 @@ export default function PWDDepartmentPanel() {
               ⚠️ Select a specific district in Section 1 to edit and save changes to Infrastructure Metrics and Fund Management.
             </div>
           )}
+        </div>
+
+        {/* ═══════════════════════════════════
+           SECTION 6: ADD NEW PROJECT
+           ═══════════════════════════════════ */}
+        <div className="dept-section" id="add-project-section" style={{ marginTop: 24 }}>
+          <div className="dept-section-header">
+            <h3>Section 6: Add New Project</h3>
+          </div>
+          <div className="card">
+            <form onSubmit={handleAddProjectInline}>
+              <div className="dept-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Project Name *</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.name} onChange={e => setAddProjectForm({ ...addProjectForm, name: e.target.value })} placeholder="e.g. Outer Ring Road Repair" required />
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>District *</label>
+                  <select className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.district} onChange={e => setAddProjectForm({ ...addProjectForm, district: e.target.value })}>
+                    {DELHI_DISTRICTS.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="dept-form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Project Type</label>
+                  <select className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.type} onChange={e => setAddProjectForm({ ...addProjectForm, type: e.target.value })}>
+                    <option value="Roads">Roads</option>
+                    <option value="Flyovers">Flyovers</option>
+                    <option value="Bridges">Bridges</option>
+                    <option value="Government Buildings">Government Buildings</option>
+                    <option value="Drainage">Drainage</option>
+                    <option value="Footpaths">Footpaths</option>
+                    <option value="Street Lighting">Street Lighting</option>
+                  </select>
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Officer In Charge</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.officer} onChange={e => setAddProjectForm({ ...addProjectForm, officer: e.target.value })} placeholder="Er. Rajesh" />
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Deadline</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} type="date" value={addProjectForm.deadline} onChange={e => setAddProjectForm({ ...addProjectForm, deadline: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="dept-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Contractor</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.contractor} onChange={e => setAddProjectForm({ ...addProjectForm, contractor: e.target.value })} placeholder="e.g. L&T Infrastructure" />
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Executing Agency</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.executing_agency} onChange={e => setAddProjectForm({ ...addProjectForm, executing_agency: e.target.value })} placeholder="e.g. PWD Zone 1" />
+                </div>
+              </div>
+
+              <div className="dept-form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Budget Allocated (₹)</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} type="number" value={addProjectForm.budget_allocated} onChange={e => setAddProjectForm({ ...addProjectForm, budget_allocated: parseFloat(e.target.value) || 0 })} />
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Budget Released (₹)</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} type="number" value={addProjectForm.budget_released} onChange={e => setAddProjectForm({ ...addProjectForm, budget_released: parseFloat(e.target.value) || 0 })} />
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Budget Utilized (₹)</label>
+                  <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} type="number" value={addProjectForm.budget_utilized} onChange={e => setAddProjectForm({ ...addProjectForm, budget_utilized: parseFloat(e.target.value) || 0 })} />
+                </div>
+              </div>
+
+              <div className="dept-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Status</label>
+                  <select className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.status} onChange={e => {
+                    const newStatus = e.target.value;
+                    setAddProjectForm(prev => ({
+                      ...prev,
+                      status: newStatus,
+                      progress: newStatus === 'Completed' ? 100 : prev.progress
+                    }));
+                  }}>
+                    <option value="On Track">On Track</option>
+                    <option value="Delayed">Delayed</option>
+                    <option value="Critical">Critical</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div className="dept-form-group">
+                  <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Progress ({addProjectForm.progress}%)</label>
+                  <input className="dept-form-input" style={{ width: '100%', height: 38 }} type="range" min="0" max="100" value={addProjectForm.progress} disabled={addProjectForm.status === 'Completed'} onChange={e => setAddProjectForm({ ...addProjectForm, progress: parseInt(e.target.value, 10) || 0 })} />
+                </div>
+              </div>
+
+              <div className="dept-form-group" style={{ marginBottom: 20 }}>
+                <label className="dept-modal-label" style={{ display: 'block', fontSize: 11, fontWeight: 700, marginBottom: 6 }}>Project Remarks</label>
+                <input className="dept-form-input" style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--gray-200)', borderRadius: 4 }} value={addProjectForm.remarks} onChange={e => setAddProjectForm({ ...addProjectForm, remarks: e.target.value })} placeholder="General updates, reasons for delay, etc." />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                <button type="button" className="btn" onClick={() => setAddProjectForm({
+                  name: '',
+                  district: projectDistrict !== 'All' ? projectDistrict : 'New Delhi',
+                  type: 'Roads',
+                  contractor: '',
+                  executing_agency: '',
+                  budget_allocated: 0,
+                  budget_released: 0,
+                  budget_utilized: 0,
+                  progress: 0,
+                  deadline: new Date().toISOString().substring(0, 10),
+                  status: 'On Track',
+                  officer: '',
+                  remarks: ''
+                })}>Reset Form</button>
+                <button type="submit" className="btn btn-primary" style={{ background: 'var(--blue-600)', color: '#fff' }}>Save Project</button>
+              </div>
+            </form>
+          </div>
         </div>
 
         {projectModal && (

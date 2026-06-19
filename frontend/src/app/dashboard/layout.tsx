@@ -166,7 +166,6 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/about': 'About System',
   '/dashboard/settings': 'Settings',
   '/dashboard/department/pwd': 'Public Works Department (PWD)',
-  '/dashboard/department/health': 'Department of Health & Family Welfare',
 };
 
 // Next.js static asset import is imported inside components.
@@ -295,24 +294,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           }}
                         >
                           🏛️ PWD Department
-                        </Link>
-                        <Link
-                          href="/dashboard/department/health"
-                          className={`submenu-item ${pathname === '/dashboard/department/health' ? 'active' : ''}`}
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            padding: '6px 8px',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: pathname === '/dashboard/department/health' ? 'var(--amber-500)' : 'rgba(255, 255, 255, 0.6)',
-                            borderLeft: pathname === '/dashboard/department/health' ? '2px solid var(--amber-500)' : '2px solid transparent',
-                            paddingLeft: '10px'
-                          }}
-                        >
-                          🏥 Health Department
                         </Link>
                       </div>
                     )}
