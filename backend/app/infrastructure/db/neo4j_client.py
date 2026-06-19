@@ -25,6 +25,12 @@ class Neo4jClient:
 
     def ensure_indexes(self):
         """Create constraints and indexes if they don't exist (idempotent)."""
+        try:
+            self.run_query("RETURN 1")
+        except Exception as e:
+            print(f"Warning: Neo4j is not reachable. Skipping index creation.")
+            return
+
         constraints = [
             "CREATE CONSTRAINT IF NOT EXISTS FOR (v:Voter) REQUIRE v.epic IS UNIQUE",
             "CREATE CONSTRAINT IF NOT EXISTS FOR (b:Booth) REQUIRE b.booth_id IS UNIQUE",
