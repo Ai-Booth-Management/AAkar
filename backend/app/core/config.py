@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
+    # WhatsApp
+    WHATSAPP_TOKEN: str
+    WHATSAPP_PHONE_NUMBER_ID: str
+    WHATSAPP_VERIFY_TOKEN: str
+
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parent.parent.parent / ".env"
     )
