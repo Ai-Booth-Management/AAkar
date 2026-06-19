@@ -111,10 +111,25 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
+# Seed the database with Delhi hierarchy + admin users
+python scripts/seed_all.py
+
 # Run the API server
 uvicorn app.main:app --reload
 ```
-*For detailed environment setup and OCR requirements, see the [Backend README](./backend/README.md).*
+
+> **Note:** The database file (`backend/data/app.db`) is gitignored. Every fresh clone must run `seed_all.py` to create the initial users and hierarchy. Run it again to reset without losing the uploads directory.
+
+### Default Login Credentials (after seeding)
+
+| Email | Password | Role |
+|---|---|---|
+| `serveradmin@aakar.gov.in` | `123456` | ELECTION_ADMIN — can create any role |
+| `statedelhi@aakar.gov.in` | `123456` | STATE_ADMIN — manages Delhi |
+| `delhiadmin@aakar.gov.in` | `123456` | DISTRICT_ADMIN — manages East Delhi |
+| `cons1@aakar.gov.in` | `123456` | CONSTITUENCY_MGR — manages Krishna Nagar |
+| `defence@aakar.gov.in` | `123456` | MANDAL_MGR — manages Defence Colony mandal |
+| `booth.*@aakar.gov.in` | `123456` | BOOTH_PRESIDENT — 240 booth-level users |
 
 ### Step 2: Frontend Setup
 
