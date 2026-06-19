@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import HeatmapAnalysis from './HeatmapAnalysis';
+import BroadcastPanel from '../shared/BroadcastPanel';
+import ManageUsers from '../shared/ManageUsers';
+import Hub from '../shared/Hub';
 
 export default function ConstituencyDashboard({ tab, hierarchy }) {
   const lc = hierarchy.constituency || '';
@@ -17,6 +20,9 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
       case 'health':           return <BoothHealth />;
       case 'heatmap':          return <HeatmapAnalysis level="CONSTITUENCY" hierarchy={hierarchy} />;
       case 'campaigns':        return <CampaignTracker />;
+      case 'hub':              return <Hub hierarchy={hierarchy} userRole="CONSTITUENCY_MGR" />;
+      case 'broadcast':        return <BroadcastPanel hierarchy={hierarchy} />;
+      case 'manage-users':     return <ManageUsers role="CONSTITUENCY_MGR" hierarchy={hierarchy} />;
       case 'ai-suggestions':   return <AIRecommendations />;
       default:                 return <ConstituencyOverview lc={lc} onSchedule={() => setActiveTab('campaigns')} />;
     }
@@ -26,6 +32,19 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
 }
 
 function ConstituencyOverview({ lc, onSchedule }) {
+  const [stats, setStats] = useState(null);
+  React.useEffect(() => {
+    if (!lc) return;
+    fetch(`/api/v1/dashboard/stats?level=constituency&code=${lc}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).then(setStats).catch(() => {});
+  }, [lc]);
+
+  const d = stats || { booths: 0, volunteers: 0, mandals: 0 };
+
   return (
     <div className="fade-in">
       <div className="dash-banner">
@@ -40,10 +59,10 @@ function ConstituencyOverview({ lc, onSchedule }) {
       </div>
 
       <div className="dash-stats">
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Active Booths</div></div>
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Volunteers</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.booths}</div><div className="ds-label">Active Booths</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.volunteers}</div><div className="ds-label">Volunteers</div></div>
         <div className="dash-stat"><div className="ds-value">0%</div><div className="ds-label">Coverage</div></div>
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Mandal Nodes</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.mandals ?? 0}</div><div className="ds-label">Mandal Nodes</div></div>
       </div>
 
       <div className="dash-grid-2">

@@ -14,6 +14,8 @@ const ROLE_OPTIONS = [
   { value: 'STATE_ADMIN', label: 'State Admin', color: '#2563eb' },
   { value: 'DISTRICT_ADMIN', label: 'District Admin', color: '#0891b2' },
   { value: 'CONSTITUENCY_MGR', label: 'Constituency Manager', color: '#059669' },
+  { value: 'MANDAL_MGR', label: 'Mandal Manager', color: '#d97706' },
+  { value: 'BOOTH_PRESIDENT', label: 'Booth President', color: '#dc2626' },
 ];
 
 const ROLE_HIERARCHY = {
@@ -21,6 +23,8 @@ const ROLE_HIERARCHY = {
   STATE_ADMIN: ['state'],
   DISTRICT_ADMIN: ['state', 'district'],
   CONSTITUENCY_MGR: ['state', 'district', 'constituency'],
+  MANDAL_MGR: ['state', 'district', 'constituency', 'mandal'],
+  BOOTH_PRESIDENT: ['state', 'district', 'constituency', 'mandal', 'booth'],
 };
 
 export default function ElectionAdminDashboard({ tab, hierarchy }) {
@@ -152,8 +156,11 @@ function UserManagement() {
         headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify(form),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || 'Failed to create user');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Failed to create user');
       setForm({ email: '', password: '', display_name: '', role: 'STATE_ADMIN', state_id: '', district_id: '', constituency_id: '' });
       setMode('view');
       fetchData();
@@ -478,8 +485,11 @@ function ConstituencySetup() {
         headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify({ code: addForm.code, name: addForm.name, level: 'constituency', parent_code: selectedDistrict }),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || 'Failed to add constituency');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Failed to add constituency');
       setShowAddForm(false);
       setAddForm({ code: '', name: '' });
       handleDistrictChange(selectedDistrict);

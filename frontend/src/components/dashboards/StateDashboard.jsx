@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, Globe, Radio, FileText, Zap, Map, TrendingUp } from 'lucide-react';
 import HeatmapAnalysis from './HeatmapAnalysis';
+import BroadcastPanel from '../shared/BroadcastPanel';
+import ManageUsers from '../shared/ManageUsers';
+import Hub from '../shared/Hub';
 
 export default function StateDashboard({ tab, hierarchy }) {
   const stateName = hierarchy.state || '';
@@ -10,6 +13,8 @@ export default function StateDashboard({ tab, hierarchy }) {
     case 'rankings':     return <DistrictRankings />;
     case 'heatmap':      return <HeatmapAnalysis level="STATE" hierarchy={hierarchy} />;
     case 'ai-suggestions': return null;
+    case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;
+    case 'manage-users': return <ManageUsers role="STATE_ADMIN" hierarchy={hierarchy} />;
     case 'broadcast':    return <BroadcastPanel hierarchy={hierarchy} />;
     case 'reports':      return <ReportsPanel />;
     default:             return <StateOverview state={stateName} />;
@@ -17,6 +22,19 @@ export default function StateDashboard({ tab, hierarchy }) {
 }
 
 function StateOverview({ state }) {
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    if (!state) return;
+    fetch(`/api/v1/dashboard/stats?level=state&code=${state}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).then(setStats).catch(() => {});
+  }, [state]);
+
+  const d = stats || { districts: 0, constituencies: 0, booths: 0, volunteers: 0 };
+
   return (
     <div className="fade-in">
       <div className="dash-page-header">
@@ -32,19 +50,19 @@ function StateOverview({ state }) {
 
       <div className="dash-stats">
         <div className="dash-stat">
-          <div className="ds-value">0</div>
+          <div className="ds-value">{d.districts}</div>
           <div className="ds-label">Districts</div>
         </div>
         <div className="dash-stat">
-          <div className="ds-value">0</div>
+          <div className="ds-value">{d.constituencies}</div>
           <div className="ds-label">Constituencies</div>
         </div>
         <div className="dash-stat">
-          <div className="ds-value">0</div>
+          <div className="ds-value">{d.booths}</div>
           <div className="ds-label">Booths</div>
         </div>
         <div className="dash-stat">
-          <div className="ds-value">0</div>
+          <div className="ds-value">{d.volunteers}</div>
           <div className="ds-label">Volunteers</div>
         </div>
         <div className="dash-stat-dark">
@@ -185,94 +203,7 @@ function AIAlerts() {
   );
 }
 
-function BroadcastPanel({ hierarchy }) {
-  const [message, setMessage] = useState('');
-  const [broadcasts, setBroadcasts] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const fetchBroadcasts = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/broadcasts/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (Array.isArray(data)) setBroadcasts(data);
-    } catch (e) { console.error(e); }
-  };
-
-  useEffect(() => { fetchBroadcasts(); }, []);
-
-  const handleBroadcast = async () => {
-    if (!message.trim()) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/broadcasts/', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          message,
-          target_type: 'STATE',
-          target_id: hierarchy.state_id || hierarchy.state
-        })
-      });
-      if (res.ok) {
-        setMessage('');
-        fetchBroadcasts();
-      }
-    } catch (e) { console.error(e); }
-    setLoading(false);
-  };
-
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">State Broadcast Channel</div></div>
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Compose Message — State-wide Broadcast</h3></div>
-        <div className="dash-section-body">
-          <textarea 
-            className="broadcast-area" 
-            rows={6} 
-            placeholder="Compose your state-wide directive here..." 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn btn-primary" onClick={handleBroadcast} disabled={loading}>
-              {loading ? 'SENDING...' : 'BROADCAST NOW'}
-            </button>
-            <button className="btn">SCHEDULE</button>
-            <button className="btn">SAVE DRAFT</button>
-          </div>
-        </div>
-      </div>
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Recent Broadcasts</h3></div>
-        <div className="dash-section-body" style={{ padding: 0 }}>
-          <table>
-            <thead><tr><th>Message</th><th>Target</th><th>Sent</th><th>Level</th></tr></thead>
-            <tbody>
-              {broadcasts.length > 0 ? broadcasts.map((b, i) => (
-                <tr key={i}>
-                  <td style={{ fontWeight: 600 }}>"{b.message}"</td>
-                  <td>{b.target_type === 'GLOBAL' ? 'Global' : b.target_id}</td>
-                  <td>{new Date(b.created_at).toLocaleDateString()}</td>
-                  <td><span className="badge badge-low">{b.sender_role}</span></td>
-                </tr>
-              )) : (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)' }}>No broadcasts found</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ReportsPanel() {
   return (

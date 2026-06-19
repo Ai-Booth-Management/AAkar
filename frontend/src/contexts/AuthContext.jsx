@@ -74,13 +74,13 @@ export function AuthProvider({ children }) {
       }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      const err = new Error(data.detail || 'Registration failed');
-      err.code = data.detail;
+      const errBody = await res.json().catch(() => ({}));
+      const err = new Error(errBody.detail || 'Registration failed');
+      err.code = errBody.detail;
       throw err;
     }
+    const data = await res.json();
 
     localStorage.setItem('aakar_session', '1');
     if (data.access_token) {
@@ -108,13 +108,13 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      const err = new Error(data.detail || 'Login failed');
-      err.code = data.detail;
+      const errBody = await res.json().catch(() => ({}));
+      const err = new Error(errBody.detail || 'Login failed');
+      err.code = errBody.detail;
       throw err;
     }
+    const data = await res.json();
 
     localStorage.setItem('aakar_session', '1');
     if (data.access_token) {

@@ -37,6 +37,7 @@ const Schemes = () => {
         setExcludedNames([]);
         try {
             const res = await fetch(`${API_BASE}/voters/filter?category=${encodeURIComponent(category)}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setVoters(Array.isArray(data) ? data : []);
         } catch (e) {
@@ -75,15 +76,15 @@ const Schemes = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            const data = await res.json();
-            if (res.ok) {
-                setFeedback({ type: 'success', text: `SCHEME BROADCASTED SUCCESSFULLY. ${data.message || ''}` });
-                setForm({ scheme_name: '', message: '', category: '' });
-                setVoters([]);
-                setExcludedNames([]);
-            } else {
-                setFeedback({ type: 'error', text: data.detail || 'BROADCAST FAILED' });
+            if (!res.ok) {
+              const errBody = await res.json().catch(() => ({}));
+              throw new Error(errBody.detail || `HTTP ${res.status}`);
             }
+            const data = await res.json();
+            setFeedback({ type: 'success', text: `SCHEME BROADCASTED SUCCESSFULLY. ${data.message || ''}` });
+            setForm({ scheme_name: '', message: '', category: '' });
+            setVoters([]);
+            setExcludedNames([]);
         } catch (e) {
             setFeedback({ type: 'error', text: 'SYSTEM ERROR: CONNECTION REFUSED' });
         } finally {
