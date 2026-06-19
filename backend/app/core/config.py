@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     WHATSAPP_PHONE_NUMBER_ID: str
     WHATSAPP_VERIFY_TOKEN: str
 
+    # Database
+    DATABASE_URL: str = "sqlite:///./data/app.db"
+
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parent.parent.parent / ".env"
     )

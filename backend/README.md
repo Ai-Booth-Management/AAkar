@@ -71,6 +71,9 @@ NEO4J_PASSWORD=your_password
 OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5:7b
 JWT_SECRET_KEY=your_secure_jwt_secret_key
+WHATSAPP_TOKEN=your_meta_whatsapp_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+WHATSAPP_VERIFY_TOKEN=any_string_you_make_up
 ```
 
 ### 4. Running the Development Server

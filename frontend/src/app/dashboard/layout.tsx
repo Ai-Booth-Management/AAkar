@@ -162,7 +162,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [expanded] = useState(true);
 
-  const isAuthorized = currentUser && (currentUser.role === 'official' || currentUser.role === 'cm' || currentUser.role === 'dm');
+  const userRole = (currentUser?.role || '').toLowerCase();
+  const isAuthorized = currentUser && (userRole === 'official' || userRole === 'cm' || userRole === 'dm');
 
   useEffect(() => {
     if (!loading && !isAuthorized) {
@@ -196,14 +197,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const emailUser = currentUser.email ? currentUser.email.split('@')[0] : 'USER';
-  // If email has prefixes like cm_ or dm_, clean it up
   const cleanId = emailUser.replace(/^(official_|cm_|dm_)/i, '').toUpperCase();
   const officialId = currentUser.displayName || cleanId;
-  const roleName = currentUser.role === 'cm' ? 'CM_PORTAL' : currentUser.role === 'dm' ? 'DM_PORTAL' : 'OFFICIAL_PORTAL';
+  const roleName = userRole === 'cm' ? 'CM_PORTAL' : userRole === 'dm' ? 'DM_PORTAL' : 'OFFICIAL_PORTAL';
   const currentTitle = PAGE_TITLES[pathname] || 'Dashboard';
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
-    if (currentUser.role === 'dm') {
+    if (userRole === 'dm') {
       return ['overview', 'ask', 'complaints', 'heatmap'].includes(item.id);
     }
     return true;
@@ -215,9 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className={`sidebar ${expanded ? 'expanded' : ''}`}>
         <div className="sidebar-top">
           <div className="sidebar-brand" style={{ padding: '16px 20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <img src="/icon.png" alt="Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
-            </div>
+            <img src={logo.src} alt="Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
           </div>
 
           <nav className="sidebar-nav">
@@ -283,7 +281,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.7 }}>{roleName}</span>
               <span style={{ fontSize: 9, opacity: 0.5 }}>{officialId || 'ACCESS'}</span>
             </div>
-            <div className="avatar" style={{ fontWeight: 800 }}>{currentUser.role === 'cm' ? 'CM' : currentUser.role === 'dm' ? 'DM' : 'A'}</div>
+            <div className="avatar" style={{ fontWeight: 800 }}>{userRole === 'cm' ? 'CM' : userRole === 'dm' ? 'DM' : 'A'}</div>
           </div>
         </header>
 

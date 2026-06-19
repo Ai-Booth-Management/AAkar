@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 // Disable SSR for MapPanel because Leaflet initializes window-based properties at load-time.
-const MapPanel = dynamic(() => import('../../../components/MapPanel'), {
+const MapPanel = dynamic(() => import('../../../components/panels/MapPanel'), {
   ssr: false,
   loading: () => (
     <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
