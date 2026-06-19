@@ -67,7 +67,7 @@ def list_users(
     district_id: str | None = None,
     constituency_id: str | None = None,
     skip: int = 0,
-    limit: int = 50,
+    limit: int = 500,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):

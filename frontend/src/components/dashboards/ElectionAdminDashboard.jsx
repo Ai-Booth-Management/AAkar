@@ -14,6 +14,8 @@ const ROLE_OPTIONS = [
   { value: 'STATE_ADMIN', label: 'State Admin', color: '#2563eb' },
   { value: 'DISTRICT_ADMIN', label: 'District Admin', color: '#0891b2' },
   { value: 'CONSTITUENCY_MGR', label: 'Constituency Manager', color: '#059669' },
+  { value: 'MANDAL_MGR', label: 'Mandal Manager', color: '#d97706' },
+  { value: 'BOOTH_PRESIDENT', label: 'Booth President', color: '#dc2626' },
 ];
 
 const ROLE_HIERARCHY = {
@@ -21,6 +23,8 @@ const ROLE_HIERARCHY = {
   STATE_ADMIN: ['state'],
   DISTRICT_ADMIN: ['state', 'district'],
   CONSTITUENCY_MGR: ['state', 'district', 'constituency'],
+  MANDAL_MGR: ['state', 'district', 'constituency', 'mandal'],
+  BOOTH_PRESIDENT: ['state', 'district', 'constituency', 'mandal', 'booth'],
 };
 
 export default function ElectionAdminDashboard({ tab, hierarchy }) {
