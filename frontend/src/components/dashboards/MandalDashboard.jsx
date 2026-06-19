@@ -1,13 +1,19 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
+import BroadcastPanel from '../shared/BroadcastPanel';
+import ManageUsers from '../shared/ManageUsers';
+import Hub from '../shared/Hub';
 
 export default function MandalDashboard({ tab, hierarchy }) {
   const mandal = hierarchy.mandal || '';
   switch (tab) {
     case 'overview':     return <MandalOverview mandal={mandal} />;
     case 'booth_status': return <BoothStatusTable />;
+    case 'manage-users': return <ManageUsers role="MANDAL_MGR" hierarchy={hierarchy} />;
+    case 'hub':          return <Hub hierarchy={hierarchy} userRole="MANDAL_MGR" />;
     case 'volunteers':   return <VolunteerView />;
     case 'meetings':     return <MeetingTracker />;
+    case 'broadcast':    return <BroadcastPanel hierarchy={hierarchy} />;
     case 'ai-suggestions': return null;
     case 'issues':       return <IssueBoard />;
     default:             return <MandalOverview mandal={mandal} />;
@@ -15,6 +21,19 @@ export default function MandalDashboard({ tab, hierarchy }) {
 }
 
 function MandalOverview({ mandal }) {
+  const [stats, setStats] = useState(null);
+  React.useEffect(() => {
+    if (!mandal) return;
+    fetch(`/api/v1/dashboard/stats?level=mandal&code=${mandal}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).then(setStats).catch(() => {});
+  }, [mandal]);
+
+  const d = stats || { booths: 0, volunteers: 0 };
+
   return (
     <div className="fade-in">
       <div className="dash-page-header">
@@ -29,9 +48,9 @@ function MandalOverview({ mandal }) {
       </div>
 
       <div className="dash-stats">
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Total Booths</div></div>
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Active Booths</div></div>
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Volunteers</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.booths}</div><div className="ds-label">Total Booths</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.booths}</div><div className="ds-label">Active Booths</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.volunteers}</div><div className="ds-label">Volunteers</div></div>
         <div className="dash-stat-dark"><div className="ds-value">0%</div><div className="ds-label">Coverage</div></div>
       </div>
 

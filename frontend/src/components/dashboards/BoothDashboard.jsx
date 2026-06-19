@@ -1,13 +1,17 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield } from 'lucide-react';
+import Hub from '../shared/Hub';
 
 export default function BoothDashboard({ tab, hierarchy }) {
   const booth = hierarchy.booth || '';
   switch (tab) {
     case 'profile':     return <BoothProfile booth={booth} />;
+    case 'hub':         return <Hub hierarchy={hierarchy} userRole="BOOTH_PRESIDENT" />;
     case 'households':  return <HouseholdCoverage />;
     case 'volunteers':  return <FieldStaff />;
+    case 'volunteer-management': return <ComingSoon title="Volunteer Management" />;
+    case 'broadcast':   return <ComingSoon title="Broadcast" />;
     case 'activities':  return <Activities />;
     case 'issues':      return <LocalIssues />;
     case 'ai-suggestions': return null;
@@ -16,7 +20,34 @@ export default function BoothDashboard({ tab, hierarchy }) {
   }
 }
 
+function ComingSoon({ title }) {
+  return (
+    <div className="fade-in">
+      <div className="dash-page-header"><div className="dash-page-title">{title}</div></div>
+      <div className="dash-section">
+        <div className="dash-section-body" style={{ textAlign: 'center', padding: '48px' }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--gray-400)', marginBottom: 8 }}>Coming Soon</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-400)' }}>{title} feature is under development</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BoothProfile({ booth }) {
+  const [stats, setStats] = useState(null);
+  React.useEffect(() => {
+    if (!booth) return;
+    fetch(`/api/v1/dashboard/stats?level=booth&code=${booth}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).then(setStats).catch(() => {});
+  }, [booth]);
+
+  const d = stats || { voters: 0, volunteers: 0 };
+
   return (
     <div className="fade-in">
       <div className="dash-page-header">
@@ -33,7 +64,7 @@ function BoothProfile({ booth }) {
       </div>
 
       <div className="dash-stats">
-        <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Registered Voters</div></div>
+        <div className="dash-stat"><div className="ds-value">{d.voters}</div><div className="ds-label">Registered Voters</div></div>
         <div className="dash-stat"><div className="ds-value">0</div><div className="ds-label">Est. Households</div></div>
         <div className="dash-stat"><div className="ds-value">—</div><div className="ds-label">Category</div></div>
         <div className="dash-stat-dark"><div className="ds-value">0/100</div><div className="ds-label">BOSI Strength</div></div>

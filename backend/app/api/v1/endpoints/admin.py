@@ -41,7 +41,16 @@ class UserOut(BaseModel):
     created_at: datetime
 
 
-# ── Helpers ─────────────────────────────────────────────────────────
+# ── Role hierarchy ─────────────────────────────────────────────────
+
+CAN_CREATE_ROLE = {
+    "ELECTION_ADMIN": {"STATE_ADMIN", "DISTRICT_ADMIN", "CONSTITUENCY_MGR", "MANDAL_MGR", "BOOTH_PRESIDENT"},
+    "STATE_ADMIN": {"DISTRICT_ADMIN"},
+    "DISTRICT_ADMIN": {"CONSTITUENCY_MGR"},
+    "CONSTITUENCY_MGR": {"MANDAL_MGR"},
+    "MANDAL_MGR": {"BOOTH_PRESIDENT"},
+}
+
 
 def _require_election_admin(current_user: User = Depends(get_current_user)):
     if current_user.role != "ELECTION_ADMIN":
@@ -60,9 +69,38 @@ def list_users(
     skip: int = 0,
     limit: int = 50,
     session: Session = Depends(get_session),
-    _admin: User = Depends(_require_election_admin),
+    current_user: User = Depends(get_current_user),
 ):
     query = select(User)
+
+    # Scope to current user's hierarchy
+    if current_user.role == "ELECTION_ADMIN":
+        pass  # can see all
+    elif current_user.role == "STATE_ADMIN":
+        query = query.where(User.state_id == current_user.state_id)
+    elif current_user.role == "DISTRICT_ADMIN":
+        query = query.where(
+            User.state_id == current_user.state_id,
+            User.district_id == current_user.district_id,
+        )
+    elif current_user.role == "CONSTITUENCY_MGR":
+        query = query.where(
+            User.state_id == current_user.state_id,
+            User.district_id == current_user.district_id,
+            User.constituency_id == current_user.constituency_id,
+        )
+    elif current_user.role == "MANDAL_MGR":
+        query = query.where(
+            User.state_id == current_user.state_id,
+            User.district_id == current_user.district_id,
+            User.constituency_id == current_user.constituency_id,
+            User.mandal_id == current_user.mandal_id,
+        )
+    else:
+        query = query.where(User.id == current_user.id)  # can only see self
+
+    query = query.where(User.id != current_user.id)
+
     if role:
         query = query.where(User.role == role.upper())
     if state_id:
@@ -167,21 +205,44 @@ def update_user(
 def create_user(
     body: UserCreateRequest,
     session: Session = Depends(get_session),
-    _admin: User = Depends(_require_election_admin),
+    current_user: User = Depends(get_current_user),
 ):
+    target_role = body.role.upper()
+    allowed = CAN_CREATE_ROLE.get(current_user.role, set())
+    if target_role not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Your role ({current_user.role}) cannot create {target_role} users",
+        )
+
     existing = session.exec(select(User).where(User.email == body.email)).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already in use")
 
+    # Scope enforcement — creators can only create users within their own hierarchy boundary
+    if current_user.role != "ELECTION_ADMIN":
+        if current_user.role == "STATE_ADMIN":
+            if body.state_id and body.state_id != current_user.state_id:
+                raise HTTPException(status_code=403, detail="Can only create users in your state")
+        elif current_user.role == "DISTRICT_ADMIN":
+            if body.district_id and body.district_id != current_user.district_id:
+                raise HTTPException(status_code=403, detail="Can only create users in your district")
+        elif current_user.role == "CONSTITUENCY_MGR":
+            if body.constituency_id and body.constituency_id != current_user.constituency_id:
+                raise HTTPException(status_code=403, detail="Can only create users in your constituency")
+        elif current_user.role == "MANDAL_MGR":
+            if body.mandal_id and body.mandal_id != current_user.mandal_id:
+                raise HTTPException(status_code=403, detail="Can only create users in your mandal")
+
     user = User(
         email=body.email,
         hashed_password=hash_password(body.password),
-        role=body.role.upper(),
+        role=target_role,
         display_name=body.display_name,
-        state_id=body.state_id,
-        district_id=body.district_id,
-        constituency_id=body.constituency_id,
-        mandal_id=body.mandal_id,
+        state_id=body.state_id or current_user.state_id,
+        district_id=body.district_id or current_user.district_id,
+        constituency_id=body.constituency_id or current_user.constituency_id,
+        mandal_id=body.mandal_id or current_user.mandal_id,
         booth_id=body.booth_id,
     )
     session.add(user)
@@ -240,7 +301,7 @@ def get_hierarchy_flat(
     level: str | None = None,
     parent_code: str | None = None,
     session: Session = Depends(get_session),
-    _admin: User = Depends(_require_election_admin),
+    _current_user: User = Depends(get_current_user),
 ):
     query = select(HierarchyNode)
     if level:

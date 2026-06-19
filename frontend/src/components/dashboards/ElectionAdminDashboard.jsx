@@ -152,8 +152,11 @@ function UserManagement() {
         headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify(form),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || 'Failed to create user');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Failed to create user');
       setForm({ email: '', password: '', display_name: '', role: 'STATE_ADMIN', state_id: '', district_id: '', constituency_id: '' });
       setMode('view');
       fetchData();
@@ -478,8 +481,11 @@ function ConstituencySetup() {
         headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify({ code: addForm.code, name: addForm.name, level: 'constituency', parent_code: selectedDistrict }),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || 'Failed to add constituency');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Failed to add constituency');
       setShowAddForm(false);
       setAddForm({ code: '', name: '' });
       handleDistrictChange(selectedDistrict);

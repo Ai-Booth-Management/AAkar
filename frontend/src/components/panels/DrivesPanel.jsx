@@ -34,6 +34,7 @@ const DrivesPanel = () => {
     const fetchBooths = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/booths`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setBooths(data);
         } catch (e) {
@@ -44,6 +45,7 @@ const DrivesPanel = () => {
     const fetchAllDrives = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/drives`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setAllDrives(data);
         } catch (e) {
@@ -66,8 +68,8 @@ const DrivesPanel = () => {
                 setForm({ title: '', description: '', type: 'Drive', date: '', booth_id: '' });
                 fetchAllDrives(); // Refresh table
             } else {
-                const data = await res.json();
-                setMessage({ type: 'error', text: data.detail || 'AUTHORIZATION FAILED: UNABLE TO DISPATCH DRIVE' });
+                const errBody = await res.json().catch(() => ({}));
+                setMessage({ type: 'error', text: errBody.detail || 'AUTHORIZATION FAILED: UNABLE TO DISPATCH DRIVE' });
             }
         } catch (e) {
             setMessage({ type: 'error', text: 'SYSTEM ERROR: CONNECTION REFUSED' });
