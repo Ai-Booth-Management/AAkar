@@ -74,8 +74,12 @@ export default function BoothUserPortal() {
       </main>
 
       <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-around', padding: '12px 0', zIndex: 100 }}>
-        <NavButton label="Home" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon="🏠" />
-        <NavButton label="Tasks" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon="📋" />
+        <NavButton label="Home" active={activeTab === 'profile' || activeTab === 'overview'} onClick={() => setActiveTab(userRole === 'BOOTH_PRESIDENT' ? 'profile' : 'overview')} icon="🏠" />
+        {userRole === 'BOOTH_PRESIDENT' ? (
+          <NavButton label="Team" active={activeTab === 'volunteer-management'} onClick={() => setActiveTab('volunteer-management')} icon="👥" />
+        ) : (
+          <NavButton label="Tasks" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon="📋" />
+        )}
         <NavButton label="Data" active={activeTab === 'households' || activeTab === 'surveys'} onClick={() => setActiveTab(userRole === 'BOOTH_PRESIDENT' ? 'households' : 'surveys')} icon="📊" />
         <NavButton label="Intel" active={activeTab === 'knowledge'} onClick={() => setActiveTab('knowledge')} icon="🧠" />
       </nav>

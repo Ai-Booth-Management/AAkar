@@ -183,6 +183,8 @@ async def receive_whatsapp_message(request: Request):
     - Task completion (registered volunteers texting 'DONE' or sending a photo)
     """
     body = await request.json()
+    print("\n--- INCOMING WHATSAPP WEBHOOK ---")
+    print(json.dumps(body, indent=2))
 
     try:
         entry = body["entry"][0]
