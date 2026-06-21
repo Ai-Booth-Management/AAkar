@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import BoothDashboard from '../../components/dashboards/BoothDashboard';
-import VolunteerDashboard from '../../components/dashboards/VolunteerDashboard';
 import logo from '../../assets/logo.png';
 import { useRouter } from 'next/navigation';
 import LodgeComplaintPanel from '../../components/shared/LodgeComplaintPanel';
@@ -33,7 +32,7 @@ export default function BoothUserPortal() {
   };
 
   const userRole = (currentUser.role || '').toUpperCase();
-  const isFieldUser = userRole === 'VOLUNTEER' || userRole === 'BOOTH' || userRole === 'BOOTH_PRESIDENT';
+  const isFieldUser = userRole === 'BOOTH' || userRole === 'BOOTH_PRESIDENT';
 
   if (!isFieldUser) {
     const boothId = currentUser.email ? currentUser.email.split('@')[0].split('_').slice(1).join('_') : null;
@@ -66,11 +65,7 @@ export default function BoothUserPortal() {
       </header>
 
       <main style={{ padding: '24px' }}>
-        {userRole === 'BOOTH_PRESIDENT' ? (
-          <BoothDashboard hierarchy={hierarchy} tab={activeTab} />
-        ) : (
-          <VolunteerDashboard tab={activeTab} />
-        )}
+        <BoothDashboard hierarchy={hierarchy} tab={activeTab} />
       </main>
 
       <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-around', padding: '12px 0', zIndex: 100 }}>

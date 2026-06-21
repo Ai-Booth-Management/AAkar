@@ -111,6 +111,96 @@ OUTPUT:"""
 
         return query
 
+    def generate_sql(self, schema: str, question: str) -> str:
+        """Prompt the LLM with SQLite schema + user question → read-only SQL."""
+        prompt = f"""[OBJECTIVE]
+Convert natural language into high-performance, READ-ONLY SQLite SQL queries.
+
+[CONTEXT]
+You are a Senior SQL Database Architect. You interpret user questions against a provided <schema> to produce executable SQLite code.
+
+<schema>
+{schema}
+</schema>
+
+[THOUGHT_PROCESS_STRICT]
+Before outputting SQL, you must internally:
+1. IDENTIFY: Which tables and columns in the <schema> match the user's intent?
+2. CASE-INSENSITIVE: Apply `LOWER()` to string comparisons (e.g., `WHERE LOWER(name) LIKE '%sharma%'`).
+3. STRUCTURE: Ensure the SELECT statement returns meaningful columns (do not just return IDs). Use JOINs where appropriate.
+4. VALIDATE: Check for any mutating keywords (INSERT, UPDATE, DELETE, CREATE, DROP, ALTER). If found, remove them.
+5. FALLBACK: If the schema is insufficient, your only allowed output is the fallback query (`SELECT 1 LIMIT 0`).
+
+[CONSTRAINTS]
+- NO markdown formatting (no ```sql).
+- NO explanations or preamble outside the XML tags.
+
+[OUTPUT_FORMAT]
+You MUST output your response exactly in this XML format:
+<logic>
+Write a short 1-sentence explanation of your approach.
+</logic>
+<query>
+Write the executable SQL query here.
+</query>
+
+[EXAMPLES]
+Question: "How many volunteers do we have?"
+<logic>
+I will count all rows in the volunteer table.
+</logic>
+<query>
+SELECT COUNT(*) as count FROM volunteer
+</query>
+
+Question: "List all pending tasks for booth MH_1"
+<logic>
+I will select from the task table where status is assigned and booth_id matches.
+</logic>
+<query>
+SELECT * FROM task WHERE status = 'assigned' AND booth_id = 'MH_1'
+</query>
+
+QUESTION: "{question}"
+
+OUTPUT:"""
+
+        response = requests.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {"temperature": 0},
+            },
+            timeout=120,
+        )
+        response.raise_for_status()
+        raw_text = response.json().get("response", "").strip()
+
+        return self._clean_sql(raw_text)
+
+    def _clean_sql(self, text: str) -> str:
+        """
+        Extracts the SQL query from the Antigravity XML structure.
+        """
+        import re
+        # Find content between <query> tags
+        query_match = re.search(r'<query>(.*?)</query>', text, re.DOTALL)
+        if query_match:
+            query = query_match.group(1).strip()
+        else:
+            # Fallback if the LLM failed the tags but gave the query
+            query = text.replace("```sql", "").replace("```", "").strip()
+
+        # Final safety check: No mutations
+        query = query.split(';')[0].strip()
+        forbidden = ["INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "REPLACE"]
+        if any(cmd in query.upper() for cmd in forbidden):
+            return "SELECT 1 LIMIT 0"
+
+        return query
+
     def summarize_results(self, question: str, cypher: str, results: list) -> str:
         """Prompt the LLM with question + Cypher + results → natural-language answer."""
         import json
@@ -167,7 +257,7 @@ ANSWER:"""
                     "stream": False,
                     "options": {"temperature": 0.7},
                 },
-                timeout=30,
+                timeout=120,
             )
             response.raise_for_status()
             return response.json().get("response", "").strip()
