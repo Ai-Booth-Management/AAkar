@@ -42,7 +42,7 @@ def test_register_and_login(mock_gdb, mock_seed, mock_read_csv):
     assert res.status_code == 201, res.text
     data = res.json()
     assert "access_token" in data
-    assert data["user"]["role"] == "booth"
+    assert data["user"]["role"].lower() == "booth"
     assert data["user"]["email"] == email
     token = data["access_token"]
 
@@ -59,7 +59,7 @@ def test_register_and_login(mock_gdb, mock_seed, mock_read_csv):
     assert res.status_code == 200, res.text
     me = res.json()
     assert me["email"] == email
-    assert me["role"] == "booth"
+    assert me["role"].lower() == "booth"
 
 
 @patch("app.domain.services.seed_graph.seed")

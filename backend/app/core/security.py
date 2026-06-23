@@ -58,4 +58,9 @@ def get_current_user(
     user = session.exec(select(User).where(User.email == email)).first()
     if user is None:
         raise credentials_exception
+    
+    # Normalize civic roles to lowercase for authorization compatibility
+    if user.role and user.role.lower() in ["official", "cm", "dm"]:
+        user.role = user.role.lower()
+        
     return user
