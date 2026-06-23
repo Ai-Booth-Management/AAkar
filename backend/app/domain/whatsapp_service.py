@@ -46,7 +46,7 @@ from fastapi import APIRouter, Request, HTTPException, Query
 from sqlmodel import Session, select
 from app.core.config import settings
 from app.infrastructure.db.sqlite_client import engine
-from app.domain.models.volunteer import Volunteer, Task, ConversationState
+from app.domain.models.volunteer import Volunteer, VolunteerTask, ConversationState
 
 logger = logging.getLogger(__name__)
 
@@ -264,9 +264,9 @@ async def receive_whatsapp_message(request: Request):
                 # --- REGISTERED VOLUNTEER ---
                 if msg_type == "text" and text_body.upper() == "DONE":
                     task = session.exec(
-                        select(Task)
-                        .where(Task.volunteer_id == volunteer.id, Task.status == "assigned")
-                        .order_by(Task.assigned_at.desc())
+                        select(VolunteerTask)
+                        .where(VolunteerTask.volunteer_id == volunteer.id, VolunteerTask.status == "assigned")
+                        .order_by(VolunteerTask.assigned_at.desc())
                     ).first()
 
                     if task:
@@ -281,9 +281,9 @@ async def receive_whatsapp_message(request: Request):
                 elif msg_type == "image":
                     media_id = msg["image"]["id"]
                     task = session.exec(
-                        select(Task)
-                        .where(Task.volunteer_id == volunteer.id, Task.status == "assigned")
-                        .order_by(Task.assigned_at.desc())
+                        select(VolunteerTask)
+                        .where(VolunteerTask.volunteer_id == volunteer.id, VolunteerTask.status == "assigned")
+                        .order_by(VolunteerTask.assigned_at.desc())
                     ).first()
 
                     if task:

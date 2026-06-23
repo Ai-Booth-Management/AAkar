@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlmodel import Session, select, func
 
-from app.domain.models.volunteer import Volunteer, Task
+from app.domain.models.volunteer import Volunteer, VolunteerTask
 from app.domain.whatsapp_service import send_text
 from app.infrastructure.db.sqlite_client import get_session
 
@@ -46,15 +46,15 @@ def get_volunteer_stats(
     active_volunteers = session.exec(q_active).one() or 0
 
     # Assigned tasks
-    q_assigned = select(func.count(Task.id)).where(Task.status == "assigned")
+    q_assigned = select(func.count(VolunteerTask.id)).where(VolunteerTask.status == "assigned")
     if booth_id:
-        q_assigned = q_assigned.where(Task.booth_id == booth_id)
+        q_assigned = q_assigned.where(VolunteerTask.booth_id == booth_id)
     assigned_tasks = session.exec(q_assigned).one() or 0
 
     # Completed tasks
-    q_completed = select(func.count(Task.id)).where(Task.status == "completed")
+    q_completed = select(func.count(VolunteerTask.id)).where(VolunteerTask.status == "completed")
     if booth_id:
-        q_completed = q_completed.where(Task.booth_id == booth_id)
+        q_completed = q_completed.where(VolunteerTask.booth_id == booth_id)
     completed_tasks = session.exec(q_completed).one() or 0
 
     total_tasks = assigned_tasks + completed_tasks
@@ -89,13 +89,13 @@ def list_volunteers(
     result = []
     for vol in volunteers:
         assigned = session.exec(
-            select(func.count(Task.id)).where(
-                Task.volunteer_id == vol.id, Task.status == "assigned"
+            select(func.count(VolunteerTask.id)).where(
+                VolunteerTask.volunteer_id == vol.id, VolunteerTask.status == "assigned"
             )
         ).one() or 0
         completed = session.exec(
-            select(func.count(Task.id)).where(
-                Task.volunteer_id == vol.id, Task.status == "completed"
+            select(func.count(VolunteerTask.id)).where(
+                VolunteerTask.volunteer_id == vol.id, VolunteerTask.status == "completed"
             )
         ).one() or 0
         result.append({
@@ -121,7 +121,7 @@ def list_volunteer_tasks(
 ):
     """List all tasks for a specific volunteer."""
     tasks = session.exec(
-        select(Task).where(Task.volunteer_id == volunteer_id)
+        select(VolunteerTask).where(VolunteerTask.volunteer_id == volunteer_id)
     ).all()
     return tasks
 
@@ -139,7 +139,7 @@ async def create_task(
             detail="Volunteer not found.",
         )
 
-    task = Task(
+    task = VolunteerTask(
         volunteer_id=body.volunteer_id,
         booth_id=body.booth_id,
         title=body.title,
@@ -176,12 +176,12 @@ def list_tasks(
     session: Session = Depends(get_session),
 ):
     """List tasks enriched with volunteer info, optionally filtered."""
-    query = select(Task)
+    query = select(VolunteerTask)
     if booth_id:
-        query = query.where(Task.booth_id == booth_id)
+        query = query.where(VolunteerTask.booth_id == booth_id)
     if status_filter:
-        query = query.where(Task.status == status_filter)
-    query = query.order_by(Task.assigned_at.desc())
+        query = query.where(VolunteerTask.status == status_filter)
+    query = query.order_by(VolunteerTask.assigned_at.desc())
     tasks = session.exec(query).all()
 
     result = []
@@ -214,7 +214,7 @@ def get_task_proof(
     session: Session = Depends(get_session),
 ):
     """Serve the proof image for a completed task."""
-    task = session.get(Task, task_id)
+    task = session.get(VolunteerTask, task_id)
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
