@@ -228,17 +228,7 @@ const MapPanel = () => {
     const [geojsonData, setGeojsonData] = useState(null);
     const [activeCategory, setActiveCategory] = useState("All"); // Sanitation, Water, Roads, Electricity, All
     
-    const dmDistrict = currentUser?.role === 'dm' ? getDistrictFromEmail(currentUser.email) : null;
-    const [selectedDistrict, setSelectedDistrict] = useState(dmDistrict);
-
-    useEffect(() => {
-        if (currentUser?.role === 'dm') {
-            const dist = getDistrictFromEmail(currentUser.email);
-            if (dist) {
-                setSelectedDistrict(dist);
-            }
-        }
-    }, [currentUser]);
+    const [selectedDistrict, setSelectedDistrict] = useState(null);
 
     // Map Overlays state
     const [overlays, setOverlays] = useState({
@@ -373,26 +363,17 @@ const MapPanel = () => {
 
                 layer.on({
                     click: (e) => {
-                        if (currentUser?.role === 'dm' && dtName !== dmDistrict) {
-                            return;
-                        }
                         setSelectedDistrict(dtName);
                         map.fitBounds(e.target.getBounds());
                     },
                     mouseover: (e) => {
                         const l = e.target;
-                        if (currentUser?.role === 'dm' && dtName !== dmDistrict) {
-                            return;
-                        }
                         if (selectedDistrict === null || selectedDistrict === dtName) {
                             l.setStyle({ fillOpacity: 0.8 });
                         }
                     },
                     mouseout: (e) => {
                         const l = e.target;
-                        if (currentUser?.role === 'dm' && dtName !== dmDistrict) {
-                            return;
-                        }
                         if (selectedDistrict === null) {
                             l.setStyle({ fillOpacity: 0.65 });
                         } else if (selectedDistrict === dtName) {
@@ -485,18 +466,8 @@ const MapPanel = () => {
 
         geojsonLayerRef.current = layer;
 
-        // Auto-focus on DM's district at load
-        if (currentUser?.role === 'dm' && layer) {
-            layer.eachLayer((l) => {
-                if (l.feature.properties.dtname === dmDistrict) {
-                    map.fitBounds(l.getBounds());
-                }
-            });
-        }
-
         // Reset style highlights on click outside
         map.on('click', (e) => {
-            if (currentUser?.role === 'dm') return; // Do not reset selection for DM
             if (e.originalEvent.target.id === mapContainerRef.current.id || e.originalEvent.target.tagName === 'svg') {
                 setSelectedDistrict(null);
                 map.setView([28.6139, 77.2090], 11);

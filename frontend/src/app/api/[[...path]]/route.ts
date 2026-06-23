@@ -16,6 +16,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ p
   return handle(req, await params);
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
+  return handle(req, await params);
+}
+
 async function handle(req: NextRequest, params: { path?: string[] }) {
   const pathParts = params.path || [];
   const targetPath = pathParts.join("/");

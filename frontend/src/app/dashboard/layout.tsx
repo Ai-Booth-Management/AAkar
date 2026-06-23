@@ -178,6 +178,16 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    id: 'campaign',
+    label: 'Campaign Mgmt',
+    path: '/dashboard/campaign',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 11l19-9-9 19-2-8-8-2z" />
+      </svg>
+    ),
+  },
 ];
 
 const ABOUT_ITEM = {
@@ -222,6 +232,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/audit': 'Audit & Decision Trail',
   '/dashboard/actions': 'Action Tracker',
   '/dashboard/summary': 'AI District Summary',
+  '/dashboard/campaign': 'Campaign Management',
 };
 
 // Next.js static asset import is imported inside components.
@@ -280,7 +291,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       return false;
     }
     if (currentUser.role === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti', 'tasks', 'files', 'audit', 'actions', 'summary'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'drishti', 'tasks', 'files', 'audit', 'actions', 'summary', 'campaign'].includes(item.id);
     }
     return true;
   });
