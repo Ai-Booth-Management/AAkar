@@ -1,13 +1,29 @@
-"""SQLite database engine and session management via SQLModel."""
+"""Database engine and session management via SQLModel.
+Supports both SQLite and PostgreSQL based on DATABASE_URL config."""
 
 from pathlib import Path
 from sqlmodel import SQLModel, Session, create_engine
+from app.core.config import settings
 
-DB_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
-DB_DIR.mkdir(parents=True, exist_ok=True)
-DATABASE_URL = f"sqlite:///{DB_DIR / 'app.db'}"
+RAW_URL = settings.DATABASE_URL
 
-engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+if RAW_URL.startswith("sqlite"):
+    DB_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
+    DB_DIR.mkdir(parents=True, exist_ok=True)
+    if ":///" in RAW_URL:
+        # url like sqlite:///./data/app.db – resolve relative path
+        url_path = RAW_URL.replace("sqlite:///", "")
+        p = Path(url_path)
+        if not p.is_absolute():
+            p = Path(__file__).resolve().parent.parent.parent.parent / p
+        p.parent.mkdir(parents=True, exist_ok=True)
+        DATABASE_URL = f"sqlite:///{p}"
+    else:
+        DATABASE_URL = RAW_URL
+    engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+else:
+    DATABASE_URL = RAW_URL
+    engine = create_engine(DATABASE_URL, echo=False, pool_size=10, max_overflow=20)
 
 
 def init_db():

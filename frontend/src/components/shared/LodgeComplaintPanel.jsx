@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../assets/logo.png';
+import logo from '../../assets/logo.png';
 
 const LodgeComplaintPanel = ({ boothId }) => {
   const [epic, setEpic] = useState('');
@@ -13,7 +13,10 @@ const LodgeComplaintPanel = ({ boothId }) => {
   React.useEffect(() => {
     if (boothId) {
       fetch(`/api/v1/drives/${boothId}`)
-        .then(res => res.json())
+        .then(async res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then(data => setDrives(data))
         .catch(err => console.error("Failed to fetch drives:", err));
     }
@@ -50,16 +53,16 @@ const LodgeComplaintPanel = ({ boothId }) => {
         }),
       });
 
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.detail || `HTTP ${response.status}`);
+      }
       const data = await response.json();
 
-      if (response.ok) {
-        setMessage({ type: 'success', text: `INCIDENT REPORT #${data.complaint_id} REGISTERED SUCCESSFULLY.` });
-        setEpic('');
-        setPhone('');
-        setDescription('');
-      } else {
-        setMessage({ type: 'error', text: data.detail || 'DISPATCH ERROR: SYSTEM UNREACHABLE.' });
-      }
+      setMessage({ type: 'success', text: `INCIDENT REPORT #${data.complaint_id} REGISTERED SUCCESSFULLY.` });
+      setEpic('');
+      setPhone('');
+      setDescription('');
     } catch (err) {
       setMessage({ type: 'error', text: 'CONNECTION ERROR: VERIFY NODE STATUS.' });
     } finally {

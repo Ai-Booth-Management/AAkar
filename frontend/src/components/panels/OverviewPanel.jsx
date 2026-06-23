@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_BASE = '/api/v1/admin';
 
@@ -41,10 +41,14 @@ const OverviewPanel = () => {
     if (!silent) setLoading(true);
     setError(null);
     try {
+      const safeJson = async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      };
       const [o, b, r] = await Promise.all([
-        fetch(`${API_BASE}/overview`).then(res => res.json()),
-        fetch(`${API_BASE}/booths`).then(res => res.json()),
-        fetch(`${API_BASE}/recommendations`).then(res => res.json()),
+        fetch(`${API_BASE}/overview`).then(safeJson),
+        fetch(`${API_BASE}/booths`).then(safeJson),
+        fetch(`${API_BASE}/recommendations`).then(safeJson),
       ]);
       setOverview(o);
       setBooths(b);

@@ -18,6 +18,8 @@ from app.api.v1.endpoints.audit import router as audit_router
 from app.api.v1.endpoints.action_tracker import router as action_tracker_router
 from app.api.v1.endpoints.summary import router as summary_router
 from app.api.v1.endpoints.campaign import router as campaign_router
+from app.api.v1.endpoints.broadcasts import router as broadcasts_router
+from app.api.v1.endpoints.dashboard import router as dashboard_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.domain.models.project import Project, ProjectJustification  # noqa: F401 – ensure table is registered
@@ -29,6 +31,7 @@ from app.domain.models.audit_log import AuditLog  # noqa: F401 - ensure table is
 from app.domain.models.cm_instruction import CmInstruction  # noqa: F401 - ensure table is registered
 from app.domain.models.ai_summary import AiSummary  # noqa: F401 - ensure table is registered
 from app.domain.models.campaign import CampaignVolunteer, ConstituencyCoverage  # noqa: F401 - ensure tables are registered
+from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 
@@ -776,13 +779,11 @@ async def lifespan(app: FastAPI):
     yield
     task.cancel()
 
-app = FastAPI(title="AAkar Backend", lifespan=lifespan)
-
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+app = FastAPI(title="AAkar Backend", lifespan=lifespan, redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -802,6 +803,8 @@ app.include_router(files_router, prefix="/api/v1/files", tags=["Files"])
 app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit Logs"])
 app.include_router(action_tracker_router, prefix="/api/v1/actions", tags=["Action Tracker"])
 app.include_router(campaign_router, prefix="/api/v1", tags=["Campaign"])
+app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"])
+app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"])
 
 
 @app.get("/")

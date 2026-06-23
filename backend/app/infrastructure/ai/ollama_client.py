@@ -152,5 +152,27 @@ ANSWER:"""
         response.raise_for_status()
         return response.json().get("response", "").strip()
 
+    def chat(self, message: str) -> str:
+        """General chat fallback using the configured model.
+
+        This sends a short prompt asking the model to reply conversationally.
+        """
+        prompt = f"You are a helpful assistant. Reply briefly and conversationally to the user message:\n\nUser: {message}\n\nAssistant:" 
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {"temperature": 0.7},
+                },
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.json().get("response", "").strip()
+        except Exception:
+            return "I'm available to help with your data queries."
+
 
 ollama_client = OllamaClient()

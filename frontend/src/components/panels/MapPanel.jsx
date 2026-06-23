@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
 
 // DISTRICT_METRICS dictionary has been migrated to the SQLite Relational Database (RDB)

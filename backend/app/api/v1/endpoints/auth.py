@@ -27,6 +27,11 @@ class RegisterRequest(BaseModel):
     password: str
     role: str = "official"
     display_name: str | None = None
+    state_id: str | None = None
+    district_id: str | None = None
+    constituency_id: str | None = None
+    mandal_id: str | None = None
+    booth_id: str | None = None
 
 
 class LoginRequest(BaseModel):
@@ -45,6 +50,11 @@ class UserResponse(BaseModel):
     email: str
     role: str
     display_name: str | None
+    state_id: str | None = None
+    district_id: str | None = None
+    constituency_id: str | None = None
+    mandal_id: str | None = None
+    booth_id: str | None = None
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────
@@ -83,8 +93,13 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
     user = User(
         email=body.email,
         hashed_password=hash_password(body.password),
-        role=body.role,
+        role=body.role.upper(),
         display_name=body.display_name,
+        state_id=body.state_id,
+        district_id=body.district_id,
+        constituency_id=body.constituency_id,
+        mandal_id=body.mandal_id,
+        booth_id=body.booth_id,
     )
     session.add(user)
     session.commit()
@@ -93,7 +108,17 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
     token = create_access_token({"sub": user.email})
     return TokenResponse(
         access_token=token,
-        user={"id": user.id, "email": user.email, "role": user.role, "displayName": user.display_name},
+        user={
+            "id": user.id,
+            "email": user.email,
+            "role": user.role,
+            "displayName": user.display_name,
+            "state_id": user.state_id,
+            "district_id": user.district_id,
+            "constituency_id": user.constituency_id,
+            "mandal_id": user.mandal_id,
+            "booth_id": user.booth_id,
+        },
     )
 
 
@@ -110,7 +135,17 @@ def login(body: LoginRequest, session: Session = Depends(get_session)):
     token = create_access_token({"sub": user.email})
     return TokenResponse(
         access_token=token,
-        user={"id": user.id, "email": user.email, "role": user.role, "displayName": user.display_name},
+        user={
+            "id": user.id,
+            "email": user.email,
+            "role": user.role,
+            "displayName": user.display_name,
+            "state_id": user.state_id,
+            "district_id": user.district_id,
+            "constituency_id": user.constituency_id,
+            "mandal_id": user.mandal_id,
+            "booth_id": user.booth_id,
+        },
     )
 
 
@@ -122,6 +157,11 @@ def me(current_user: User = Depends(get_current_user)):
         email=current_user.email,
         role=current_user.role,
         display_name=current_user.display_name,
+        state_id=current_user.state_id,
+        district_id=current_user.district_id,
+        constituency_id=current_user.constituency_id,
+        mandal_id=current_user.mandal_id,
+        booth_id=current_user.booth_id,
     )
 
 

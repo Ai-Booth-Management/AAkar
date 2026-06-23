@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_BASE = '/api/v1';
 
@@ -53,6 +53,7 @@ const ComplaintsPanel = () => {
         setLoading(true);
         try {
             const res = await fetch(`${API_BASE}/complaints/`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setComplaints(Array.isArray(data) ? data : []);
         } catch (e) {
