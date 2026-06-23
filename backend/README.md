@@ -71,7 +71,30 @@ NEO4J_PASSWORD=your_password
 OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5:7b
 JWT_SECRET_KEY=your_secure_jwt_secret_key
+WHATSAPP_TOKEN=your_meta_whatsapp_access_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+WHATSAPP_VERIFY_TOKEN=any_string_you_make_up
 ```
+
+### 3.1 WhatsApp Webhook Setup (Local Development)
+
+To test WhatsApp integrations locally, you have two options:
+
+**Option A: The Fast Way (Simulation)**
+You do not need a Meta account. Simply run the provided simulation script in a separate terminal while your backend is running:
+```bash
+python scripts/simulate_webhook.py
+```
+This bypasses Meta entirely and sends production-accurate JSON payloads directly to your local endpoint.
+
+**Option B: The Full Way (Meta Dashboard & Ngrok)**
+If you need to test with a physical phone:
+1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/) and create a "Business" app.
+2. Add the **WhatsApp** product to your app.
+3. Expose your local server using ngrok: `ngrok http 8000`.
+4. In the Meta Dashboard under **WhatsApp -> Configuration**, set your Callback URL to `https://<your-ngrok-url>/api/v1/whatsapp/webhook`.
+5. Subscribe to the `messages` webhook field.
+*Note: Meta's sandbox test numbers often block inbound messages from physical phones while an app is unpublished. If physical tests fail, use Option A.*
 
 ### 4. Running the Development Server
 

@@ -4,6 +4,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlmodel import Session, create_engine, select
 from app.domain.models.user import User
+from app.domain.models.volunteer import Volunteer, Task, ConversationState
+from app.domain.models.hierarchy import HierarchyNode
+from app.infrastructure.db.sqlite_client import init_db
 from app.core.security import hash_password
 
 sqlite_url = "sqlite:///./data/app.db"
@@ -26,6 +29,9 @@ def run(script_name, label):
 print("=" * 60)
 print("AAKAR — Full Database Seed")
 print("=" * 60)
+
+print("\n[0/4] Initializing Database Tables...")
+init_db()
 
 run("seed_hierarchy.py", "1/4")
 run("seed_delhi_mandals.py", "2/4")
