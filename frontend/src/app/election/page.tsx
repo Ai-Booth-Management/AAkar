@@ -9,7 +9,6 @@ import DistrictDashboard from '../../components/dashboards/DistrictDashboard';
 import ConstituencyDashboard from '../../components/dashboards/ConstituencyDashboard';
 import MandalDashboard from '../../components/dashboards/MandalDashboard';
 import BoothDashboard from '../../components/dashboards/BoothDashboard';
-import VolunteerDashboard from '../../components/dashboards/VolunteerDashboard';
 
 import AICopilot from '../../components/shared/AICopilot';
 import ElectionAdminDashboard from '../../components/dashboards/ElectionAdminDashboard';
@@ -44,8 +43,6 @@ export default function ElectionPage() {
         return <MandalDashboard hierarchy={hierarchy} tab={activeTab} />;
       case 'BOOTH_PRESIDENT':
         return <BoothDashboard hierarchy={hierarchy} tab={activeTab} />;
-      case 'VOLUNTEER':
-        return <VolunteerDashboard tab={activeTab} />;
       default:
         return <div>Unauthorized Role Access</div>;
     }

@@ -22,7 +22,11 @@ export default function AICopilot({ hierarchy }) {
         setIsThinking(true);
 
         try {
-            const res = await fetch('/api/v1/ask', {
+            const API_URL = process.env.NODE_ENV === 'development' 
+                ? 'http://localhost:8000/api/v1/ask-election' 
+                : '/api/v1/ask-election';
+            
+            const res = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
