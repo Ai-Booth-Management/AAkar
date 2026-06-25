@@ -619,9 +619,9 @@ def seed_campaign_volunteers():
     from pathlib import Path
     import json
 
-    geojson_path = Path("c:/Users/Pavithran/AAkar/frontend/public/delhi_constituencies_new.geojson")
+    geojson_path = Path("c:/Users/Pavithran/AAkar/frontend/public/delhi_constituencies_abs.geojson")
     if not geojson_path.exists():
-        geojson_path = Path(__file__).parent.parent.parent / "frontend/public/delhi_constituencies_new.geojson"
+        geojson_path = Path(__file__).parent.parent.parent / "frontend/public/delhi_constituencies_abs.geojson"
 
     const_geoms = {}
     if geojson_path.exists():

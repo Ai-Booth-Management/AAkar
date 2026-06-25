@@ -3,68 +3,17 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
+import {
+  DELHI_DISTRICTS,
+  CONSTITUENCIES_OLD,
+  CONSTITUENCIES_NEW,
+  DISTRICT_CENTERS,
+  normDistrict,
+  normConstit,
+  getDistrictFromEmail,
+} from '../constants/constituencies';
 
-/* ─── District from Email (identical to MapPanel) ──────────── */
-const getDistrictFromEmail = (email) => {
-  if (!email) return null;
-  const e = email.toLowerCase();
-  if (e.includes('north_west'))  return 'North West';
-  if (e.includes('north_east'))  return 'North East';
-  if (e.includes('new_delhi'))   return 'New Delhi';
-  if (e.includes('south_west'))  return 'South West';
-  if (e.includes('south_east'))  return 'South East';
-  if (e.includes('north'))       return 'North';
-  if (e.includes('shahdara'))    return 'Shahdara';
-  if (e.includes('east'))        return 'East';
-  if (e.includes('west'))        return 'West';
-  if (e.includes('central'))     return 'Central';
-  if (e.includes('south'))       return 'South';
-  return null;
-};
-
-/* ─── Constants ────────────────────────────────────────────── */
-const DELHI_DISTRICTS = [
-  'Central', 'East', 'New Delhi', 'North', 'North East',
-  'North West', 'Shahdara', 'South', 'South East', 'South West', 'West'
-];
-
-// Display names (Title Case) — match AC_NAME in datameet geojson (may include SC suffix)
-// normConstit strips spaces/hyphens/parentheses/SC for fuzzy matching
-const CONSTITUENCIES_OLD = {
-  'Central':    ['Ballimaran', 'Burari', 'Chandni Chowk', 'Karol Bagh', 'Matia Mahal', 'Patel Nagar', 'Sadar Bazar'],
-  'East':       ['Kondli', 'Krishna Nagar', 'Laxmi Nagar', 'Patparganj', 'Trilokpuri'],
-  'New Delhi':  ['Bijwasan', 'Delhi Cantt', 'Jangpura', 'Mehrauli', 'New Delhi', 'R K Puram'],
-  'North':      ['Adarsh Nagar', 'Badli', 'Bawana', 'Model Town', 'Narela', 'Rohini', 'Timarpur'],
-  'North East': ['Ghonda', 'Karawal Nagar', 'Mustafabad'],
-  'North West': ['Kirari', 'Mangol Puri', 'Mundka', 'Rithala', 'Shalimar Bagh', 'Sultanpur Majra', 'Wazirpur'],
-  'Shahdara':   ['Babarpur', 'Gandhi Nagar', 'Gokalpur', 'Rohtas Nagar', 'Seelampur', 'Seemapuri', 'Shahdara', 'Vishwas Nagar'],
-  'South':      ['Ambedkar Nagar', 'Chhatarpur', 'Deoli', 'Malviya Nagar'],
-  'South East': ['Badarpur', 'Greater Kailash', 'Kalkaji', 'Kasturba Nagar', 'Okhla', 'Sangam Vihar', 'Tughlakabad'],
-  'South West': ['Dwarka', 'Matiala', 'Najafgarh', 'Palam', 'Uttam Nagar'],
-  'West':       ['Hari Nagar', 'Janakpuri', 'Madipur', 'Moti Nagar', 'Nangloi Jat', 'Rajinder Nagar', 'Rajouri Garden', 'Shakur Basti', 'Tilak Nagar', 'Tri Nagar', 'Vikaspuri'],
-};
-
-const CONSTITUENCIES_NEW = {
-  'Central':    ['Ballimaran', 'Chandni Chowk', 'Karol Bagh', 'Matia Mahal', 'Patel Nagar', 'Sadar Bazar'],
-  'East':       ['Gandhi Nagar', 'Kondli', 'Krishna Nagar', 'Laxmi Nagar', 'Patparganj', 'Trilokpuri'],
-  'New Delhi':  ['Delhi Cantt', 'Jangpura', 'New Delhi', 'Rajinder Nagar'],
-  'North':      ['Adarsh Nagar', 'Badli', 'Burari', 'Model Town', 'Narela', 'Timarpur'],
-  'North East': ['Ghonda', 'Gokalpur', 'Karawal Nagar', 'Mustafabad', 'Seelampur'],
-  'North West': ['Bawana', 'Kirari', 'Mangol Puri', 'Mundka', 'Nangloi Jat', 'Rithala', 'Rohini', 'Shakur Basti', 'Shalimar Bagh', 'Sultanpur Majra', 'Tri Nagar', 'Wazirpur'],
-  'Shahdara':   ['Babarpur', 'Rohtas Nagar', 'Seemapuri', 'Shahdara', 'Vishwas Nagar'],
-  'South':      ['Ambedkar Nagar', 'Chhatarpur', 'Deoli', 'Malviya Nagar', 'Mehrauli', 'R K Puram'],
-  'South East': ['Badarpur', 'Greater Kailash', 'Kalkaji', 'Kasturba Nagar', 'Okhla', 'Sangam Vihar', 'Tughlakabad'],
-  'South West': ['Bijwasan', 'Dwarka', 'Matiala', 'Najafgarh', 'Palam', 'Uttam Nagar'],
-  'West':       ['Hari Nagar', 'Janakpuri', 'Madipur', 'Moti Nagar', 'Rajouri Garden', 'Tilak Nagar', 'Vikaspuri'],
-};
-
-// Normalise district: lowercase, strip spaces AND hyphens
-const normDistrict = (s) => (s || '').toLowerCase().replace(/[\s\-]/g, '');
-// Normalise constituency: lowercase, strip spaces, hyphens, dots, parentheses+contents
-const normConstit  = (s) => (s || '').toLowerCase()
-  .replace(/\s*\(sc\)/gi, '')   // strip (SC) tag
-  .replace(/\s*\(st\)/gi, '')   // strip (ST) tag
-  .replace(/[\s\-\.]/g, '');   // strip spaces, hyphens, dots
+/* ─── Constants imported from ../constants/constituencies ──── */
 
 const pointInPolygon = (x, y, poly) => {
   let inside = false;
@@ -101,19 +50,8 @@ const isPointInGeometry = (lng, lat, geom) => {
   return false;
 };
 
-const DISTRICT_CENTERS = {
-  'Central':    [28.6517, 77.2219],
-  'East':       [28.6342, 77.3010],
-  'New Delhi':  [28.6139, 77.2090],
-  'North':      [28.7041, 77.1025],
-  'North East': [28.7000, 77.2620],
-  'North West': [28.7140, 77.0989],
-  'Shahdara':   [28.6717, 77.2880],
-  'South':      [28.5244, 77.2066],
-  'South East': [28.5623, 77.2905],
-  'South West': [28.5876, 77.0614],
-  'West':       [28.6271, 77.0947],
-};
+
+
 
 // same navy/saffron palette as MapPanel
 const navy    = '#04122e';
@@ -122,7 +60,7 @@ const saffron = '#D4A843';
 
 
 /* ─── API helpers ──────────────────────────────────────────── */
-const API = '/api';
+const API = '/api/v1';
 
 const fetchVolunteers = async (district, constituency, mode) => {
   try {
@@ -183,6 +121,19 @@ const buildCovMap = (coverageArr) => {
   return m;
 };
 
+const normUserGeo = (s) => (s || '').toLowerCase().replace(/^c-/, '').replace(/[\s\-\._]/g, '');
+
+const getDisplayDistrict = (districtId) => {
+  if (!districtId) return null;
+  return DELHI_DISTRICTS.find(d => normUserGeo(d) === normUserGeo(districtId)) || null;
+};
+
+const getDisplayConstituency = (districtName, constituencyId) => {
+  if (!districtName || !constituencyId) return '';
+  const list = [...(CONSTITUENCIES_NEW[districtName] || []), ...(CONSTITUENCIES_OLD[districtName] || [])];
+  return list.find(c => normUserGeo(c) === normUserGeo(constituencyId)) || '';
+};
+
 /* ─── Main Component ───────────────────────────────────────── */
 const CampaignPanel = () => {
   const { currentUser } = useAuth();
@@ -197,8 +148,21 @@ const CampaignPanel = () => {
   const volLayerRef      = useRef([]);
   const heatLayerRef     = useRef(null);
 
-  const dmDistrict = currentUser?.role === 'dm'
-    ? getDistrictFromEmail(currentUser.email)
+  const dmDistrict = (currentUser?.role || '').toLowerCase() === 'dm'
+    ? (currentUser?.district_id ? getDisplayDistrict(currentUser.district_id) : getDistrictFromEmail(currentUser.email))
+    : null;
+
+  const userRole = (currentUser?.role || '').toUpperCase();
+  const lockDistrict = (userRole === 'DISTRICT_ADMIN' || userRole === 'CONSTITUENCY_MGR' || userRole === 'MANDAL_MGR' || userRole === 'DM') && currentUser?.district_id
+    ? getDisplayDistrict(currentUser.district_id)
+    : null;
+
+  const lockConstituency = (userRole === 'CONSTITUENCY_MGR' || userRole === 'MANDAL_MGR') && currentUser?.constituency_id && lockDistrict
+    ? getDisplayConstituency(lockDistrict, currentUser.constituency_id)
+    : null;
+
+  const lockWard = userRole === 'MANDAL_MGR' && currentUser?.mandal_id
+    ? currentUser.mandal_id.replace(/^w-/i, '')
     : null;
 
   const [mode,               setMode]               = useState('abs'); // 'abs' only
@@ -210,6 +174,39 @@ const CampaignPanel = () => {
   const [selectedDistrict,   setSelectedDistrict]   = useState(null);
   const [selectedConstit,    setSelectedConstit]    = useState('');
   const [selectedWard,       setSelectedWard]       = useState('');
+
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!currentUser || initializedRef.current) return;
+
+    const uRole = (currentUser.role || '').toUpperCase();
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const dParam = params ? params.get('district') : null;
+    const cParam = params ? params.get('constituency') : null;
+    const wParam = params ? params.get('ward') : null;
+
+    let defaultDist = dParam || null;
+    let defaultConst = cParam || '';
+    let defaultWard = wParam || '';
+
+    if (!dParam && !cParam) {
+      if ((uRole === 'DISTRICT_ADMIN' || uRole === 'CONSTITUENCY_MGR' || uRole === 'MANDAL_MGR') && currentUser.district_id) {
+        defaultDist = getDisplayDistrict(currentUser.district_id);
+      }
+      if ((uRole === 'CONSTITUENCY_MGR' || uRole === 'MANDAL_MGR') && currentUser.constituency_id && defaultDist) {
+        defaultConst = getDisplayConstituency(defaultDist, currentUser.constituency_id);
+      }
+      if (uRole === 'MANDAL_MGR' && currentUser.mandal_id) {
+        defaultWard = currentUser.mandal_id.replace(/^w-/i, '');
+      }
+    }
+
+    if (defaultDist) setSelectedDistrict(defaultDist);
+    if (defaultConst) setSelectedConstit(defaultConst);
+    if (defaultWard) setSelectedWard(defaultWard);
+
+    initializedRef.current = true;
+  }, [currentUser]);
   const [volunteers,         setVolunteers]         = useState([]);
   const [selectedVol,        setSelectedVol]        = useState(null);
   const [coverageMap,        setCoverageMap]        = useState({});  // {district: {constit: bool}}
@@ -406,9 +403,17 @@ const CampaignPanel = () => {
     const curConst = params.get('constituency') || '';
 
     if (selectedDistrict !== curDist || selectedConstit !== curConst) {
-      const newParams = new URLSearchParams();
-      if (selectedDistrict) newParams.set('district', selectedDistrict);
-      if (selectedConstit) newParams.set('constituency', selectedConstit);
+      const newParams = new URLSearchParams(window.location.search);
+      if (selectedDistrict) {
+        newParams.set('district', selectedDistrict);
+      } else {
+        newParams.delete('district');
+      }
+      if (selectedConstit) {
+        newParams.set('constituency', selectedConstit);
+      } else {
+        newParams.delete('constituency');
+      }
       const search = newParams.toString();
       const url = search ? `?${search}` : window.location.pathname;
       window.history.pushState({ district: selectedDistrict, constituency: selectedConstit }, '', url);
@@ -429,10 +434,16 @@ const CampaignPanel = () => {
   const loadVolunteers = useCallback(async (district, constit) => {
     setLoading(true);
     const apiMode = mode === 'blended' ? 'new' : mode;
-    const dbVols = await fetchVolunteers(district, constit, apiMode);
+
+    let fetchDist = district;
+    let fetchConst = constit;
+    if (lockDistrict) fetchDist = lockDistrict;
+    if (lockConstituency) fetchConst = lockConstituency;
+
+    const dbVols = await fetchVolunteers(fetchDist, fetchConst, apiMode);
     setVolunteers(dbVols || []);
     setLoading(false);
-  }, [mode]);
+  }, [mode, lockDistrict, lockConstituency]);
 
   useEffect(() => {
     loadVolunteers(selectedDistrict, selectedConstit);
@@ -552,6 +563,7 @@ const CampaignPanel = () => {
               setPinModeActive(false);
               return;
             }
+            if (lockDistrict && lockDistrict !== dt) return;
             setSelectedDistrict(dt);
             setSelectedConstit('');
             setSelectedWard('');
@@ -631,6 +643,7 @@ const CampaignPanel = () => {
                 setPinModeActive(false);
                 return;
               }
+              if (lockConstituency && lockConstituency !== displayName) return;
               setSelectedConstit(displayName);
               setSelectedWard('');
             },
@@ -710,6 +723,7 @@ const CampaignPanel = () => {
                 setPinModeActive(false);
                 return;
               }
+              if (lockWard && lockWard !== wNo) return;
               setSelectedWard(wNo);
             },
             mouseover: (e) => {
@@ -732,7 +746,15 @@ const CampaignPanel = () => {
       map.setView([28.6139, 77.2090], 11);
     } else {
       let zoomed = false;
-      if (selectedConstit && cLayer) {
+      if (selectedWard && wLayer) {
+        wLayer.eachLayer(l => {
+          if (l.feature?.properties?.Ward_No === selectedWard) {
+            map.fitBounds(l.getBounds());
+            zoomed = true;
+          }
+        });
+      }
+      if (!zoomed && selectedConstit && cLayer) {
         cLayer.eachLayer(l => {
           const rawName = l.feature?.properties?.AC_NAME || '';
           if (normConstit(selectedConstit) === normConstit(rawName)) {
@@ -751,7 +773,7 @@ const CampaignPanel = () => {
       }
     }
 
-    // Outside click resets (DM stays locked)
+    // Outside click resets
     map.off('click');
     map.on('click', (e) => {
       if (pinModeActiveRef.current) {
@@ -763,9 +785,16 @@ const CampaignPanel = () => {
       }
       if (e.originalEvent.target.id === mapContainerRef.current.id ||
           e.originalEvent.target.tagName === 'svg') {
-        setSelectedDistrict(null);
-        setSelectedConstit('');
-        setSelectedWard('');
+        if (!lockDistrict) {
+          setSelectedDistrict(null);
+          setSelectedConstit('');
+          setSelectedWard('');
+        } else if (!lockConstituency) {
+          setSelectedConstit('');
+          setSelectedWard('');
+        } else if (!lockWard) {
+          setSelectedWard('');
+        }
       }
     });
   }, [geojsonData, constitsData, wardsData, wardToConstit, volunteers, selectedDistrict, selectedConstit, selectedWard, coverageMap, currentUser, dmDistrict, mode]);
@@ -902,6 +931,26 @@ const CampaignPanel = () => {
 
     volunteers.forEach(v => {
       if (!v.lat || !v.lng) return;
+
+      // Enforce role locks
+      if (lockDistrict && v.district !== lockDistrict) return;
+      if (lockConstituency && v.constituency !== lockConstituency) return;
+      if (lockWard && wardsData) {
+        const wardFeature = (wardsData.features || []).find(f => f.properties.Ward_No === lockWard);
+        if (wardFeature && !isPointInGeometry(v.lng, v.lat, wardFeature.geometry)) {
+          return;
+        }
+      }
+
+      // Enforce active selections
+      if (selectedDistrict && v.district !== selectedDistrict) return;
+      if (selectedConstit && v.constituency !== selectedConstit) return;
+      if (selectedWard && wardsData) {
+        const wardFeature = (wardsData.features || []).find(f => f.properties.Ward_No === selectedWard);
+        if (wardFeature && !isPointInGeometry(v.lng, v.lat, wardFeature.geometry)) {
+          return;
+        }
+      }
       
       const taskStatus = v.task_status || 'unassigned';
       const color = taskStatus === 'completed' ? '#22c55e' // green
@@ -936,7 +985,7 @@ const CampaignPanel = () => {
       marker.addTo(map);
       volLayerRef.current.push(marker);
     });
-  }, [volunteers, mode]);
+  }, [volunteers, mode, lockDistrict, lockConstituency, lockWard, selectedDistrict, selectedConstit, selectedWard, wardsData]);
 
   /* ── Heatmap Layer for Blended Mode ──────────────────────── */
   useEffect(() => {
@@ -1050,6 +1099,12 @@ const CampaignPanel = () => {
   const constitCovered = constitNames.filter(c => distCov[c]).length;
 
   const filteredVolunteersList = volunteers.filter(v => {
+    if (lockDistrict && v.district !== lockDistrict) return false;
+    if (lockConstituency && v.constituency !== lockConstituency) return false;
+    if (lockWard && wardsData) {
+      const wardFeature = (wardsData.features || []).find(f => f.properties.Ward_No === lockWard);
+      if (wardFeature && v.lat && v.lng && !isPointInGeometry(v.lng, v.lat, wardFeature.geometry)) return false;
+    }
     if (selectedDistrict && v.district !== selectedDistrict) return false;
     if (selectedConstit && v.constituency !== selectedConstit) return false;
     if (selectedWard && wardsData && wardToConstit.length) {
@@ -1096,8 +1151,14 @@ const CampaignPanel = () => {
             🗳️ Campaign Management
           </h2>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
-            {currentUser?.role === 'dm'
-              ? `DM — ${dmDistrict} District`
+            {userRole === 'DM'
+              ? `DM — ${lockDistrict || dmDistrict} District`
+              : userRole === 'DISTRICT_ADMIN'
+              ? `District Admin — ${lockDistrict} District`
+              : userRole === 'CONSTITUENCY_MGR'
+              ? `Constituency Manager — ${lockConstituency} (${lockDistrict})`
+              : userRole === 'MANDAL_MGR'
+              ? `Mandal Manager — Ward ${lockWard} (${lockConstituency})`
               : 'Real-time volunteer tracking · Constituency coverage · Delhi-wide overview'}
           </p>
         </div>
@@ -1112,7 +1173,7 @@ const CampaignPanel = () => {
               animation:simulateLive?'camp-pulse 1s infinite':undefined }} />
             {simulateLive ? 'Live ON' : 'Live OFF'}
           </button>
-          {selectedDistrict && (
+          {selectedDistrict && !lockDistrict && (
             <button onClick={() => { setSelectedDistrict(null); setSelectedConstit(''); if (mapRef.current) mapRef.current.setView([28.6139, 77.2090], 11); }}
               style={{
                 padding: '8px 16px', fontSize: '12px', fontWeight: '800', borderRadius: 4, border: 'none', cursor: 'pointer',
@@ -1314,14 +1375,14 @@ const CampaignPanel = () => {
                 const dc = coverageMap[d] || {};
                 const dcn = CONSTITUENCIES[d] || [];
                 const pct = dcn.length ? Math.round(dcn.filter(c => dc[c]).length / dcn.length * 100) : 0;
-                const isLocked = false;
+                const isLocked = lockDistrict && lockDistrict !== d;
                 const isSel = d === selectedDistrict;
                 return (
                   <button key={d} onClick={() => handleDistrictClick(d)} disabled={isLocked} style={{
                     padding: '6px 8px', borderRadius: 4, border: `1px solid ${isSel ? saffron : '#e2e8f0'}`,
                     background: isSel ? '#fef3c7' : 'white',
-                    cursor: 'pointer', textAlign: 'left',
-                    opacity: 1,
+                    cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left',
+                    opacity: isLocked ? 0.4 : 1,
                     transition: 'all 0.1s ease',
                   }}>
                     <div style={{ fontSize: 11, fontWeight: isSel ? 800 : 500, color: isSel ? '#92400e' : navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d}</div>
@@ -1344,20 +1405,26 @@ const CampaignPanel = () => {
                 Constituency Filter
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                <button onClick={() => { setSelectedConstit(''); setSelectedWard(''); }} style={{
-                  padding: '4px 10px', fontSize: 10, fontWeight: 800, borderRadius: 4, border: 'none', cursor: 'pointer',
-                  background: !selectedConstit ? navy : '#f1f5f9', color: !selectedConstit ? 'white' : '#475569',
-                }}>All</button>
-                {constitNames.map(c => (
-                  <button key={c} onClick={() => { setSelectedConstit(c); setSelectedWard(''); }} style={{
+                {!lockConstituency && (
+                  <button onClick={() => { setSelectedConstit(''); setSelectedWard(''); }} style={{
                     padding: '4px 10px', fontSize: 10, fontWeight: 800, borderRadius: 4, border: 'none', cursor: 'pointer',
-                    background: selectedConstit === c ? navy : '#f1f5f9', color: selectedConstit === c ? 'white' : '#475569',
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                    {distCov[c] && <span style={{ color: '#22c55e' }}>✓</span>}
-                    {c}
-                  </button>
-                ))}
+                    background: !selectedConstit ? navy : '#f1f5f9', color: !selectedConstit ? 'white' : '#475569',
+                  }}>All</button>
+                )}
+                {constitNames.map(c => {
+                  const isConstLocked = lockConstituency && lockConstituency !== c;
+                  if (isConstLocked) return null;
+                  return (
+                    <button key={c} onClick={() => { setSelectedConstit(c); setSelectedWard(''); }} style={{
+                      padding: '4px 10px', fontSize: 10, fontWeight: 800, borderRadius: 4, border: 'none', cursor: 'pointer',
+                      background: selectedConstit === c ? navy : '#f1f5f9', color: selectedConstit === c ? 'white' : '#475569',
+                      display: 'flex', alignItems: 'center', gap: 4,
+                    }}>
+                      {distCov[c] && <span style={{ color: '#22c55e' }}>✓</span>}
+                      {c}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1367,7 +1434,7 @@ const CampaignPanel = () => {
             <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0, padding: 16 }}>
               <h4 style={{ margin: '0 0 10px 0', color: navy, fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Wards in {selectedConstit}</span>
-                {selectedWard && (
+                {selectedWard && !lockWard && (
                   <button onClick={() => setSelectedWard('')} style={{ border: 'none', background: 'transparent', fontSize: '9px', fontWeight: '800', color: '#ef4444', cursor: 'pointer' }}>
                     [Clear Filter]
                   </button>
@@ -1377,6 +1444,8 @@ const CampaignPanel = () => {
                 {wardToConstit
                   .filter(w => normConstit(w.Constituency) === normConstit(selectedConstit))
                   .map(w => {
+                    const isWardLocked = lockWard && lockWard !== w.Ward_No;
+                    if (isWardLocked) return null;
                     const wardGeom = (wardsData?.features || []).find(f => f.properties.Ward_No === w.Ward_No)?.geometry;
                     const volsInWard = volunteers.filter(v => 
                       v.lat && v.lng && isPointInGeometry(v.lng, v.lat, wardGeom)
@@ -1385,10 +1454,13 @@ const CampaignPanel = () => {
                     return (
                       <div 
                         key={w.Ward_No}
-                        onClick={() => setSelectedWard(isSel ? '' : w.Ward_No)}
+                        onClick={() => {
+                          if (lockWard) return;
+                          setSelectedWard(isSel ? '' : w.Ward_No);
+                        }}
                         style={{
                           padding: '6px 8px', borderRadius: 4, border: `1px solid ${isSel ? saffron : '#e2e8f0'}`,
-                          background: isSel ? '#fef3c7' : 'white', cursor: 'pointer',
+                          background: isSel ? '#fef3c7' : 'white', cursor: lockWard ? 'default' : 'pointer',
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           transition: 'all 0.1s ease',
                         }}

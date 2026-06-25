@@ -4,6 +4,19 @@ import HeatmapAnalysis from './HeatmapAnalysis';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
+import dynamic from 'next/dynamic';
+
+const CampaignPanel = dynamic(() => import('../CampaignPanel'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '24px', height: '24px', border: '3px solid #e2e8f0', borderTopColor: '#0f172a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading Campaign Engine...</span>
+      </div>
+    </div>
+  )
+});
 
 export default function StateDashboard({ tab, hierarchy }) {
   const stateName = hierarchy.state || '';
@@ -12,6 +25,7 @@ export default function StateDashboard({ tab, hierarchy }) {
     case 'performance':  return <PerformanceAnalytics />;
     case 'rankings':     return <DistrictRankings />;
     case 'heatmap':      return <HeatmapAnalysis level="STATE" hierarchy={hierarchy} />;
+    case 'campaign':     return <CampaignPanel />;
     case 'ai-suggestions': return null;
     case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;
     case 'manage-users': return <ManageUsers role="STATE_ADMIN" hierarchy={hierarchy} />;
