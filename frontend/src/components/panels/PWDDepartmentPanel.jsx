@@ -15,6 +15,20 @@ import './PWDDepartmentPanel.css';
 
 const API_BASE = '/api/v1/department';
 
+const authFetch = (url, options = {}) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    ...options.headers,
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+};
+
 
 /* ═══════════════════════════════════════════
    CHART COLOR PALETTE (Secretariat theme)
@@ -162,7 +176,7 @@ export default function PWDDepartmentPanel() {
   const fetchAiSummary = async (m = selectedMonth, y = selectedYear, silent = false) => {
     if (!silent) setAiLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/ai-summary?month=${m}&year=${y}`);
+      const res = await authFetch(`${API_BASE}/ai-summary?month=${m}&year=${y}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setAiSummaryData(json);
@@ -176,7 +190,7 @@ export default function PWDDepartmentPanel() {
   const fetchAnalytics = async (m = selectedMonth, y = selectedYear, silent = false) => {
     if (!silent) setAnalyticsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/analytics?month=${m}&year=${y}`);
+      const res = await authFetch(`${API_BASE}/analytics?month=${m}&year=${y}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setAnalyticsData(json);
@@ -202,7 +216,7 @@ export default function PWDDepartmentPanel() {
       if (auditModule !== 'All') params.append('module', auditModule);
       if (auditDistrict !== 'All') params.append('district', auditDistrict);
 
-      const res = await fetch(`${API_BASE}/audit-logs?${params.toString()}`);
+      const res = await authFetch(`${API_BASE}/audit-logs?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setAuditLogs(json.logs || []);
@@ -218,7 +232,7 @@ export default function PWDDepartmentPanel() {
   const fetchActions = async (silent = false) => {
     if (!silent) setActionsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/actions`);
+      const res = await authFetch(`${API_BASE}/actions`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setActionsList(json);
@@ -238,8 +252,8 @@ export default function PWDDepartmentPanel() {
     }
     try {
       const [res, summaryRes] = await Promise.all([
-        fetch(`${API_BASE}/dashboard?month=${m}&year=${y}${previewMode ? '&preview=true' : ''}`),
-        fetch(`${API_BASE}/district-summary`)
+        authFetch(`${API_BASE}/dashboard?month=${m}&year=${y}${previewMode ? '&preview=true' : ''}`),
+        authFetch(`${API_BASE}/district-summary`)
       ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
@@ -293,7 +307,7 @@ export default function PWDDepartmentPanel() {
         district: projectDistrict,
         status: projectStatus
       });
-      const res = await fetch(`${API_BASE}/projects?${queryParams.toString()}`);
+      const res = await authFetch(`${API_BASE}/projects?${queryParams.toString()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setProjectsList(json);
@@ -307,7 +321,7 @@ export default function PWDDepartmentPanel() {
   const fetchDistrictMetrics = async (silent = false) => {
     if (!silent) setMetricsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/district-metrics?district=${projectDistrict}&month=${selectedMonth}&year=${selectedYear}`);
+      const res = await authFetch(`${API_BASE}/district-metrics?district=${projectDistrict}&month=${selectedMonth}&year=${selectedYear}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setInfraMetrics({
@@ -337,7 +351,7 @@ export default function PWDDepartmentPanel() {
   const handleSaveMetrics = async () => {
     if (projectDistrict === 'All') return;
     try {
-      const res = await fetch(`${API_BASE}/district-metrics`, {
+      const res = await authFetch(`${API_BASE}/district-metrics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -666,7 +680,7 @@ export default function PWDDepartmentPanel() {
           reporting_year: selectedYear
         };
 
-        const res = await fetch(`${API_BASE}/projects`, {
+        const res = await authFetch(`${API_BASE}/projects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -701,7 +715,7 @@ export default function PWDDepartmentPanel() {
           } : null
         };
 
-        const res = await fetch(`${API_BASE}/projects/${projectUid}`, {
+        const res = await authFetch(`${API_BASE}/projects/${projectUid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -728,7 +742,7 @@ export default function PWDDepartmentPanel() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/projects/${projectUid}`, {
+      const res = await authFetch(`${API_BASE}/projects/${projectUid}`, {
         method: 'DELETE'
       });
       if (!res.ok) {
@@ -806,7 +820,7 @@ export default function PWDDepartmentPanel() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/projects/${projectUid}/action`, {
+      const res = await authFetch(`${API_BASE}/projects/${projectUid}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -848,7 +862,7 @@ export default function PWDDepartmentPanel() {
   const submitActionStatusUpdate = async () => {
     if (!actionUpdateModal) return;
     try {
-      const res = await fetch(`${API_BASE}/actions/${actionUpdateModal.action_uid}`, {
+      const res = await authFetch(`${API_BASE}/actions/${actionUpdateModal.action_uid}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -883,7 +897,7 @@ export default function PWDDepartmentPanel() {
 
   const refreshDetailsModalProject = async (projectUid) => {
     try {
-      const res = await fetch(`${API_BASE}/projects`);
+      const res = await authFetch(`${API_BASE}/projects`);
       if (res.ok) {
         const list = await res.json();
         const updatedProj = list.find(p => p.id === projectUid);
@@ -943,7 +957,7 @@ export default function PWDDepartmentPanel() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/projects/${projectUid}/action`, {
+      const res = await authFetch(`${API_BASE}/projects/${projectUid}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1044,7 +1058,7 @@ export default function PWDDepartmentPanel() {
   const handleSaveDraft = async () => {
     const finalized = finalizeFormState(formState);
     try {
-      const res = await fetch(`${API_BASE}/draft`, {
+      const res = await authFetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalized)
@@ -1062,7 +1076,7 @@ export default function PWDDepartmentPanel() {
   const handlePreviewDashboard = async () => {
     const finalized = finalizeFormState(formState);
     try {
-      const res = await fetch(`${API_BASE}/draft`, {
+      const res = await authFetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalized)
@@ -1085,7 +1099,7 @@ export default function PWDDepartmentPanel() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/submit`, {
+      const res = await authFetch(`${API_BASE}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalized)
@@ -2126,7 +2140,7 @@ export default function PWDDepartmentPanel() {
 
   const handleViewProjectDetailsByUid = async (projectUid) => {
     try {
-      const res = await fetch(`${API_BASE}/projects?search=${projectUid}`);
+      const res = await authFetch(`${API_BASE}/projects?search=${projectUid}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const list = await res.json();
       const proj = list.find(p => p.id === projectUid);

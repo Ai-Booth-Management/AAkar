@@ -21,6 +21,7 @@ from app.domain.models.user import User  # noqa: F401 – ensure table is regist
 from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
 from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
 from app.domain.models.department import DepartmentReport, InfrastructureMetric, Project, Action, AuditLog, ProjectEvidence, ProjectApproval, ProjectDelay, ProjectProgress  # noqa: F401
+from app.domain.models.health import HealthReport, HealthMetric, HealthProject  # noqa: F401
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 
@@ -236,12 +237,140 @@ def seed_pwd_db():
             print(f"❌ Failed to seed PWD database: {e}")
 
 
+def seed_health_db():
+    """Seed Health report data from health.json into SQLite if table is empty."""
+    from sqlmodel import Session, select
+    from app.infrastructure.db.sqlite_client import engine
+    import json
+    
+    with Session(engine) as session:
+        existing_projects = session.exec(select(HealthProject)).first()
+        if existing_projects:
+            return
+            
+        existing_reports = session.exec(select(HealthReport)).all()
+        for r in existing_reports:
+            session.delete(r)
+            
+        session.commit()
+            
+        seed_file = Path("data/health.json")
+        if not seed_file.exists():
+            print(f"⚠️ Seed file {seed_file} not found. Skipping seeding.")
+            return
+            
+        print("🌱 Seeding Health reports into SQLite database...")
+        try:
+            with open(seed_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                
+            reporting_month = data.get("reporting_month", "June")
+            reporting_year = data.get("reporting_year", 2026)
+            
+            action_counter = 1
+            all_actions = session.exec(select(Action)).all()
+            uids = [
+                int(a.action_uid.split("-")[1])
+                for a in all_actions
+                if a.action_uid.startswith("ACT-") and a.action_uid.split("-")[1].isdigit()
+            ]
+            action_counter = max(uids) + 1 if uids else 1
+            
+            for dist in data.get("district_data", []):
+                district_name = dist.get("district_name", "")
+                
+                notes = dist.get("officer_notes", {})
+                remarks = notes.get("remarks", "")
+                risks = notes.get("risks", "")
+                recommendations = notes.get("recommendations", "")
+                
+                report = HealthReport(
+                    department="Department of Health & Family Welfare",
+                    district_name=district_name,
+                    reporting_month=reporting_month,
+                    reporting_year=reporting_year,
+                    status="submitted",
+                    achievements=remarks,
+                    challenges=risks,
+                    recommendations=recommendations,
+                    updated_by="health_officer@innovateindia.gov"
+                )
+                session.add(report)
+                session.commit()
+                session.refresh(report)
+                
+                infra = dist.get("infrastructure", {})
+                infra_metric = HealthMetric(
+                    report_id=report.id,
+                    hospitals_completed=infra.get("hospitals", {}).get("completed", 0.0),
+                    hospitals_ongoing=infra.get("hospitals", {}).get("ongoing", 0.0),
+                    clinics_completed=infra.get("clinics", {}).get("completed", 0.0),
+                    clinics_ongoing=infra.get("clinics", {}).get("ongoing", 0.0),
+                    icu_beds_completed=infra.get("icu_beds", {}).get("completed", 0.0),
+                    icu_beds_ongoing=infra.get("icu_beds", {}).get("ongoing", 0.0),
+                    ventilators_completed=infra.get("ventilators", {}).get("completed", 0.0),
+                    ventilators_ongoing=infra.get("ventilators", {}).get("ongoing", 0.0),
+                    medicine_stock_completed=infra.get("medicine_stock", {}).get("completed", 0.0),
+                    medicine_stock_ongoing=infra.get("medicine_stock", {}).get("ongoing", 0.0),
+                    immunization_completed=infra.get("immunization", {}).get("completed", 0.0),
+                    immunization_ongoing=infra.get("immunization", {}).get("ongoing", 0.0),
+                )
+                session.add(infra_metric)
+                
+                projects_list = dist.get("projects", {}).get("list", [])
+                for proj in projects_list:
+                    db_proj = HealthProject(
+                        report_id=report.id,
+                        project_uid=proj.get("id", ""),
+                        name=proj.get("name", ""),
+                        category=proj.get("type", "Hospitals"),
+                        contractor=proj.get("contractor", ""),
+                        executing_agency=proj.get("executing_agency", ""),
+                        budget_allocated=proj.get("budget_allocated", 0.0),
+                        budget_released=proj.get("budget_released", 0.0),
+                        budget_utilized=proj.get("budget_utilized", 0.0),
+                        progress=proj.get("progress", 0),
+                        status=proj.get("status", "On Track"),
+                        deadline=proj.get("deadline", ""),
+                        officer_in_charge=proj.get("officer", ""),
+                        remarks=proj.get("remarks", "")
+                    )
+                    session.add(db_proj)
+                    
+                    tasks_list = proj.get("tasks", [])
+                    for task in tasks_list:
+                        action_uid = f"ACT-{action_counter:03d}"
+                        action_counter += 1
+                        db_action = Action(
+                            action_uid=action_uid,
+                            title=task.get("name", "Task Description"),
+                            description=f"Action item for Health project: {proj.get('name')}",
+                            assigned_by="Health Department Headquarters",
+                            assigned_to=proj.get("officer", "Dr. Rajesh Sharma"),
+                            district=district_name,
+                            project_uid=proj.get("id", ""),
+                            priority=proj.get("priority", "Medium"),
+                            deadline=task.get("deadline", proj.get("deadline", "")),
+                            status=task.get("stage", "Assigned"),
+                            remarks="",
+                            evidence_url=""
+                        )
+                        session.add(db_action)
+                
+            session.commit()
+            print("✅ Health seed data loaded successfully into SQLite!")
+        except Exception as e:
+            print(f"❌ Failed to seed Health database: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize SQLite tables
     init_db()
     # Seed PWD report data if table is empty
     seed_pwd_db()
+    # Seed Health report data if table is empty
+    seed_health_db()
     # Ensure Neo4j indexes exist
     neo4j_client.ensure_indexes()
     # Seed initially if needed, and start watcher
@@ -271,6 +400,9 @@ app.include_router(volunteers_router, prefix="/api/v1", tags=["Volunteers"])
 app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"])
 app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"])
 app.include_router(department_router, prefix="/api/v1/department", tags=["Department"])
+
+from app.api.v1.endpoints.health import router as health_router
+app.include_router(health_router, prefix="/api/v1/health", tags=["Health"])
 
 
 @app.get("/")

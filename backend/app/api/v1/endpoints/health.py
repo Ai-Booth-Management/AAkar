@@ -1,11 +1,4 @@
-"""Department Dashboard & Data Entry API using SQLite (SQLModel) as source of truth.
-
-Endpoints:
-  GET  /dashboard           – Live dashboard data  (?preview=true → draft data)
-  GET  /admin               – Load draft / submitted data for form
-  POST /draft               – Save draft data
-  POST /submit              – Promote draft → live
-"""
+"""Health & Family Welfare Department Dashboard & Data Entry API using SQLite (SQLModel) as source of truth."""
 
 import json
 from pathlib import Path
@@ -15,13 +8,15 @@ from typing import Optional, List, Dict
 from fastapi import APIRouter, Query, HTTPException, Depends
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
+from pydantic import BaseModel
 
 from app.core.config import settings
 from app.core.security import get_current_user
 from app.domain.models.user import User
 from app.infrastructure.db.sqlite_client import get_session
-from app.domain.models.department import DepartmentReport, InfrastructureMetric, Project, Action, AuditLog, ProjectEvidence, ProjectApproval, ProjectDelay, ProjectProgress
-from app.api.v1.schemas.department_schemas import (
+from app.domain.models.health import HealthReport, HealthMetric, HealthProject
+from app.domain.models.department import Action, AuditLog, ProjectEvidence, ProjectApproval, ProjectDelay, ProjectProgress
+from app.api.v1.schemas.health_schemas import (
     DataEntrySubmitSchema,
     DraftSaveResponse,
     SubmitResponse,
@@ -36,9 +31,9 @@ from app.api.v1.schemas.department_schemas import (
 
 router = APIRouter()
 
-# ─── File Paths (Used for reading static/complaints layout metadata) ───
+# ─── File Paths ───
 DATA_DIR = Path(__file__).resolve().parents[4] / "data"
-PWD_SEED_FILE = DATA_DIR / "pwd.json"
+HEALTH_SEED_FILE = DATA_DIR / "health.json"
 
 DELHI_DISTRICTS = [
     "Central Delhi",
@@ -59,8 +54,8 @@ DELHI_DISTRICTS = [
 
 def _load_seed_json() -> dict:
     """Load the original seed json to extract static complaints/backlog fields."""
-    if PWD_SEED_FILE.exists():
-        with open(PWD_SEED_FILE, "r", encoding="utf-8") as f:
+    if HEALTH_SEED_FILE.exists():
+        with open(HEALTH_SEED_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
 
@@ -71,32 +66,26 @@ def _get_district_report_from_db(
     year: int,
     preview: bool,
     session: Session
-) -> Optional[DepartmentReport]:
-    """Retrieve the report for a district, month, and year from database.
-    If preview=True, prioritize draft status over submitted status.
-    """
+) -> Optional[HealthReport]:
+    """Retrieve the report for a district, month, and year from database."""
     if preview:
-        # Check draft first
         report = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.district_name == district_name)
-            .where(DepartmentReport.reporting_month == month)
-            .where(DepartmentReport.reporting_year == year)
-            .where(DepartmentReport.status == "draft")
+            select(HealthReport)
+            .where(HealthReport.district_name == district_name)
+            .where(HealthReport.reporting_month == month)
+            .where(HealthReport.reporting_year == year)
+            .where(HealthReport.status == "draft")
         ).first()
         if report:
             return report
 
-    # Check submitted
     return session.exec(
-        select(DepartmentReport)
-        .where(DepartmentReport.district_name == district_name)
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
-        .where(DepartmentReport.status == "submitted")
+        select(HealthReport)
+        .where(HealthReport.district_name == district_name)
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
+        .where(HealthReport.status == "submitted")
     ).first()
-
-
 
 
 def _sync_project_actions(
@@ -112,7 +101,6 @@ def _sync_project_actions(
     if tasks is None:
         return
     
-    # Query existing actions for this project
     existing_actions = session.exec(
         select(Action).where(Action.project_uid == project_uid)
     ).all()
@@ -120,12 +108,10 @@ def _sync_project_actions(
     existing_map = {act.title: act for act in existing_actions}
     incoming_names = {t.get("name") for t in tasks if t.get("name")}
     
-    # 1. Delete actions that are no longer in the incoming tasks list
     for name, act in list(existing_map.items()):
         if name not in incoming_names:
             session.delete(act)
             
-    # 2. Add or update incoming tasks
     for task in tasks:
         title = task.get("name")
         if not title:
@@ -136,13 +122,11 @@ def _sync_project_actions(
         
         act = existing_map.get(title)
         if act:
-            # Update metadata but preserve workflow status and details
             act.deadline = deadline
-            act.assigned_to = officer or "Er. Rajesh Kumar"
+            act.assigned_to = officer or "Dr. Rajesh Sharma"
             act.priority = priority or "Medium"
             session.add(act)
         else:
-            # Create new action with a unique action_uid
             all_actions = session.exec(select(Action)).all()
             uids = [
                 int(a.action_uid.split("-")[1])
@@ -155,9 +139,9 @@ def _sync_project_actions(
             db_action = Action(
                 action_uid=action_uid,
                 title=title,
-                description=f"Action item for PWD project: {project_name}",
-                assigned_by="PWD Headquarters",
-                assigned_to=officer or "Er. Rajesh Kumar",
+                description=f"Action item for Health project: {project_name}",
+                assigned_by="Health Department Headquarters",
+                assigned_to=officer or "Dr. Rajesh Sharma",
                 district=district_name,
                 project_uid=project_uid,
                 priority=priority or "Medium",
@@ -182,86 +166,81 @@ def _save_report_to_db(
     for dist in payload.district_data:
         district_name = dist.district_name
 
-        # If we are submitting, we promote/overwrite. Let's delete the corresponding
-        # draft report if it exists so we don't have dangling drafts.
         if status == "submitted":
             old_draft = session.exec(
-                select(DepartmentReport)
-                .where(DepartmentReport.district_name == district_name)
-                .where(DepartmentReport.reporting_month == reporting_month)
-                .where(DepartmentReport.reporting_year == reporting_year)
-                .where(DepartmentReport.status == "draft")
+                select(HealthReport)
+                .where(HealthReport.district_name == district_name)
+                .where(HealthReport.reporting_month == reporting_month)
+                .where(HealthReport.reporting_year == reporting_year)
+                .where(HealthReport.status == "draft")
             ).first()
             if old_draft:
                 session.delete(old_draft)
 
-        # Check if a report with target status already exists
         report = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.district_name == district_name)
-            .where(DepartmentReport.reporting_month == reporting_month)
-            .where(DepartmentReport.reporting_year == reporting_year)
-            .where(DepartmentReport.status == status)
+            select(HealthReport)
+            .where(HealthReport.district_name == district_name)
+            .where(HealthReport.reporting_month == reporting_month)
+            .where(HealthReport.reporting_year == reporting_year)
+            .where(HealthReport.status == status)
         ).first()
 
         if not report:
-            report = DepartmentReport(
+            report = HealthReport(
                 district_name=district_name,
                 reporting_month=reporting_month,
                 reporting_year=reporting_year,
                 status=status
             )
 
-        # Update core report fields
         report.achievements = dist.officer_notes.remarks
         report.challenges = dist.officer_notes.risks
         report.recommendations = dist.officer_notes.recommendations
         report.updated_at = now
-        report.updated_by = "officer@innovateindia.gov"
+        report.updated_by = "health_officer@innovateindia.gov"
 
         session.add(report)
         session.commit()
         session.refresh(report)
 
-        # Update infrastructure metrics
+        # Update health metrics
         infra = session.exec(
-            select(InfrastructureMetric)
-            .where(InfrastructureMetric.report_id == report.id)
+            select(HealthMetric)
+            .where(HealthMetric.report_id == report.id)
         ).first()
 
         if not infra:
-            infra = InfrastructureMetric(report_id=report.id)
+            infra = HealthMetric(report_id=report.id)
 
-        infra.roads_completed = dist.infrastructure.roads.completed
-        infra.roads_ongoing = dist.infrastructure.roads.ongoing
-        infra.flyovers_completed = dist.infrastructure.flyovers.completed
-        infra.flyovers_ongoing = dist.infrastructure.flyovers.ongoing
-        infra.bridges_completed = dist.infrastructure.bridges.completed
-        infra.bridges_ongoing = dist.infrastructure.bridges.ongoing
-        infra.buildings_completed = dist.infrastructure.buildings.completed
-        infra.buildings_ongoing = dist.infrastructure.buildings.ongoing
-        infra.drainage_completed = dist.infrastructure.drainage.completed
-        infra.drainage_ongoing = dist.infrastructure.drainage.ongoing
-        infra.lighting_completed = dist.infrastructure.lighting.completed
-        infra.lighting_ongoing = dist.infrastructure.lighting.ongoing
+        infra.hospitals_completed = dist.infrastructure.hospitals.completed
+        infra.hospitals_ongoing = dist.infrastructure.hospitals.ongoing
+        infra.clinics_completed = dist.infrastructure.clinics.completed
+        infra.clinics_ongoing = dist.infrastructure.clinics.ongoing
+        infra.icu_beds_completed = dist.infrastructure.icu_beds.completed
+        infra.icu_beds_ongoing = dist.infrastructure.icu_beds.ongoing
+        infra.ventilators_completed = dist.infrastructure.ventilators.completed
+        infra.ventilators_ongoing = dist.infrastructure.ventilators.ongoing
+        infra.medicine_stock_completed = dist.infrastructure.medicine_stock.completed
+        infra.medicine_stock_ongoing = dist.infrastructure.medicine_stock.ongoing
+        infra.immunization_completed = dist.infrastructure.immunization.completed
+        infra.immunization_ongoing = dist.infrastructure.immunization.ongoing
 
         session.add(infra)
 
-        # Update projects (delete existing and replace, but track changes first)
+        # Update projects
         existing_projects = session.exec(
-            select(Project)
-            .where(Project.report_id == report.id)
+            select(HealthProject)
+            .where(HealthProject.report_id == report.id)
         ).all()
         
         existing_map = {p.project_uid: p for p in existing_projects}
         incoming_uids = {p.id for p in dist.projects.list}
         
-        # Log deletions
         for uid, p in existing_map.items():
             if uid not in incoming_uids:
                 log = AuditLog(
-                    officer="officer@innovateindia.gov",
-                    department="Public Works Department (PWD)",
+                    officer="health_officer@innovateindia.gov",
+                    department="Department of Health & Family Welfare",
                     district=district_name,
                     module="Projects",
                     action_type="Project Deleted",
@@ -272,7 +251,6 @@ def _save_report_to_db(
                 )
                 session.add(log)
                 
-                # Delete actions associated with the deleted project
                 project_actions = session.exec(select(Action).where(Action.project_uid == uid)).all()
                 for pa in project_actions:
                     session.delete(pa)
@@ -280,11 +258,10 @@ def _save_report_to_db(
         for proj in dist.projects.list:
             old_p = existing_map.get(proj.id)
             if old_p:
-                # Compare fields and write AuditLog if changed
                 if old_p.progress != proj.progress:
                     log = AuditLog(
-                        officer="officer@innovateindia.gov",
-                        department="Public Works Department (PWD)",
+                        officer="health_officer@innovateindia.gov",
+                        department="Department of Health & Family Welfare",
                         district=district_name,
                         module="Projects",
                         action_type="Progress Updated",
@@ -296,8 +273,8 @@ def _save_report_to_db(
                     session.add(log)
                 if old_p.status != proj.status:
                     log = AuditLog(
-                        officer="officer@innovateindia.gov",
-                        department="Public Works Department (PWD)",
+                        officer="health_officer@innovateindia.gov",
+                        department="Department of Health & Family Welfare",
                         district=district_name,
                         module="Projects",
                         action_type="Status Changed",
@@ -308,7 +285,6 @@ def _save_report_to_db(
                     )
                     session.add(log)
                 
-                # Check for budget changes
                 budget_changed = False
                 prev_budget_str = []
                 new_budget_str = []
@@ -327,8 +303,8 @@ def _save_report_to_db(
                 
                 if budget_changed:
                     log = AuditLog(
-                        officer="officer@innovateindia.gov",
-                        department="Public Works Department (PWD)",
+                        officer="health_officer@innovateindia.gov",
+                        department="Department of Health & Family Welfare",
                         district=district_name,
                         module="Funds",
                         action_type="Budget Updated",
@@ -339,7 +315,6 @@ def _save_report_to_db(
                     )
                     session.add(log)
 
-                # Check general metadata changes
                 metadata_changed = []
                 if old_p.name != proj.name:
                     metadata_changed.append("name")
@@ -358,8 +333,8 @@ def _save_report_to_db(
 
                 if metadata_changed:
                     log = AuditLog(
-                        officer="officer@innovateindia.gov",
-                        department="Public Works Department (PWD)",
+                        officer="health_officer@innovateindia.gov",
+                        department="Department of Health & Family Welfare",
                         district=district_name,
                         module="Projects",
                         action_type="Project Updated",
@@ -370,10 +345,9 @@ def _save_report_to_db(
                     )
                     session.add(log)
             else:
-                # New project added
                 log = AuditLog(
-                    officer="officer@innovateindia.gov",
-                    department="Public Works Department (PWD)",
+                    officer="health_officer@innovateindia.gov",
+                    department="Department of Health & Family Welfare",
                     district=district_name,
                     module="Projects",
                     action_type="Project Created",
@@ -384,7 +358,6 @@ def _save_report_to_db(
                 )
                 session.add(log)
 
-        # Clear old projects and write new
         for ep in existing_projects:
             session.delete(ep)
 
@@ -394,10 +367,9 @@ def _save_report_to_db(
             evidence_timestamp = proj.evidence.timestamp if proj.evidence else None
             evidence_remarks = proj.evidence.remarks if proj.evidence else None
 
-            # Keep manual progress value when saving draft/submitting report
             calculated_progress = proj.progress
 
-            db_proj = Project(
+            db_proj = HealthProject(
                 report_id=report.id,
                 project_uid=proj.id,
                 name=proj.name,
@@ -419,7 +391,6 @@ def _save_report_to_db(
             )
             session.add(db_proj)
 
-            # Sync Actions table for this project
             _sync_project_actions(
                 project_uid=proj.id,
                 district_name=district_name,
@@ -431,11 +402,10 @@ def _save_report_to_db(
                 session=session
             )
 
-        # Log Draft Saved or Report Submitted (one per district report)
         action_type = "Draft Saved" if status == "draft" else "Report Submitted"
         log = AuditLog(
-            officer="officer@innovateindia.gov",
-            department="Public Works Department (PWD)",
+            officer="health_officer@innovateindia.gov",
+            department="Department of Health & Family Welfare",
             district=district_name,
             module="Reports",
             action_type=action_type,
@@ -459,16 +429,15 @@ def get_department_dashboard(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Compile and return the full dashboard payload from the SQLite database."""
+    """Compile and return the full health dashboard payload from the SQLite database."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
     now_iso = datetime.now(timezone.utc).isoformat() + "Z"
     seed_data = _load_seed_json()
 
-    # Base shell matching dashboard expectation
     dashboard_payload = {
-        "department": "Public Works Department (PWD)",
+        "department": "Department of Health & Family Welfare",
         "government": "Government of NCT of Delhi",
         "last_updated": now_iso,
         "kpi": {
@@ -506,7 +475,6 @@ def get_department_dashboard(
         "districts": DELHI_DISTRICTS,
     }
 
-    # Aggregate lists
     all_projects = []
     total_fund_allocated = 0
     total_fund_released = 0
@@ -514,7 +482,6 @@ def get_department_dashboard(
     district_scores = []
     district_utilization = []
 
-    # Map static complaints / backlog / monthly spending trends from seed
     all_complaints = []
     for dist in seed_data.get("district_data", []):
         dist_name = dist.get("district_name")
@@ -542,21 +509,19 @@ def get_department_dashboard(
     dashboard_payload["complaints"] = all_complaints
     dashboard_payload["fund_management"]["monthly_spending"] = seed_data.get("fund_management", {}).get("monthly_spending", [])
 
-    # Batch retrieve all reports for the given month and year to avoid N+1 query loops
     reports_in_db = session.exec(
-        select(DepartmentReport)
+        select(HealthReport)
         .options(
-            selectinload(DepartmentReport.projects),
-            selectinload(DepartmentReport.infra_metrics)
+            selectinload(HealthReport.projects),
+            selectinload(HealthReport.health_metrics)
         )
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
     ).all()
 
     draft_reports = {r.district_name: r for r in reports_in_db if r.status == "draft"}
     submitted_reports = {r.district_name: r for r in reports_in_db if r.status == "submitted"}
 
-    # Map each district to its active report (respecting preview mode)
     reports_map = {}
     all_projects_db = []
     for dist_name in DELHI_DISTRICTS:
@@ -569,7 +534,6 @@ def get_department_dashboard(
         if report:
             all_projects_db.extend(report.projects)
 
-    # Batch retrieve all Actions for the collected projects to prevent N+1 query loops
     project_uids = [p.project_uid for p in all_projects_db]
     actions_map = {}
     if project_uids:
@@ -579,15 +543,12 @@ def get_department_dashboard(
         for act in all_actions:
             actions_map.setdefault(act.project_uid, []).append(act)
 
-    # Retrieve reports for each district
     for dist_name in DELHI_DISTRICTS:
         report = reports_map.get(dist_name)
         seed_dist = next((d for d in seed_data.get("district_data", []) if d.get("district_name") == dist_name), {})
 
-        # Load projects dynamically from DB associated with this specific report
         projects_db = report.projects if report else []
 
-        # Calculate budgets from report overrides if set, otherwise from projects_db
         budget_alloc = report.funds_allocated if (report and report.funds_allocated is not None) else sum(p.budget_allocated for p in projects_db)
         budget_rel = report.funds_released if (report and report.funds_released is not None) else sum(p.budget_released for p in projects_db)
         budget_spent = report.funds_spent if (report and report.funds_spent is not None) else sum(p.budget_utilized for p in projects_db)
@@ -627,13 +588,11 @@ def get_department_dashboard(
             "pct": util_pct,
         })
 
-        # Calculate score
         total_proj = len(projects_db)
         completed_proj = len([p for p in projects_db if p.status == "Completed"])
         completed_ratio = completed_proj / total_proj if total_proj > 0 else 0.0
         
         delayed_count = len([p for p in projects_db if p.status in ("Delayed", "Critical")])
-        
         utilization_ratio = budget_spent / budget_alloc if budget_alloc > 0 else 0.0
         
         bl = seed_dist.get("administrative_backlog", {})
@@ -656,7 +615,6 @@ def get_department_dashboard(
         total_fund_released += budget_rel
         total_fund_utilized += budget_spent
 
-        # Merge administrative backlog
         bl = seed_dist.get("administrative_backlog", {})
         dashboard_payload["admin_backlog"]["pending_approvals"] += bl.get("pending_approvals", 0)
         dashboard_payload["admin_backlog"]["pending_reports"] += bl.get("pending_reports", 0)
@@ -668,7 +626,6 @@ def get_department_dashboard(
                 if agg_b["label"] == label:
                     agg_b["count"] += bucket.get("count", 0)
 
-    # Compile Final KPIs
     active_count = len([p for p in all_projects if p["status"] != "Completed"])
     delayed_count = len([p for p in all_projects if p["status"] in ("Delayed", "Critical")])
     fund_util_pct = round(total_fund_utilized / total_fund_allocated * 100) if total_fund_allocated > 0 else 0
@@ -689,7 +646,7 @@ def get_department_dashboard(
     dashboard_payload["kpi"] = {
         "active_projects": active_count,
         "delayed_projects": delayed_count,
-        "open_tasks": len([p for p in all_projects if p["status"] != "Completed"]) * 2,  # Mocked count
+        "open_tasks": len([p for p in all_projects if p["status"] != "Completed"]) * 2,
         "fund_utilization_pct": fund_util_pct,
         "admin_backlog": total_backlog,
         "department_score": avg_score,
@@ -706,40 +663,37 @@ def get_admin_draft(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Return the PWD monthly report draft or baseline state for data entry."""
+    """Return the Health monthly report draft or baseline state for data entry."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
     seed_data = _load_seed_json()
 
-    # Form expects the full PWDDataFileSchema layout
     form_data = {
         "metadata": {
             "version": "1.0",
-            "updated_by": "officer@innovateindia.gov",
+            "updated_by": "health_officer@innovateindia.gov",
             "last_updated": datetime.now(timezone.utc).isoformat() + "Z",
         },
-        "department": "Public Works Department (PWD)",
+        "department": "Department of Health & Family Welfare",
         "reporting_month": month,
         "reporting_year": year,
         "district_data": [],
     }
 
-    # Batch retrieve all reports for the given month and year to avoid N+1 query loops
     reports_in_db = session.exec(
-        select(DepartmentReport)
+        select(HealthReport)
         .options(
-            selectinload(DepartmentReport.projects),
-            selectinload(DepartmentReport.infra_metrics)
+            selectinload(HealthReport.projects),
+            selectinload(HealthReport.health_metrics)
         )
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
     ).all()
 
     draft_reports = {r.district_name: r for r in reports_in_db if r.status == "draft"}
     submitted_reports = {r.district_name: r for r in reports_in_db if r.status == "submitted"}
 
-    # Map each district to its active report (prefer draft for admin view)
     reports_map = {}
     all_projects_db = []
     for dist_name in DELHI_DISTRICTS:
@@ -748,7 +702,6 @@ def get_admin_draft(
         if report:
             all_projects_db.extend(report.projects)
 
-    # Batch retrieve Actions
     project_uids = [p.project_uid for p in all_projects_db]
     actions_map = {}
     if project_uids:
@@ -758,13 +711,11 @@ def get_admin_draft(
         for act in all_actions:
             actions_map.setdefault(act.project_uid, []).append(act)
 
-    # Fetch district data from SQLite, fall back to seed JSON if not in database
     for dist_name in DELHI_DISTRICTS:
         report = reports_map.get(dist_name)
         seed_dist = next((d for d in seed_data.get("district_data", []) if d.get("district_name") == dist_name), {})
 
         if report:
-            # Map report from DB
             projects_list = []
             for p in report.projects:
                 proj_actions = actions_map.get(p.project_uid, [])
@@ -793,14 +744,14 @@ def get_admin_draft(
                     ]
                 })
 
-            infra_db = report.infra_metrics
+            infra_db = report.health_metrics
             infra_data = {
-                "roads": {"completed": infra_db.roads_completed if infra_db else 0.0, "ongoing": infra_db.roads_ongoing if infra_db else 0.0},
-                "flyovers": {"completed": infra_db.flyovers_completed if infra_db else 0.0, "ongoing": infra_db.flyovers_ongoing if infra_db else 0.0},
-                "bridges": {"completed": infra_db.bridges_completed if infra_db else 0.0, "ongoing": infra_db.bridges_ongoing if infra_db else 0.0},
-                "buildings": {"completed": infra_db.buildings_completed if infra_db else 0.0, "ongoing": infra_db.buildings_ongoing if infra_db else 0.0},
-                "drainage": {"completed": infra_db.drainage_completed if infra_db else 0.0, "ongoing": infra_db.drainage_ongoing if infra_db else 0.0},
-                "lighting": {"completed": infra_db.lighting_completed if infra_db else 0.0, "ongoing": infra_db.lighting_ongoing if infra_db else 0.0},
+                "hospitals": {"completed": infra_db.hospitals_completed if infra_db else 0.0, "ongoing": infra_db.hospitals_ongoing if infra_db else 0.0},
+                "clinics": {"completed": infra_db.clinics_completed if infra_db else 0.0, "ongoing": infra_db.clinics_ongoing if infra_db else 0.0},
+                "icu_beds": {"completed": infra_db.icu_beds_completed if infra_db else 0.0, "ongoing": infra_db.icu_beds_ongoing if infra_db else 0.0},
+                "ventilators": {"completed": infra_db.ventilators_completed if infra_db else 0.0, "ongoing": infra_db.ventilators_ongoing if infra_db else 0.0},
+                "medicine_stock": {"completed": infra_db.medicine_stock_completed if infra_db else 0.0, "ongoing": infra_db.medicine_stock_ongoing if infra_db else 0.0},
+                "immunization": {"completed": infra_db.immunization_completed if infra_db else 0.0, "ongoing": infra_db.immunization_ongoing if infra_db else 0.0},
             }
 
             funds_allocated_val = report.funds_allocated if report.funds_allocated is not None else sum(p.budget_allocated for p in report.projects)
@@ -837,7 +788,6 @@ def get_admin_draft(
                 }
             })
         else:
-            # Use seed JSON data
             form_data["district_data"].append(seed_dist)
 
     return {"status": "ok", "source": "db", "data": form_data}
@@ -883,9 +833,7 @@ def submit_data(
         raise HTTPException(status_code=500, detail=f"Failed to submit data to database: {str(e)}")
 
 
-# ─────────────────────────────────────────────
-# Project Management CRUD & Action Endpoints
-# ─────────────────────────────────────────────
+# ─── Project Management CRUD & Action Endpoints ─────────────────────────────────────────────
 
 @router.get("/projects")
 def get_projects(
@@ -895,22 +843,19 @@ def get_projects(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve all projects with search and filters."""
+    """Retrieve all health projects with search and filters."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
-    stmt = select(Project).options(selectinload(Project.report))
+    stmt = select(HealthProject).options(selectinload(HealthProject.report))
     projects = session.exec(stmt).all()
     
-    # Filter by district
     if district and district != "All":
         projects = [p for p in projects if p.report and p.report.district_name == district]
         
-    # Filter by status
     if status and status != "All":
         projects = [p for p in projects if p.status == status]
         
-    # Search filter
     if search:
         s = search.lower()
         projects = [
@@ -918,7 +863,6 @@ def get_projects(
             if s in p.name.lower() or s in p.project_uid.lower() or (p.officer_in_charge and s in p.officer_in_charge.lower())
         ]
         
-    # Batch query evidences, approvals, delays, and progress updates to resolve N+1 queries
     project_uids = [p.project_uid for p in projects]
     evidences_map = {}
     approvals_map = {}
@@ -948,7 +892,6 @@ def get_projects(
             if not existing or prog.id > existing.id:
                 progress_map[prog.project_uid] = prog
 
-    # Convert database models to response format
     result = []
     for p in projects:
         evs = evidences_map.get(p.project_uid, [])
@@ -984,7 +927,6 @@ def get_projects(
         prog_obj = progress_map.get(p.project_uid)
         progress_updated_at = prog_obj.timestamp if prog_obj else None
 
-        # Build fallback evidence if evidence list is empty but project has fields
         if not ev_list and (p.evidence_photo_url or p.evidence_gps or p.evidence_timestamp or p.evidence_remarks):
             fallback_ev = {
                 "photo_url": p.evidence_photo_url or "",
@@ -1018,35 +960,33 @@ def get_projects(
     return result
 
 
-
 @router.post("/projects")
 def create_project(
     payload: ProjectCreateSchema,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Create a new project linked to a district report, logging to AuditTrail."""
+    """Create a new health project linked to a district report, logging to AuditTrail."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
-    # Find or create report
+    
     report = session.exec(
-        select(DepartmentReport)
-        .where(DepartmentReport.district_name == payload.district)
-        .where(DepartmentReport.reporting_month == payload.reporting_month)
-        .where(DepartmentReport.reporting_year == payload.reporting_year)
-        .where(DepartmentReport.status == "submitted")
+        select(HealthReport)
+        .where(HealthReport.district_name == payload.district)
+        .where(HealthReport.reporting_month == payload.reporting_month)
+        .where(HealthReport.reporting_year == payload.reporting_year)
+        .where(HealthReport.status == "submitted")
     ).first()
     if not report:
         report = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.district_name == payload.district)
-            .where(DepartmentReport.reporting_month == payload.reporting_month)
-            .where(DepartmentReport.reporting_year == payload.reporting_year)
-            .where(DepartmentReport.status == "draft")
+            select(HealthReport)
+            .where(HealthReport.district_name == payload.district)
+            .where(HealthReport.reporting_month == payload.reporting_month)
+            .where(HealthReport.reporting_year == payload.reporting_year)
+            .where(HealthReport.status == "draft")
         ).first()
     if not report:
-        # Create a submitted report
-        report = DepartmentReport(
+        report = HealthReport(
             district_name=payload.district,
             reporting_month=payload.reporting_month,
             reporting_year=payload.reporting_year,
@@ -1059,25 +999,23 @@ def create_project(
         session.commit()
         session.refresh(report)
 
-        # Create infrastructure metrics
-        infra = InfrastructureMetric(report_id=report.id)
+        infra = HealthMetric(report_id=report.id)
         session.add(infra)
         session.commit()
 
-    # Generate sequential project UID (PWD-XXX)
-    existing_p = session.exec(select(Project)).all()
+    existing_p = session.exec(select(HealthProject)).all()
     max_num = 0
     for p in existing_p:
-        if p.project_uid.startswith("PWD-"):
+        if p.project_uid.startswith("HLT-"):
             try:
                 num = int(p.project_uid.split("-")[1])
                 if num > max_num:
                     max_num = num
             except Exception:
                 pass
-    project_uid = f"PWD-{max_num + 1:03d}"
+    project_uid = f"HLT-{max_num + 1:03d}"
 
-    db_proj = Project(
+    db_proj = HealthProject(
         report_id=report.id,
         project_uid=project_uid,
         name=payload.name,
@@ -1095,11 +1033,10 @@ def create_project(
     )
     session.add(db_proj)
 
-    # Seed default actions for the newly created project
     default_tasks = [
-        {"name": "Initial Site Inspection & Survey", "stage": "Assigned", "deadline": payload.deadline},
-        {"name": "Civil Construction Work", "stage": "Assigned", "deadline": payload.deadline},
-        {"name": "Final Quality Control Inspection", "stage": "Assigned", "deadline": payload.deadline}
+        {"name": "Initial Infrastructure & Facility Setup", "stage": "Assigned", "deadline": payload.deadline},
+        {"name": "Medical Equipment Installation & Testing", "stage": "Assigned", "deadline": payload.deadline},
+        {"name": "Final Medical Compliance & Licensing", "stage": "Assigned", "deadline": payload.deadline}
     ]
     _sync_project_actions(
         project_uid=project_uid,
@@ -1112,10 +1049,9 @@ def create_project(
         session=session
     )
 
-    # Log to Audit Trail
     log = AuditLog(
         officer=current_user.email,
-        department="Public Works Department (PWD)",
+        department="Department of Health & Family Welfare",
         district=payload.district,
         module="Projects",
         action_type="Project Created",
@@ -1142,12 +1078,11 @@ def update_project(
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
     project = session.exec(
-        select(Project).where(Project.project_uid == project_uid)
+        select(HealthProject).where(HealthProject.project_uid == project_uid)
     ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Record changes
     changes = []
     if project.name != payload.name:
         changes.append(f"Name: {project.name} -> {payload.name}")
@@ -1200,10 +1135,9 @@ def update_project(
             changes.append(f"Evidence Remarks: {project.evidence_remarks} -> {payload.evidence.remarks}")
             project.evidence_remarks = payload.evidence.remarks
 
-    if changes or payload.evidence:  # Commit if changes list is not empty or evidence payload was sent
+    if changes or payload.evidence:
         session.add(project)
 
-        # If project is marked Completed or progress is 100%, update all actions to Completed
         if project.status == "Completed" or project.progress == 100:
             actions = session.exec(select(Action).where(Action.project_uid == project_uid)).all()
             for act in actions:
@@ -1213,10 +1147,9 @@ def update_project(
                     act.updated_at = datetime.now(timezone.utc)
                     session.add(act)
                     
-                    # Add Audit Log entry for the action status update
                     log_act = AuditLog(
                         officer=current_user.email,
-                        department="Public Works Department (PWD)",
+                        department="Department of Health & Family Welfare",
                         district=project.report.district_name,
                         module="Action Tracker",
                         action_type="Action Status Updated",
@@ -1229,7 +1162,7 @@ def update_project(
 
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=project.report.district_name,
             module="Projects",
             action_type="Project Updated",
@@ -1251,11 +1184,11 @@ def delete_project(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Delete a project, logging to AuditTrail."""
+    """Delete a health project, logging to AuditTrail."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
     project = session.exec(
-        select(Project).where(Project.project_uid == project_uid)
+        select(HealthProject).where(HealthProject.project_uid == project_uid)
     ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -1264,10 +1197,9 @@ def delete_project(
     name = project.name
     session.delete(project)
 
-    # Log to Audit Trail
     log = AuditLog(
         officer=current_user.email,
-        department="Public Works Department (PWD)",
+        department="Department of Health & Family Welfare",
         district=district,
         module="Projects",
         action_type="Project Deleted",
@@ -1289,11 +1221,11 @@ def run_project_action(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Perform action on project (Update Progress, Upload Evidence, Request Approval, Flag Delay) and log to AuditTrail."""
+    """Perform action on health project (Update Progress, Upload Evidence, Request Approval, Flag Delay) and log to AuditTrail."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
     project = session.exec(
-        select(Project).where(Project.project_uid == project_uid)
+        select(HealthProject).where(HealthProject.project_uid == project_uid)
     ).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -1308,7 +1240,6 @@ def run_project_action(
         project.progress = payload.progress
         if payload.progress == 100:
             project.status = "Completed"
-            # Auto-complete associated actions
             actions = session.exec(select(Action).where(Action.project_uid == project_uid)).all()
             for act in actions:
                 if act.status not in ("Completed", "Verified"):
@@ -1316,10 +1247,9 @@ def run_project_action(
                     act.status = "Completed"
                     act.updated_at = datetime.now(timezone.utc)
                     session.add(act)
-                    # Log action update
                     log_act = AuditLog(
                         officer=current_user.email,
-                        department="Public Works Department (PWD)",
+                        department="Department of Health & Family Welfare",
                         district=project.report.district_name,
                         module="Action Tracker",
                         action_type="Action Status Updated",
@@ -1333,7 +1263,6 @@ def run_project_action(
             project.remarks = payload.remarks
         session.add(project)
 
-        # Store progress history
         prog_record = ProjectProgress(
             project_uid=project_uid,
             progress=payload.progress,
@@ -1344,7 +1273,7 @@ def run_project_action(
 
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=project.report.district_name,
             module="Projects",
             action_type="Progress Updated",
@@ -1356,14 +1285,12 @@ def run_project_action(
         session.add(log)
 
     elif action_type == "upload_evidence":
-        # Keep project-level fields updated for backward compatibility
         project.evidence_photo_url = payload.photo_url
         project.evidence_gps = payload.gps
         project.evidence_timestamp = payload.timestamp or datetime.now(timezone.utc).isoformat()
         project.evidence_remarks = payload.remarks
         session.add(project)
 
-        # Store to ProjectEvidence table (multiple allowed)
         evidence_record = ProjectEvidence(
             project_uid=project_uid,
             photo_url=payload.photo_url or "",
@@ -1375,7 +1302,7 @@ def run_project_action(
 
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=project.report.district_name,
             module="Projects",
             action_type="Evidence Uploaded",
@@ -1388,7 +1315,7 @@ def run_project_action(
 
     elif action_type == "request_approval":
         app_status = payload.status or "Pending"
-        approver_val = payload.approver or "Department Officer"
+        approver_val = payload.approver or "Health Department Officer"
         comments_val = payload.remarks or "Officer requested project completion/milestone approval."
         ts_val = payload.timestamp or datetime.now(timezone.utc).isoformat()
 
@@ -1405,7 +1332,7 @@ def run_project_action(
 
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=project.report.district_name,
             module="Projects",
             action_type=action_type_str,
@@ -1416,9 +1343,8 @@ def run_project_action(
         )
         session.add(log)
 
-
     elif action_type == "flag_delay":
-        delay_reason = payload.reason or "Labour Shortage"
+        delay_reason = payload.reason or "Supply Shortage"
         revised_deadline = payload.revised_deadline or project.deadline
         remarks_val = payload.remarks or "Delay flagged"
         
@@ -1427,7 +1353,6 @@ def run_project_action(
             project.remarks = payload.remarks
         session.add(project)
 
-        # Store to ProjectDelay table
         delay_record = ProjectDelay(
             project_uid=project_uid,
             reason=delay_reason,
@@ -1439,7 +1364,7 @@ def run_project_action(
 
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=project.report.district_name,
             module="Projects",
             action_type="Delay Flagged",
@@ -1464,13 +1389,7 @@ def run_project_action(
     }}
 
 
-
-# ─────────────────────────────────────────────
-# Phase 3 REST API Endpoints
-# ─────────────────────────────────────────────
-
-from pydantic import BaseModel
-
+# ─── AI summary & Analytics REST Endpoints ───
 
 def _query_ollama_realtime(prompt: str) -> str:
     import requests
@@ -1490,7 +1409,6 @@ def _query_ollama_realtime(prompt: str) -> str:
         )
         if res.status_code == 200:
             text = res.json().get("response", "")
-            # Remove DeepSeek thinking block if present
             text = re.sub(r"<thought>.*?</thought>", "", text, flags=re.DOTALL).strip()
             return text
     except Exception as e:
@@ -1513,7 +1431,7 @@ def get_ai_summary(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Generate rule-based AI executive department summaries based on active SQLite records."""
+    """Generate rule-based AI executive health department summaries based on active SQLite records."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
@@ -1524,13 +1442,12 @@ def get_ai_summary(
     delayed_by_district = {}
     backlog_by_district = {}
     
-    # Batch retrieve all submitted reports for this month and year to avoid N+1 query loop
     reports_in_db = session.exec(
-        select(DepartmentReport)
-        .options(selectinload(DepartmentReport.projects))
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
-        .where(DepartmentReport.status == "submitted")
+        select(HealthReport)
+        .options(selectinload(HealthReport.projects))
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
+        .where(HealthReport.status == "submitted")
     ).all()
     reports_map = {r.district_name: r for r in reports_in_db}
 
@@ -1574,7 +1491,7 @@ def get_ai_summary(
                 "pct": (spent / alloc * 100) if alloc > 0 else 0.0
             })
             for p in p_list:
-                proj_obj = Project(
+                proj_obj = HealthProject(
                     project_uid=p.get("id"),
                     name=p.get("name"),
                     category=p.get("type"),
@@ -1592,6 +1509,7 @@ def get_ai_summary(
                 if p.get("status") in ("Delayed", "Critical"):
                     delayed_by_district[dist_name] = delayed_by_district.get(dist_name, 0) + 1
             backlog_by_district[dist_name] = backlog
+            
     total_projects = len(all_projects)
     completed_projects = len([p for p in all_projects if p.status == "Completed"])
     delayed_projects = len([p for p in all_projects if p.status == "Delayed"])
@@ -1604,10 +1522,8 @@ def get_ai_summary(
     under_utilized = [d["district"] for d in district_utilization if d["pct"] < 40.0]
     high_spending = [d["district"] for d in district_utilization if d["pct"] > 75.0]
     
-    # Delayed projects list details
     delayed_list = [p for p in all_projects if p.status in ("Delayed", "Critical")]
     
-    # Complaints trends calculation
     complaints = dash.get("complaints", [])
     total_c = len(complaints)
     open_c = len([c for c in complaints if c.get("status") != "Resolved"])
@@ -1621,7 +1537,6 @@ def get_ai_summary(
     top_cat = max(cat_counts, key=cat_counts.get) if cat_counts else "None"
     top_cat_count = cat_counts.get(top_cat, 0)
     
-    # Generate recommendations and run local LLM
     delayed_projects_text = ""
     for idx, p in enumerate(delayed_list):
         delayed_projects_text += f"- {p.name} ({getattr(p, 'district_name', 'Unknown')}): Status is '{p.status}' with {p.progress}% progress. Officer: {p.officer_in_charge}.\n"
@@ -1632,10 +1547,10 @@ def get_ai_summary(
     high_spending_str = ", ".join(high_spending) if high_spending else "None"
 
     prompt = f"""You are AAkar AI, an advanced governance AI assistant for the Government of NCT of Delhi.
-Analyze the following Public Works Department (PWD) real-time data for {month} {year} and generate a concise department summary.
+Analyze the following Health & Family Welfare Department real-time data for {month} {year} and generate a concise department summary.
 
 DATA:
-1. Projects Overview:
+1. Health Projects Overview:
 - Total Projects: {total_projects}
 - Completed: {completed_projects}
 - Delayed: {delayed_projects}
@@ -1675,17 +1590,16 @@ Generate the following four sections in your response. Each section must start w
 
     ai_response = _query_ollama_realtime(prompt)
     
-    # Defaults / Rule-based Fallbacks
-    delayed_insight = f"{len(delayed_list)} PWD projects are currently delayed or critical. Immediate oversight is required for {', '.join(set(getattr(p, 'district_name', 'Unknown') for p in delayed_list[:3]))}." if delayed_list else "All active PWD projects are on schedule."
-    complaint_insight = f"Civic complaints stand at {total_c} with {open_c} open. Surges identified in '{top_cat}' ({top_cat_count} reports)." if total_c > 0 else "No active civic complaints registered."
+    delayed_insight = f"{len(delayed_list)} health projects are currently delayed or critical. Immediate oversight is required for {', '.join(set(getattr(p, 'district_name', 'Unknown') for p in delayed_list[:3]))}." if delayed_list else "All active health projects are on schedule."
+    complaint_insight = f"Medical service grievances stand at {total_c} with {open_c} open. Surges identified in '{top_cat}' ({top_cat_count} reports)." if total_c > 0 else "No active medical grievances registered."
     fund_insight = f"Overall budget utilization is at {utilization_pct}%. Low fund deployment (<40%) in: {', '.join(under_utilized)}." if under_utilized else f"Budget deployment is optimal at {utilization_pct}% across all districts."
     
     recommendations = []
     worst_delayed_district = max(delayed_by_district, key=delayed_by_district.get) if delayed_by_district else None
     if worst_delayed_district and delayed_by_district[worst_delayed_district] > 0:
-        recommendations.append(f"Increase project monitoring and allocate emergency recovery resources in {worst_delayed_district} (due to {delayed_by_district[worst_delayed_district]} delayed/critical projects).")
+        recommendations.append(f"Increase project monitoring and allocate emergency recovery resources in {worst_delayed_district} (due to {delayed_by_district[worst_delayed_district]} delayed/critical health projects).")
     else:
-        recommendations.append("All active PWD projects are generally on track; maintain current construction pacing.")
+        recommendations.append("All active health projects are generally on track; maintain current procurement and building pacing.")
         
     worst_backlog_district = max(backlog_by_district, key=backlog_by_district.get) if backlog_by_district else None
     if worst_backlog_district and backlog_by_district[worst_backlog_district] > 10:
@@ -1697,9 +1611,8 @@ Generate the following four sections in your response. Each section must start w
         recommendations.append(f"Perform fiscal review and release additional contingent funds for high-performing districts: {', '.join(high_spending[:2])}.")
         
     if open_c > 0:
-        recommendations.append(f"Direct maintenance division to prioritize resolving open '{top_cat}' complaints (currently {top_cat_count} cases).")
+        recommendations.append(f"Direct pharmacy division to prioritize resolving open '{top_cat}' complaints (currently {top_cat_count} cases).")
 
-    # If LLM response succeeded, parse and overwrite
     if ai_response:
         import re
         pattern = r"\[\s*(DELAYED[ _-]PROJECTS?[ _-]INSIGHTS?|COMPLAINTS?[ _-]TRENDS?[ _-]INSIGHTS?|FUNDS?[ _-]ISSUES?[ _-]INSIGHTS?|FUNDING[ _-]ISSUES?[ _-]INSIGHTS?|RECOMMENDATIONS?)\s*\]"
@@ -1717,7 +1630,6 @@ Generate the following four sections in your response. Each section must start w
             elif "REC" in tag and val:
                 lines = [line.strip().lstrip("-* ").strip() for line in val.split("\n") if line.strip()]
                 for line in lines:
-                    # Strip leading numbers or list bullets
                     cleaned = re.sub(r"^\d+[\.\s\-]+", "", line).strip()
                     if cleaned:
                         parsed_recs.append(cleaned)
@@ -1769,90 +1681,84 @@ def get_analytics(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve compiled aggregated charts, PWD analytics, and district performance datasets."""
+    """Retrieve compiled aggregated charts, health analytics, and district performance datasets."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
     dash = get_department_dashboard(preview=False, month=month, year=year, session=session, current_user=current_user)
     
-    # 1. PWD Facilities / Work Sites
-    # Roads, Flyovers, Bridges, Buildings, Drainage, Lighting
-    roads_count = len([p for p in dash.get("projects", []) if p.get("category") == "Roads"])
-    flyovers_count = len([p for p in dash.get("projects", []) if p.get("category") == "Flyovers"])
-    bridges_count = len([p for p in dash.get("projects", []) if p.get("category") == "Bridges"])
-    buildings_count = len([p for p in dash.get("projects", []) if p.get("category") == "Buildings"])
-    drainage_count = len([p for p in dash.get("projects", []) if p.get("category") == "Drainage"])
-    lighting_count = len([p for p in dash.get("projects", []) if p.get("category") == "Lighting"])
+    hospitals_count = len([p for p in dash.get("projects", []) if p.get("category") == "Hospitals"])
+    phc_count = len([p for p in dash.get("projects", []) if p.get("category") == "Primary Health Centers"])
+    icu_count = len([p for p in dash.get("projects", []) if p.get("category") == "ICU Units"])
+    maternity_count = len([p for p in dash.get("projects", []) if p.get("category") == "Maternity Centers"])
+    diag_count = len([p for p in dash.get("projects", []) if p.get("category") == "Diagnostics Centers"])
+    procurement_count = len([p for p in dash.get("projects", []) if p.get("category") == "Ambulance Procurement"])
+    specialty_count = len([p for p in dash.get("projects", []) if p.get("category") == "Specialty Clinics"])
     
-    # 2. Officer/Staff Availability
     staff_availability = {
-        "engineers_on_duty": 42,
-        "engineers_total": 45,
-        "inspectors_on_duty": 88,
-        "inspectors_total": 95,
-        "contractors_active": 24,
-        "contractors_total": 26,
-        "overall_rate": 93.4
+        "doctors_on_duty": 154,
+        "doctors_total": 160,
+        "nurses_on_duty": 340,
+        "nurses_total": 355,
+        "paramedical_active": 112,
+        "paramedical_total": 118,
+        "overall_rate": 96.2
     }
     
-    # 3. Material Stock Level (%)
     material_stock = [
-        {"item": "Asphalt / Bitumen", "stock": 82, "status": "Good", "unit": "metric tons"},
-        {"item": "Portland Cement", "stock": 18, "status": "Critical", "unit": "bags"},
-        {"item": "Reinforced Steel Bars", "stock": 45, "status": "Moderate", "unit": "metric tons"},
-        {"item": "Drainage Pipes (HPDE)", "stock": 64, "status": "Good", "unit": "meters"},
-        {"item": "LED Streetlight Luminaires", "stock": 35, "status": "Moderate", "unit": "units"},
+        {"item": "Essential Antibiotics", "stock": 85, "status": "Good", "unit": "vials"},
+        {"item": "Oxygen Cylinders", "stock": 15, "status": "Critical", "unit": "cylinders"},
+        {"item": "Surgical Kits", "stock": 40, "status": "Moderate", "unit": "kits"},
+        {"item": "PPE Kits", "stock": 68, "status": "Good", "unit": "packs"},
+        {"item": "Vaccine Vials (Universal)", "stock": 92, "status": "Good", "unit": "doses"},
     ]
     
-    # 4. Machinery & Fleet Availability
     machinery_availability = [
-        {"type": "Road Rollers", "operational": 18, "maintenance": 2, "total": 20},
-        {"type": "Excavators", "operational": 14, "maintenance": 1, "total": 15},
-        {"type": "Asphalt Pavers", "operational": 8, "maintenance": 2, "total": 10},
-        {"type": "Dumper Trucks", "operational": 29, "maintenance": 3, "total": 32},
-        {"type": "Mobile Cranes", "operational": 6, "maintenance": 0, "total": 6},
+        {"type": "Ambulances", "operational": 24, "maintenance": 2, "total": 26},
+        {"type": "Ventilators", "operational": 45, "maintenance": 3, "total": 48},
+        {"type": "MRI Scanners", "operational": 12, "maintenance": 1, "total": 13},
+        {"type": "Ultrasound Machines", "operational": 38, "maintenance": 2, "total": 40},
+        {"type": "Defibrillators", "operational": 55, "maintenance": 5, "total": 60},
     ]
 
     seed_data = _load_seed_json()
     
-    # Get from DB reports (eager load infra_metrics to avoid N+1 query loop)
-    reports = session.exec(select(DepartmentReport).options(selectinload(DepartmentReport.infra_metrics)).where(DepartmentReport.status == "submitted")).all()
+    reports = session.exec(select(HealthReport).options(selectinload(HealthReport.health_metrics)).where(HealthReport.status == "submitted")).all()
     if not reports:
-        # Fall back to seed data
         infra_list = [d.get("infrastructure", {}) for d in seed_data.get("district_data", [])]
-        roads_c = sum(i.get("roads", {}).get("completed", 0.0) for i in infra_list)
-        roads_o = sum(i.get("roads", {}).get("ongoing", 0.0) for i in infra_list)
-        flyovers_c = sum(i.get("flyovers", {}).get("completed", 0.0) for i in infra_list)
-        flyovers_o = sum(i.get("flyovers", {}).get("ongoing", 0.0) for i in infra_list)
-        bridges_c = sum(i.get("bridges", {}).get("completed", 0.0) for i in infra_list)
-        bridges_o = sum(i.get("bridges", {}).get("ongoing", 0.0) for i in infra_list)
-        buildings_c = sum(i.get("buildings", {}).get("completed", 0.0) for i in infra_list)
-        buildings_o = sum(i.get("buildings", {}).get("ongoing", 0.0) for i in infra_list)
-        drainage_c = sum(i.get("drainage", {}).get("completed", 0.0) for i in infra_list)
-        drainage_o = sum(i.get("drainage", {}).get("ongoing", 0.0) for i in infra_list)
-        lighting_c = sum(i.get("lighting", {}).get("completed", 0.0) for i in infra_list)
-        lighting_o = sum(i.get("lighting", {}).get("ongoing", 0.0) for i in infra_list)
+        hosp_c = sum(i.get("hospitals", {}).get("completed", 0.0) for i in infra_list)
+        hosp_o = sum(i.get("hospitals", {}).get("ongoing", 0.0) for i in infra_list)
+        clinics_c = sum(i.get("clinics", {}).get("completed", 0.0) for i in infra_list)
+        clinics_o = sum(i.get("clinics", {}).get("ongoing", 0.0) for i in infra_list)
+        beds_c = sum(i.get("icu_beds", {}).get("completed", 0.0) for i in infra_list)
+        beds_o = sum(i.get("icu_beds", {}).get("ongoing", 0.0) for i in infra_list)
+        vents_c = sum(i.get("ventilators", {}).get("completed", 0.0) for i in infra_list)
+        vents_o = sum(i.get("ventilators", {}).get("ongoing", 0.0) for i in infra_list)
+        med_c = sum(i.get("medicine_stock", {}).get("completed", 0.0) for i in infra_list) / len(infra_list) if infra_list else 0.0
+        med_o = 0.0
+        imm_c = sum(i.get("immunization", {}).get("completed", 0.0) for i in infra_list) / len(infra_list) if infra_list else 0.0
+        imm_o = 0.0
     else:
-        roads_c = sum(r.infra_metrics.roads_completed for r in reports if r.infra_metrics)
-        roads_o = sum(r.infra_metrics.roads_ongoing for r in reports if r.infra_metrics)
-        flyovers_c = sum(r.infra_metrics.flyovers_completed for r in reports if r.infra_metrics)
-        flyovers_o = sum(r.infra_metrics.flyovers_ongoing for r in reports if r.infra_metrics)
-        bridges_c = sum(r.infra_metrics.bridges_completed for r in reports if r.infra_metrics)
-        bridges_o = sum(r.infra_metrics.bridges_ongoing for r in reports if r.infra_metrics)
-        buildings_c = sum(r.infra_metrics.buildings_completed for r in reports if r.infra_metrics)
-        buildings_o = sum(r.infra_metrics.buildings_ongoing for r in reports if r.infra_metrics)
-        drainage_c = sum(r.infra_metrics.drainage_completed for r in reports if r.infra_metrics)
-        drainage_o = sum(r.infra_metrics.drainage_ongoing for r in reports if r.infra_metrics)
-        lighting_c = sum(r.infra_metrics.lighting_completed for r in reports if r.infra_metrics)
-        lighting_o = sum(r.infra_metrics.lighting_ongoing for r in reports if r.infra_metrics)
+        hosp_c = sum(r.health_metrics.hospitals_completed for r in reports if r.health_metrics)
+        hosp_o = sum(r.health_metrics.hospitals_ongoing for r in reports if r.health_metrics)
+        clinics_c = sum(r.health_metrics.clinics_completed for r in reports if r.health_metrics)
+        clinics_o = sum(r.health_metrics.clinics_ongoing for r in reports if r.health_metrics)
+        beds_c = sum(r.health_metrics.icu_beds_completed for r in reports if r.health_metrics)
+        beds_o = sum(r.health_metrics.icu_beds_ongoing for r in reports if r.health_metrics)
+        vents_c = sum(r.health_metrics.ventilators_completed for r in reports if r.health_metrics)
+        vents_o = sum(r.health_metrics.ventilators_ongoing for r in reports if r.health_metrics)
+        med_c = sum(r.health_metrics.medicine_stock_completed for r in reports if r.health_metrics) / len(reports)
+        med_o = sum(r.health_metrics.medicine_stock_ongoing for r in reports if r.health_metrics) / len(reports)
+        imm_c = sum(r.health_metrics.immunization_completed for r in reports if r.health_metrics) / len(reports)
+        imm_o = sum(r.health_metrics.immunization_ongoing for r in reports if r.health_metrics) / len(reports)
 
     infra_progress = [
-        {"category": "Roads (km)", "completed": roads_c, "ongoing": roads_o},
-        {"category": "Flyovers (no)", "completed": flyovers_c, "ongoing": flyovers_o},
-        {"category": "Bridges (no)", "completed": bridges_c, "ongoing": bridges_o},
-        {"category": "Buildings (no)", "completed": buildings_c, "ongoing": buildings_o},
-        {"category": "Drainage (km)", "completed": drainage_c, "ongoing": drainage_o},
-        {"category": "Lighting (pts)", "completed": lighting_c, "ongoing": lighting_o},
+        {"category": "Hospitals (no)", "completed": hosp_c, "ongoing": hosp_o},
+        {"category": "Clinics (no)", "completed": clinics_c, "ongoing": clinics_o},
+        {"category": "ICU Beds (no)", "completed": beds_c, "ongoing": beds_o},
+        {"category": "Ventilators (no)", "completed": vents_c, "ongoing": vents_o},
+        {"category": "Medicine Stock (%)", "completed": round(med_c, 1), "ongoing": round(med_o, 1)},
+        {"category": "Immunization (%)", "completed": round(imm_c, 1), "ongoing": round(imm_o, 1)},
     ]
 
     return {
@@ -1860,23 +1766,23 @@ def get_analytics(
         "budget_utilization": dash["fund_management"]["district_utilization"],
         "district_ranking": dash["district_scores"],
         "facilities": [
-            {"category": "Roads", "count": roads_count if roads_count > 0 else 12, "metric": "km maintained"},
-            {"category": "Flyovers", "count": flyovers_count if flyovers_count > 0 else 5, "metric": "active"},
-            {"category": "Bridges", "count": bridges_count if bridges_count > 0 else 3, "metric": "active"},
-            {"category": "Buildings", "count": buildings_count if buildings_count > 0 else 8, "metric": "public assets"},
-            {"category": "Drainage", "count": drainage_count if drainage_count > 0 else 14, "metric": "km network"},
-            {"category": "Lighting", "count": lighting_count if lighting_count > 0 else 20, "metric": "points"},
+            {"category": "Hospitals", "count": hospitals_count if hospitals_count > 0 else 6, "metric": "assets"},
+            {"category": "Clinics", "count": phc_count + specialty_count if (phc_count + specialty_count) > 0 else 18, "metric": "active"},
+            {"category": "ICU Units", "count": icu_count if icu_count > 0 else 8, "metric": "equipped"},
+            {"category": "Maternity", "count": maternity_count if maternity_count > 0 else 10, "metric": "centers"},
+            {"category": "Diagnostics", "count": diag_count if diag_count > 0 else 12, "metric": "labs"},
+            {"category": "Ambulances", "count": procurement_count if procurement_count > 0 else 24, "metric": "procured"},
         ],
         "staff_availability": staff_availability,
         "material_stock": material_stock,
         "machinery_availability": machinery_availability,
         "monthly_completion": [
-            {"month": "Jan", "completed": 2},
-            {"month": "Feb", "completed": 4},
-            {"month": "Mar", "completed": 6},
-            {"month": "Apr", "completed": 8},
-            {"month": "May", "completed": 10},
-            {"month": "Jun", "completed": 12},
+            {"month": "Jan", "completed": 3},
+            {"month": "Feb", "completed": 5},
+            {"month": "Mar", "completed": 4},
+            {"month": "Apr", "completed": 7},
+            {"month": "May", "completed": 9},
+            {"month": "Jun", "completed": 11},
         ],
         "delayed_projects": [
             {"district": d["district"], "delayed": len([p for p in dash["projects"] if p["district"] == d["district"] and p["status"] in ("Delayed", "Critical")])}
@@ -1895,18 +1801,18 @@ class DistrictMetricsUpdatePayload(BaseModel):
     funds_released: float
     funds_spent: float
     
-    roads_completed: float
-    roads_ongoing: float
-    flyovers_completed: float
-    flyovers_ongoing: float
-    bridges_completed: float
-    bridges_ongoing: float
-    buildings_completed: float
-    buildings_ongoing: float
-    drainage_completed: float
-    drainage_ongoing: float
-    lighting_completed: float
-    lighting_ongoing: float
+    hospitals_completed: float
+    hospitals_ongoing: float
+    clinics_completed: float
+    clinics_ongoing: float
+    icu_beds_completed: float
+    icu_beds_ongoing: float
+    ventilators_completed: float
+    ventilators_ongoing: float
+    medicine_stock_completed: float
+    medicine_stock_ongoing: float
+    immunization_completed: float
+    immunization_ongoing: float
 
 
 @router.get("/district-metrics")
@@ -1917,42 +1823,41 @@ def get_district_metrics(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve overridden or dynamic infrastructure metrics and fund management budgets for a district."""
+    """Retrieve dynamic health infrastructure metrics and fund management budgets for a district."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
-    # If district is "All", aggregate values of all districts
     if district == "All":
         total_allocated = 0.0
         total_released = 0.0
         total_spent = 0.0
         
-        roads_c = 0.0
-        roads_o = 0.0
-        flyovers_c = 0.0
-        flyovers_o = 0.0
-        bridges_c = 0.0
-        bridges_o = 0.0
-        buildings_c = 0.0
-        buildings_o = 0.0
-        drainage_c = 0.0
-        drainage_o = 0.0
-        lighting_c = 0.0
-        lighting_o = 0.0
+        hosp_c = 0.0
+        hosp_o = 0.0
+        clinics_c = 0.0
+        clinics_o = 0.0
+        beds_c = 0.0
+        beds_o = 0.0
+        vents_c = 0.0
+        vents_o = 0.0
+        med_c = 0.0
+        med_o = 0.0
+        imm_c = 0.0
+        imm_o = 0.0
         
-        # Batch query reports with projects and infra_metrics to avoid N+1 query loop
         reports_in_db = session.exec(
-            select(DepartmentReport)
+            select(HealthReport)
             .options(
-                selectinload(DepartmentReport.projects),
-                selectinload(DepartmentReport.infra_metrics)
+                selectinload(HealthReport.projects),
+                selectinload(HealthReport.health_metrics)
             )
-            .where(DepartmentReport.reporting_month == month)
-            .where(DepartmentReport.reporting_year == year)
+            .where(HealthReport.reporting_month == month)
+            .where(HealthReport.reporting_year == year)
         ).all()
         draft_reports = {r.district_name: r for r in reports_in_db if r.status == "draft"}
         submitted_reports = {r.district_name: r for r in reports_in_db if r.status == "submitted"}
 
+        count_reports = 0
         for d_name in DELHI_DISTRICTS:
             report = submitted_reports.get(d_name) or draft_reports.get(d_name)
             projects_db = report.projects if report else []
@@ -1960,93 +1865,85 @@ def get_district_metrics(
             funds_released = report.funds_released if (report and report.funds_released is not None) else sum(p.budget_released for p in projects_db)
             funds_spent = report.funds_spent if (report and report.funds_spent is not None) else sum(p.budget_utilized for p in projects_db)
             
-            infra = report.infra_metrics if report else None
+            infra = report.health_metrics if report else None
             
             total_allocated += funds_allocated
             total_released += funds_released
             total_spent += funds_spent
             
-            roads_c += infra.roads_completed if infra else 0.0
-            roads_o += infra.roads_ongoing if infra else 0.0
-            flyovers_c += infra.flyovers_completed if infra else 0.0
-            flyovers_o += infra.flyovers_ongoing if infra else 0.0
-            bridges_c += infra.bridges_completed if infra else 0.0
-            bridges_o += infra.bridges_ongoing if infra else 0.0
-            buildings_c += infra.buildings_completed if infra else 0.0
-            buildings_o += infra.buildings_ongoing if infra else 0.0
-            drainage_c += infra.drainage_completed if infra else 0.0
-            drainage_o += infra.drainage_ongoing if infra else 0.0
-            lighting_c += infra.lighting_completed if infra else 0.0
-            lighting_o += infra.lighting_ongoing if infra else 0.0
+            if report:
+                count_reports += 1
+            hosp_c += infra.hospitals_completed if infra else 0.0
+            hosp_o += infra.hospitals_ongoing if infra else 0.0
+            clinics_c += infra.clinics_completed if infra else 0.0
+            clinics_o += infra.clinics_ongoing if infra else 0.0
+            beds_c += infra.icu_beds_completed if infra else 0.0
+            beds_o += infra.icu_beds_ongoing if infra else 0.0
+            vents_c += infra.ventilators_completed if infra else 0.0
+            vents_o += infra.ventilators_ongoing if infra else 0.0
+            med_c += infra.medicine_stock_completed if infra else 0.0
+            med_o += infra.medicine_stock_ongoing if infra else 0.0
+            imm_c += infra.immunization_completed if infra else 0.0
+            imm_o += infra.immunization_ongoing if infra else 0.0
             
+        div = count_reports if count_reports > 0 else len(DELHI_DISTRICTS)
         return {
             "district": "All",
             "funds_allocated": total_allocated,
             "funds_released": total_released,
             "funds_spent": total_spent,
             "funds_remaining": total_released - total_spent,
-            "roads_completed": roads_c,
-            "roads_ongoing": roads_o,
-            "flyovers_completed": flyovers_c,
-            "flyovers_ongoing": flyovers_o,
-            "bridges_completed": bridges_c,
-            "bridges_ongoing": bridges_o,
-            "buildings_completed": buildings_c,
-            "buildings_ongoing": buildings_o,
-            "drainage_completed": drainage_c,
-            "drainage_ongoing": drainage_o,
-            "lighting_completed": lighting_c,
-            "lighting_ongoing": lighting_o,
+            "hospitals_completed": hosp_c,
+            "hospitals_ongoing": hosp_o,
+            "clinics_completed": clinics_c,
+            "clinics_ongoing": clinics_o,
+            "icu_beds_completed": beds_c,
+            "icu_beds_ongoing": beds_o,
+            "ventilators_completed": vents_c,
+            "ventilators_ongoing": vents_o,
+            "medicine_stock_completed": med_c / div,
+            "medicine_stock_ongoing": med_o / div,
+            "immunization_completed": imm_c / div,
+            "immunization_ongoing": imm_o / div,
         }
     else:
         return _get_single_district_metrics(district, month, year, session)
 
 
 def _get_single_district_metrics(district: str, month: str, year: int, session: Session):
-    # Find report
     report = session.exec(
-        select(DepartmentReport)
-        .where(DepartmentReport.district_name == district)
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
-        .where(DepartmentReport.status == "submitted")
+        select(HealthReport)
+        .where(HealthReport.district_name == district)
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
+        .where(HealthReport.status == "submitted")
     ).first()
     if not report:
         report = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.district_name == district)
-            .where(DepartmentReport.reporting_month == month)
-            .where(DepartmentReport.reporting_year == year)
-            .where(DepartmentReport.status == "draft")
+            select(HealthReport)
+            .where(HealthReport.district_name == district)
+            .where(HealthReport.reporting_month == month)
+            .where(HealthReport.reporting_year == year)
+            .where(HealthReport.status == "draft")
         ).first()
 
     projects_db = report.projects if report else []
     
-    # Funds calculation
     funds_allocated = report.funds_allocated if (report and report.funds_allocated is not None) else sum(p.budget_allocated for p in projects_db)
     funds_released = report.funds_released if (report and report.funds_released is not None) else sum(p.budget_released for p in projects_db)
     funds_spent = report.funds_spent if (report and report.funds_spent is not None) else sum(p.budget_utilized for p in projects_db)
     
-    # Infrastructure
-    infra = report.infra_metrics if report else None
+    infra = report.health_metrics if report else None
     
     def get_infra_metrics(category):
-        type_match = lambda p: p.category == category
-        if category == "Buildings":
-            type_match = lambda p: p.category in ("Buildings", "Government Buildings")
-        elif category == "Lighting":
-            type_match = lambda p: p.category in ("Lighting", "Street Lighting")
-            
-        completed = len([p for p in projects_db if type_match(p) and p.status == "Completed"])
-        ongoing = len([p for p in projects_db if type_match(p) and p.status != "Completed"])
+        completed = len([p for p in projects_db if p.category == category and p.status == "Completed"])
+        ongoing = len([p for p in projects_db if p.category == category and p.status != "Completed"])
         return completed, ongoing
 
-    roads_c, roads_o = get_infra_metrics("Roads")
-    flyovers_c, flyovers_o = get_infra_metrics("Flyovers")
-    bridges_c, bridges_o = get_infra_metrics("Bridges")
-    buildings_c, buildings_o = get_infra_metrics("Buildings")
-    drainage_c, drainage_o = get_infra_metrics("Drainage")
-    lighting_c, lighting_o = get_infra_metrics("Lighting")
+    hosp_c, hosp_o = get_infra_metrics("Hospitals")
+    clinics_c, clinics_o = get_infra_metrics("Primary Health Centers")
+    beds_c, beds_o = get_infra_metrics("ICU Units")
+    vents_c, vents_o = get_infra_metrics("Specialty Clinics")
     
     return {
         "district": district,
@@ -2055,23 +1952,23 @@ def _get_single_district_metrics(district: str, month: str, year: int, session: 
         "funds_spent": funds_spent,
         "funds_remaining": funds_released - funds_spent,
         
-        "roads_completed": infra.roads_completed if (infra and infra.roads_completed is not None) else roads_c,
-        "roads_ongoing": infra.roads_ongoing if (infra and infra.roads_ongoing is not None) else roads_o,
+        "hospitals_completed": infra.hospitals_completed if (infra and infra.hospitals_completed is not None) else hosp_c,
+        "hospitals_ongoing": infra.hospitals_ongoing if (infra and infra.hospitals_ongoing is not None) else hosp_o,
         
-        "flyovers_completed": infra.flyovers_completed if (infra and infra.flyovers_completed is not None) else flyovers_c,
-        "flyovers_ongoing": infra.flyovers_ongoing if (infra and infra.flyovers_ongoing is not None) else flyovers_o,
+        "clinics_completed": infra.clinics_completed if (infra and infra.clinics_completed is not None) else clinics_c,
+        "clinics_ongoing": infra.clinics_ongoing if (infra and infra.clinics_ongoing is not None) else clinics_o,
         
-        "bridges_completed": infra.bridges_completed if (infra and infra.bridges_completed is not None) else bridges_c,
-        "bridges_ongoing": infra.bridges_ongoing if (infra and infra.bridges_ongoing is not None) else bridges_o,
+        "icu_beds_completed": infra.icu_beds_completed if (infra and infra.icu_beds_completed is not None) else beds_c,
+        "icu_beds_ongoing": infra.icu_beds_ongoing if (infra and infra.icu_beds_ongoing is not None) else beds_o,
         
-        "buildings_completed": infra.buildings_completed if (infra and infra.buildings_completed is not None) else buildings_c,
-        "buildings_ongoing": infra.buildings_ongoing if (infra and infra.buildings_ongoing is not None) else buildings_o,
+        "ventilators_completed": infra.ventilators_completed if (infra and infra.ventilators_completed is not None) else vents_c,
+        "ventilators_ongoing": infra.ventilators_ongoing if (infra and infra.ventilators_ongoing is not None) else vents_o,
         
-        "drainage_completed": infra.drainage_completed if (infra and infra.drainage_completed is not None) else drainage_c,
-        "drainage_ongoing": infra.drainage_ongoing if (infra and infra.drainage_ongoing is not None) else drainage_o,
+        "medicine_stock_completed": infra.medicine_stock_completed if (infra and infra.medicine_stock_completed is not None) else 80.0,
+        "medicine_stock_ongoing": infra.medicine_stock_ongoing if (infra and infra.medicine_stock_ongoing is not None) else 0.0,
         
-        "lighting_completed": infra.lighting_completed if (infra and infra.lighting_completed is not None) else lighting_c,
-        "lighting_ongoing": infra.lighting_ongoing if (infra and infra.lighting_ongoing is not None) else lighting_o,
+        "immunization_completed": infra.immunization_completed if (infra and infra.immunization_completed is not None) else 85.0,
+        "immunization_ongoing": infra.immunization_ongoing if (infra and infra.immunization_ongoing is not None) else 0.0,
     }
 
 
@@ -2081,32 +1978,31 @@ def update_district_metrics(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Save manually updated infrastructure metrics and fund management override values to the database, logging to AuditTrail."""
+    """Save manually updated health metrics and fund management override values to the database, logging to AuditTrail."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
     district = payload.district
     month = payload.month
     year = payload.year
     
-    # Find or create report
     report = session.exec(
-        select(DepartmentReport)
-        .where(DepartmentReport.district_name == district)
-        .where(DepartmentReport.reporting_month == month)
-        .where(DepartmentReport.reporting_year == year)
-        .where(DepartmentReport.status == "submitted")
+        select(HealthReport)
+        .where(HealthReport.district_name == district)
+        .where(HealthReport.reporting_month == month)
+        .where(HealthReport.reporting_year == year)
+        .where(HealthReport.status == "submitted")
     ).first()
     if not report:
         report = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.district_name == district)
-            .where(DepartmentReport.reporting_month == month)
-            .where(DepartmentReport.reporting_year == year)
-            .where(DepartmentReport.status == "draft")
+            select(HealthReport)
+            .where(HealthReport.district_name == district)
+            .where(HealthReport.reporting_month == month)
+            .where(HealthReport.reporting_year == year)
+            .where(HealthReport.status == "draft")
         ).first()
         
     if not report:
-        report = DepartmentReport(
+        report = HealthReport(
             district_name=district,
             reporting_month=month,
             reporting_year=year,
@@ -2119,7 +2015,6 @@ def update_district_metrics(
         session.commit()
         session.refresh(report)
 
-    # Track changes
     changes = []
     
     if report.funds_allocated != payload.funds_allocated:
@@ -2132,9 +2027,9 @@ def update_district_metrics(
         changes.append(f"Spent Funds: {report.funds_spent} -> {payload.funds_spent}")
         report.funds_spent = payload.funds_spent
         
-    infra = report.infra_metrics
+    infra = report.health_metrics
     if not infra:
-        infra = InfrastructureMetric(report_id=report.id)
+        infra = HealthMetric(report_id=report.id)
         session.add(infra)
         session.commit()
         session.refresh(infra)
@@ -2145,18 +2040,18 @@ def update_district_metrics(
             changes.append(f"{field_name.replace('_', ' ').title()}: {old_val} -> {new_val}")
             setattr(infra, field_name, new_val)
             
-    check_and_update("roads_completed", payload.roads_completed)
-    check_and_update("roads_ongoing", payload.roads_ongoing)
-    check_and_update("flyovers_completed", payload.flyovers_completed)
-    check_and_update("flyovers_ongoing", payload.flyovers_ongoing)
-    check_and_update("bridges_completed", payload.bridges_completed)
-    check_and_update("bridges_ongoing", payload.bridges_ongoing)
-    check_and_update("buildings_completed", payload.buildings_completed)
-    check_and_update("buildings_ongoing", payload.buildings_ongoing)
-    check_and_update("drainage_completed", payload.drainage_completed)
-    check_and_update("drainage_ongoing", payload.drainage_ongoing)
-    check_and_update("lighting_completed", payload.lighting_completed)
-    check_and_update("lighting_ongoing", payload.lighting_ongoing)
+    check_and_update("hospitals_completed", payload.hospitals_completed)
+    check_and_update("hospitals_ongoing", payload.hospitals_ongoing)
+    check_and_update("clinics_completed", payload.clinics_completed)
+    check_and_update("clinics_ongoing", payload.clinics_ongoing)
+    check_and_update("icu_beds_completed", payload.icu_beds_completed)
+    check_and_update("icu_beds_ongoing", payload.icu_beds_ongoing)
+    check_and_update("ventilators_completed", payload.ventilators_completed)
+    check_and_update("ventilators_ongoing", payload.ventilators_ongoing)
+    check_and_update("medicine_stock_completed", payload.medicine_stock_completed)
+    check_and_update("medicine_stock_ongoing", payload.medicine_stock_ongoing)
+    check_and_update("immunization_completed", payload.immunization_completed)
+    check_and_update("immunization_ongoing", payload.immunization_ongoing)
     
     report.updated_at = datetime.now(timezone.utc)
     session.add(report)
@@ -2165,7 +2060,7 @@ def update_district_metrics(
     if changes:
         log = AuditLog(
             officer=current_user.email,
-            department="Public Works Department (PWD)",
+            department="Department of Health & Family Welfare",
             district=district,
             module="Reports",
             action_type="Metrics Updated",
@@ -2184,16 +2079,14 @@ def get_district_summary(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Expose district-wise aggregated project records dynamically generated from database reports and overridden fund details."""
+    """Expose district-wise aggregated project records dynamically generated from database reports."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
     try:
-        # Get all projects joined with DepartmentReport
-        stmt = select(Project, DepartmentReport).join(DepartmentReport)
+        stmt = select(HealthProject, HealthReport).join(HealthReport)
         results = session.exec(stmt).all()
         
-        # Get unique district names dynamically from database reports
-        stmt_districts = select(DepartmentReport.district_name).distinct()
+        stmt_districts = select(HealthReport.district_name).distinct()
         db_districts = sorted(list(set(session.exec(stmt_districts).all())))
         if not db_districts:
             db_districts = DELHI_DISTRICTS
@@ -2204,11 +2097,10 @@ def get_district_summary(
             if dist_name in projects_by_district:
                 projects_by_district[dist_name].append(proj)
                 
-        # Batch retrieve all reports for this month and year to avoid N+1 query loop
         reports_in_db = session.exec(
-            select(DepartmentReport)
-            .where(DepartmentReport.reporting_month == month)
-            .where(DepartmentReport.reporting_year == year)
+            select(HealthReport)
+            .where(HealthReport.reporting_month == month)
+            .where(HealthReport.reporting_year == year)
         ).all()
         draft_reports = {r.district_name: r for r in reports_in_db if r.status == "draft"}
         submitted_reports = {r.district_name: r for r in reports_in_db if r.status == "submitted"}
@@ -2218,7 +2110,6 @@ def get_district_summary(
             dist_id = f"DIST_{i+1:02d}"
             projs = projects_by_district.get(dist_name, [])
             
-            # Fetch report for this district to see if override values exist from memory
             report = submitted_reports.get(dist_name) or draft_reports.get(dist_name)
                 
             funds_allocated = report.funds_allocated if (report and report.funds_allocated is not None) else sum(p.budget_allocated for p in projs)
@@ -2241,8 +2132,7 @@ def get_district_summary(
                 "status": report.status if report else "no_report"
             })
             
-        # Determine last updated timestamp from DepartmentReport
-        stmt_report = select(DepartmentReport.updated_at)
+        stmt_report = select(HealthReport.updated_at)
         updated_times = session.exec(stmt_report).all()
         if updated_times:
             last_updated = max(updated_times).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -2250,7 +2140,7 @@ def get_district_summary(
             last_updated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             
         return {
-            "department": "Public Works Department (PWD)",
+            "department": "Department of Health & Family Welfare",
             "last_updated": last_updated,
             "district_data": district_data_list
         }
@@ -2263,21 +2153,22 @@ def get_actions(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Get all action tracker instructions, joined with project name."""
+    """Get all action tracker instructions, joined with health project name."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
 
     actions = session.exec(select(Action)).all()
     
-    # Batch query projects to avoid N+1 query loops
     project_uids = [act.project_uid for act in actions]
     projects_map = {}
     if project_uids:
-        projects_db = session.exec(select(Project).where(Project.project_uid.in_(project_uids))).all()
+        projects_db = session.exec(select(HealthProject).where(HealthProject.project_uid.in_(project_uids))).all()
         projects_map = {p.project_uid: p.name for p in projects_db}
 
     response = []
     for act in actions:
+        if not act.project_uid.startswith("HLT-"):
+            continue  # Filter health-specific actions
         proj_name = projects_map.get(act.project_uid, "Unknown Project")
         response.append(
             ActionResponseSchema(
@@ -2329,10 +2220,9 @@ def update_action(
     act.updated_at = datetime.now(timezone.utc)
     session.add(act)
     
-    # Log change to AuditTrail
     log = AuditLog(
         officer=current_user.email,
-        department="Public Works Department (PWD)",
+        department="Department of Health & Family Welfare",
         district=act.district,
         module="Action Tracker",
         action_type="Action Status Updated",
@@ -2346,7 +2236,7 @@ def update_action(
     session.commit()
     session.refresh(act)
     
-    proj = session.exec(select(Project).where(Project.project_uid == act.project_uid)).first()
+    proj = session.exec(select(HealthProject).where(HealthProject.project_uid == act.project_uid)).first()
     proj_name = proj.name if proj else "Unknown Project"
     
     return ActionResponseSchema(
@@ -2371,7 +2261,7 @@ def update_action(
 def get_audit_logs(
     officer: Optional[str] = Query(None),
     project_uid: Optional[str] = Query(None),
-    date: Optional[str] = Query(None),  # Format: YYYY-MM-DD
+    date: Optional[str] = Query(None),
     action_type: Optional[str] = Query(None),
     module: Optional[str] = Query(None),
     district: Optional[str] = Query(None),
@@ -2381,10 +2271,11 @@ def get_audit_logs(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve audit logs with search, filtering and pagination."""
+    """Retrieve health audit logs with search, filtering and pagination."""
     if current_user.role.upper() not in ("CM", "DM", "OFFICIAL"):
         raise HTTPException(status_code=403, detail="Forbidden: Insufficient permissions")
-    stmt = select(AuditLog)
+    
+    stmt = select(AuditLog).where(AuditLog.department == "Department of Health & Family Welfare")
     
     if officer:
         stmt = stmt.where(AuditLog.officer.like(f"%{officer}%"))
@@ -2414,14 +2305,11 @@ def get_audit_logs(
             (AuditLog.module.like(search_pattern))
         )
         
-    # Order by timestamp descending
     stmt = stmt.order_by(AuditLog.timestamp.desc())
     
-    # Execute query to get total matching records
     all_logs = session.exec(stmt).all()
     total = len(all_logs)
     
-    # Paginate
     offset = (page - 1) * limit
     paginated_logs = all_logs[offset : offset + limit]
     
@@ -2435,6 +2323,3 @@ def get_audit_logs(
         "limit": limit,
         "pages": pages
     }
-
-
-

@@ -229,10 +229,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
     if (item.id === 'department') {
-      return userRole === 'cm';
+      return ['cm', 'dm', 'official'].includes(userRole);
     }
     if (userRole === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'department'].includes(item.id);
     }
     return true;
   });
