@@ -44,8 +44,9 @@ import os
 import asyncio
 import base64
 from datetime import datetime, timezone
-from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query, Depends
 from sqlmodel import Session, select
+from app.core.security import get_current_user
 from app.core.config import settings
 from app.infrastructure.db.sqlite_client import engine
 from app.domain.models.hierarchy import HierarchyNode
@@ -169,7 +170,7 @@ async def send_template(to: str, template_name: str, lang_code: str = "en_US") -
 
 
 @router.post("/simulate")
-async def simulate_whatsapp(body: dict):
+async def simulate_whatsapp(body: dict, _user=Depends(get_current_user)):
     """
     Simulates a WhatsApp message. Used by the frontend WhatsApp Simulator.
     Accepts { phone, message } for text, or { phone, is_image: true, image_data: "<base64>" }
@@ -224,7 +225,7 @@ async def simulate_whatsapp(body: dict):
 
 
 @router.post("/send")
-async def send_whatsapp_endpoint(to: str, message: str):
+async def send_whatsapp_endpoint(to: str, message: str, _user=Depends(get_current_user)):
     """
     Call this from your broadcast/task-assignment flow, e.g.:
         POST /api/v1/whatsapp/send?to=919876543210&message=New task assigned

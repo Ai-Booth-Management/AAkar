@@ -1,7 +1,9 @@
 import asyncio
 import os
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from app.core.security import get_current_user
+from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.api.v1.endpoints.upload import router as upload_router
@@ -19,6 +21,7 @@ from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
 from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
+from app.domain.models.auth import RevokedToken  # noqa: F401 - ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
 
@@ -120,23 +123,23 @@ app = FastAPI(title="AAkar Backend", lifespan=lifespan, redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[o.strip() for o in settings.ALLOWED_ORIGINS.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
-app.include_router(upload_router, prefix="/api/v1/upload", tags=["Upload"])
-app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
-app.include_router(ask_router, prefix="/api/v1", tags=["Ask"])
-app.include_router(ask_election_router, prefix="/api/v1", tags=["Ask Election"])
-app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"])
-app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"])
+app.include_router(upload_router, prefix="/api/v1/upload", tags=["Upload"], dependencies=[Depends(get_current_user)])
+app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"], dependencies=[Depends(get_current_user)])
+app.include_router(ask_router, prefix="/api/v1", tags=["Ask"], dependencies=[Depends(get_current_user)])
+app.include_router(ask_election_router, prefix="/api/v1", tags=["Ask Election"], dependencies=[Depends(get_current_user)])
+app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"], dependencies=[Depends(get_current_user)])
+app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"], dependencies=[Depends(get_current_user)])
 app.include_router(whatsapp_router, prefix="/api/v1/whatsapp", tags=["WhatsApp"])
-app.include_router(volunteers_router, prefix="/api/v1", tags=["Volunteers"])
-app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"])
-app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"])
+app.include_router(volunteers_router, prefix="/api/v1", tags=["Volunteers"], dependencies=[Depends(get_current_user)])
+app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"], dependencies=[Depends(get_current_user)])
+app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"], dependencies=[Depends(get_current_user)])
 
 
 @app.get("/")

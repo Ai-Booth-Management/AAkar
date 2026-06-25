@@ -5,11 +5,13 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+import uuid
 import bcrypt
 from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.domain.models.user import User
+from app.domain.models.auth import RevokedToken
 from app.infrastructure.db.sqlite_client import get_session
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
@@ -29,9 +31,16 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     """Create a signed JWT access token."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta or timedelta(minutes=15) # 15 min access token
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "jti": str(uuid.uuid4()), "type": "access"})
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+def create_refresh_token(data: dict) -> str:
+    """Create a signed JWT refresh token."""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=7) # 7 days
+    to_encode.update({"exp": expire, "jti": str(uuid.uuid4()), "type": "refresh"})
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
@@ -50,8 +59,17 @@ def get_current_user(
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         email: str | None = payload.get("sub")
-        if email is None:
+        token_type = payload.get("type", "access")
+        jti = payload.get("jti")
+        
+        if email is None or token_type != "access" or jti is None:
             raise credentials_exception
+            
+        # Check if revoked
+        is_revoked = session.exec(select(RevokedToken).where(RevokedToken.jti == jti)).first()
+        if is_revoked:
+            raise credentials_exception
+            
     except JWTError:
         raise credentials_exception
 
@@ -59,3 +77,14 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+def role_required(*allowed_roles: str):
+    """Dependency to check if the current user has one of the allowed roles."""
+    def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return current_user
+    return role_checker

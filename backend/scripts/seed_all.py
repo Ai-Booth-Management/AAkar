@@ -4,7 +4,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from sqlmodel import Session, create_engine, select
 from app.domain.models.user import User
-from app.domain.models.volunteer import Volunteer, Task, ConversationState
+from app.domain.models.volunteer import Volunteer, ConversationState, Task
+from app.domain.models.auth import RevokedToken
 from app.domain.models.hierarchy import HierarchyNode
 from app.infrastructure.db.sqlite_client import init_db
 from app.core.security import hash_password

@@ -12,11 +12,14 @@ export default function BoothUserPortal() {
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
 
+  React.useEffect(() => {
+    if (!loading && !currentUser) {
+      router.push('/login');
+    }
+  }, [loading, currentUser, router]);
+
   if (loading) return <div>Initialising Secure Portal...</div>;
-  if (!currentUser) {
-    if (typeof window !== 'undefined') router.push('/login');
-    return null;
-  }
+  if (!currentUser) return null;
 
   const handleLogout = async () => {
     await logout();
