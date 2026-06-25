@@ -8,26 +8,14 @@ sqlite_url = "sqlite:///./data/app.db"
 engine = create_engine(sqlite_url)
 
 INDIA_STATES = [
-    ("MH", "Maharashtra"), ("UP", "Uttar Pradesh"), ("BR", "Bihar"),
-    ("GJ", "Gujarat"), ("RJ", "Rajasthan"), ("MP", "Madhya Pradesh"),
-    ("KA", "Karnataka"), ("TN", "Tamil Nadu"), ("TS", "Telangana"),
-    ("WB", "West Bengal"), ("KL", "Kerala"), ("OR", "Odisha"),
-    ("PB", "Punjab"), ("AS", "Assam"), ("JH", "Jharkhand"),
-    ("CG", "Chhattisgarh"), ("HR", "Haryana"), ("HP", "Himachal Pradesh"),
-    ("UK", "Uttarakhand"), ("GA", "Goa"), ("DL", "Delhi"),
+    ("DL", "Delhi"),
 ]
 
 SAMPLE_DISTRICTS = {
-    "UP": [("LUCKNOW", "Lucknow"), ("VNS", "Varanasi"), ("GZB", "Ghaziabad"), ("AGR", "Agra"), ("PRG", "Prayagraj")],
-    "MH": [("MUM", "Mumbai"), ("PUN", "Pune"), ("NGP", "Nagpur"), ("THN", "Thane"), ("NASH", "Nashik")],
-    "KA": [("BLR", "Bengaluru"), ("MYS", "Mysuru"), ("UBR", "Udupi"), ("DVG", "Davangere")],
     "DL": [("NWD", "North West Delhi"), ("ND", "New Delhi"), ("SWD", "South West Delhi"), ("ED", "East Delhi")],
 }
 
 SAMPLE_CONSTITUENCIES = {
-    "LUCKNOW": [("LC-01", "Lucknow Central"), ("LC-02", "Lucknow East"), ("LC-03", "Lucknow West")],
-    "VNS": [("VNS-01", "Varanasi North"), ("VNS-02", "Varanasi South")],
-    "BLR": [("BLR-01", "Bengaluru Central"), ("BLR-02", "Bengaluru South")],
     "NWD": [("MT", "Model Town"), ("ROH", "Rohini"), ("BAW", "Bawana"), ("NAR", "Narela"), ("BAD", "Badli"), ("RIT", "Rithala")],
     "ND": [("ND-01", "New Delhi"), ("JNG", "Jangpura"), ("KN", "Kasturba Nagar"), ("MN", "Malviya Nagar"), ("RKP", "RK Puram"), ("GK", "Greater Kailash")],
     "SWD": [("DWK", "Dwarka"), ("MAT", "Matiala"), ("NJF", "Najafgarh"), ("PAL", "Palam"), ("BJW", "Bijwasan"), ("TNK", "Tilak Nagar")],
@@ -35,11 +23,6 @@ SAMPLE_CONSTITUENCIES = {
 }
 
 SAMPLE_MANDALS = {
-    "LC-01": [("CENTRAL", "Central Ward"), ("HAZ", "Hazratganj"), ("GOM", "Gomti Nagar")],
-    "LC-02": [("INDIRA", "Indira Nagar"), ("ALIG", "Aliganj")],
-    "VNS-01": [("VAR_CT", "Varanasi City"), ("VAR_CANT", "Varanasi Cantonment")],
-    "BLR-01": [("MG_RD", "MG Road"), ("SHIV", "Shivajinagar")],
-    # Delhi (DL) mandals
     "MT":  [("MT-S1", "Model Town Sector 1"), ("MT-S2", "Model Town Sector 2"), ("MT-S3", "Model Town Sector 3"), ("GTB", "GTB Nagar"), ("KAM", "Kamla Nagar")],
     "ROH": [("RH-S1", "Rohini Sector 1"), ("RH-S3", "Rohini Sector 3"), ("RH-S7", "Rohini Sector 7"), ("RH-S8", "Rohini Sector 8"), ("RH-S9", "Rohini Sector 9")],
     "BAW": [("BAW-CTR", "Bawana Centre"), ("BAW-IND", "Bawana Industrial"), ("BAW-EXT", "Bawana Extension"), ("PAP", "Pooth Kalan"), ("KHN", "Khera Khurd")],

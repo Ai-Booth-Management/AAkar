@@ -7,7 +7,11 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlmodel import Session, select, func
 
+from app.core.security import get_current_user
+from app.domain.models.hierarchy import HierarchyNode
+from app.domain.models.user import User
 from app.domain.models.volunteer import Volunteer, VolunteerTask
+
 from app.domain.whatsapp_service import send_text
 from app.infrastructure.db.sqlite_client import get_session
 
@@ -23,6 +27,12 @@ class TaskCreateRequest(BaseModel):
     booth_id: str
     title: str
     description: Optional[str] = None
+
+
+class VolunteerCreateRequest(BaseModel):
+    phone: str
+    name: str
+    booth_id: str
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────
@@ -112,6 +122,70 @@ def list_volunteers(
         })
 
     return result
+
+
+@router.post("/volunteers", status_code=status.HTTP_201_CREATED)
+async def create_volunteer(
+    body: VolunteerCreateRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Register a new volunteer. Booth President adds a volunteer to their booth."""
+    booth = session.exec(
+        select(HierarchyNode).where(
+            HierarchyNode.code == body.booth_id,
+            HierarchyNode.level == "booth",
+        )
+    ).first()
+    if not booth:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Booth '{body.booth_id}' not found in hierarchy.",
+        )
+
+    phone = body.phone.strip()
+    if not phone.startswith("91") or len(phone) < 10 or len(phone) > 15:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid phone number. Must start with 91 and be 10-15 digits.",
+        )
+
+    existing = session.exec(
+        select(Volunteer).where(Volunteer.phone == phone)
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A volunteer with this phone number already exists.",
+        )
+
+    volunteer = Volunteer(
+        phone=phone,
+        name=body.name.strip(),
+        booth_id=body.booth_id,
+        status="active",
+    )
+    session.add(volunteer)
+    session.commit()
+    session.refresh(volunteer)
+
+    try:
+        await send_text(
+            phone,
+            f"Welcome to AAkar, {body.name.strip()}! "
+            f"You have been registered as a volunteer for {booth.name} ({booth.code}). "
+            "You will receive task assignments here.",
+        )
+    except Exception as e:
+        logger.warning("WhatsApp notification failed for new volunteer %s: %s", phone, e)
+
+    return {
+        "id": volunteer.id,
+        "phone": volunteer.phone,
+        "name": volunteer.name,
+        "booth_id": volunteer.booth_id,
+        "status": volunteer.status,
+    }
 
 
 @router.get("/volunteers/{volunteer_id}/tasks")

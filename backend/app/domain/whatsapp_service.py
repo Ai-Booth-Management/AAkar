@@ -41,12 +41,17 @@ import httpx
 import json
 import logging
 import os
+import asyncio
+import base64
 from datetime import datetime, timezone
 from fastapi import APIRouter, Request, HTTPException, Query
 from sqlmodel import Session, select
 from app.core.config import settings
 from app.infrastructure.db.sqlite_client import engine
+from app.domain.models.hierarchy import HierarchyNode
 from app.domain.models.volunteer import Volunteer, VolunteerTask, ConversationState
+from app.domain.services.ask_election_service import ask_election_question
+
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +63,52 @@ VERIFY_TOKEN = settings.WHATSAPP_VERIFY_TOKEN
 
 GRAPH_API_URL = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
 
+# Simulation mode: when token is dummy, buffer replies for the simulator endpoint
+_simulated_replies: list[str] = []
+_sim_media_bytes: bytes | None = None
+_IS_SIMULATION = WHATSAPP_TOKEN in ("dummy_token", "")
+
+
+# ---------------------------------------------------------------------------
+# REGISTRATION HELPERS
+# ---------------------------------------------------------------------------
+
+
+def _parse_choice(text: str, max_val: int) -> int | None:
+    try:
+        choice = int(text.strip())
+        if 1 <= choice <= max_val:
+            return choice
+    except (ValueError, AttributeError):
+        pass
+    return None
+
+
+def _get_children_by_code(
+    session: Session, parent_code: str, parent_level: str, child_level: str
+) -> list[HierarchyNode]:
+    parent = session.exec(
+        select(HierarchyNode).where(
+            HierarchyNode.code == parent_code,
+            HierarchyNode.level == parent_level,
+        )
+    ).first()
+    if not parent:
+        return []
+    return session.exec(
+        select(HierarchyNode).where(
+            HierarchyNode.parent_id == parent.id,
+            HierarchyNode.level == child_level,
+        )
+    ).all()
+
+
+def _format_numbered_list(nodes: list[HierarchyNode], show_code: bool = False) -> str:
+    return "\n".join(
+        f"{i}) {n.name}" + (f" ({n.code})" if show_code else "")
+        for i, n in enumerate(nodes, 1)
+    )
+
 
 # ---------------------------------------------------------------------------
 # SENDING MESSAGES
@@ -65,10 +116,13 @@ GRAPH_API_URL = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
 
 async def send_text(to: str, message: str) -> dict:
     """
-    Sends a free-form text message. Only works if the recipient has
-    messaged your test number within the last 24 hours (see gotcha above).
-    `to` should be a phone number in international format, no '+', e.g. '919876543210'
+    Sends a free-form text message. In simulation mode (dummy token),
+    buffers the reply for the /simulate endpoint instead of calling Meta.
     """
+    if _IS_SIMULATION:
+        _simulated_replies.append(message)
+        return {"status": "simulated", "to": to, "message": message}
+
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
         "Content-Type": "application/json",
@@ -111,8 +165,64 @@ async def send_template(to: str, template_name: str, lang_code: str = "en_US") -
 
 
 # ---------------------------------------------------------------------------
-# FASTAPI ENDPOINTS - wire your dashboard buttons to these
+# FASTAPI ENDPOINTS
 # ---------------------------------------------------------------------------
+
+
+@router.post("/simulate")
+async def simulate_whatsapp(body: dict):
+    """
+    Simulates a WhatsApp message. Used by the frontend WhatsApp Simulator.
+    Accepts { phone, message } for text, or { phone, is_image: true, image_data: "<base64>" }
+    for image uploads. Processes through the same webhook logic and returns the bot's replies.
+    """
+    global _simulated_replies, _sim_media_bytes
+    _simulated_replies = []
+    _sim_media_bytes = None
+
+    phone = body.get("phone", "917696138229")
+
+    if body.get("is_image") and body.get("image_data"):
+        _sim_media_bytes = base64.b64decode(body["image_data"])
+        mock_payload = {
+            "entry": [{
+                "changes": [{
+                    "value": {
+                        "messages": [{
+                            "from": phone,
+                            "type": "image",
+                            "image": {"id": "sim_media_1", "mime_type": "image/jpeg"},
+                        }]
+                    }
+                }]
+            }]
+        }
+    else:
+        message = body.get("message", "hi")
+        mock_payload = {
+            "entry": [{
+                "changes": [{
+                    "value": {
+                        "messages": [{
+                            "from": phone,
+                            "type": "text",
+                            "text": {"body": message},
+                        }]
+                    }
+                }]
+            }]
+        }
+
+    class _MockRequest:
+        async def json(self):
+            return mock_payload
+
+    await receive_whatsapp_message(_MockRequest())
+
+    replies = list(_simulated_replies)
+    _simulated_replies = []
+    return {"phone": phone, "replies": replies}
+
 
 @router.post("/send")
 async def send_whatsapp_endpoint(to: str, message: str):
@@ -152,6 +262,12 @@ async def verify_webhook(
 
 async def download_media(media_id: str) -> bytes:
     """Download media from WhatsApp via the Meta Graph API."""
+    global _sim_media_bytes
+    if _IS_SIMULATION and _sim_media_bytes is not None:
+        data = _sim_media_bytes
+        _sim_media_bytes = None
+        return data
+
     async with httpx.AsyncClient() as client:
         # Step 1: Get the download URL from the media ID
         resp = await client.get(
@@ -232,32 +348,180 @@ async def receive_whatsapp_message(request: Request):
                 elif state.current_step == "awaiting_name":
                     data = json.loads(state.collected_data)
                     data["name"] = text_body
+                    data["state_code"] = "DL"
+                    data["state_name"] = "Delhi"
                     state.collected_data = json.dumps(data)
-                    state.current_step = "awaiting_booth"
+                    state.current_step = "awaiting_district"
+                    state.updated_at = datetime.now(timezone.utc)
+                    session.add(state)
+                    session.commit()
+                    districts = _get_children_by_code(
+                        session, "DL", "state", "district"
+                    )
+                    if not districts:
+                        await send_text(
+                            from_number,
+                            "Sorry, no districts found. "
+                            "Please contact your Booth President to register manually.",
+                        )
+                    else:
+                        await send_text(
+                            from_number,
+                            f"Thanks {text_body}! Which district in Delhi?\n"
+                            + _format_numbered_list(districts),
+                        )
+
+                elif state.current_step == "awaiting_district":
+                    data = json.loads(state.collected_data)
+                    districts = _get_children_by_code(
+                        session, data["state_code"], "state", "district"
+                    )
+                    choice = _parse_choice(text_body, len(districts))
+                    if choice is None:
+                        await send_text(
+                            from_number,
+                            "Invalid choice. Please reply with a number from the list:\n"
+                            + _format_numbered_list(districts),
+                        )
+                    else:
+                        selected = districts[choice - 1]
+                        data["district_code"] = selected.code
+                        data["district_name"] = selected.name
+                        state.collected_data = json.dumps(data)
+                        state.current_step = "awaiting_constituency"
+                        state.updated_at = datetime.now(timezone.utc)
+                        session.add(state)
+                        session.commit()
+                        constituencies = _get_children_by_code(
+                            session, selected.code, "district", "constituency"
+                        )
+                        if not constituencies:
+                            await send_text(
+                                from_number,
+                                f"Sorry, no constituencies found in {selected.name}. "
+                                "Please contact your Booth President to register manually.",
+                            )
+                        else:
+                            await send_text(
+                                from_number,
+                                f"Which constituency in {selected.name}?\n"
+                                + _format_numbered_list(constituencies),
+                            )
+
+                elif state.current_step == "awaiting_constituency":
+                    data = json.loads(state.collected_data)
+                    constituencies = _get_children_by_code(
+                        session, data["district_code"], "district", "constituency"
+                    )
+                    choice = _parse_choice(text_body, len(constituencies))
+                    if choice is None:
+                        await send_text(
+                            from_number,
+                            "Invalid choice. Please reply with a number from the list:\n"
+                            + _format_numbered_list(constituencies),
+                        )
+                    else:
+                        selected = constituencies[choice - 1]
+                        data["constituency_code"] = selected.code
+                        data["constituency_name"] = selected.name
+                        state.collected_data = json.dumps(data)
+                        state.current_step = "awaiting_mandal"
+                        state.updated_at = datetime.now(timezone.utc)
+                        session.add(state)
+                        session.commit()
+                        mandals = _get_children_by_code(
+                            session, selected.code, "constituency", "mandal"
+                        )
+                        if not mandals:
+                            await send_text(
+                                from_number,
+                                f"Sorry, no areas found in {selected.name}. "
+                                "Please contact your Booth President to register manually.",
+                            )
+                        else:
+                            await send_text(
+                                from_number,
+                                f"Which area in {selected.name}?\n"
+                                + _format_numbered_list(mandals),
+                            )
+
+                elif state.current_step == "awaiting_mandal":
+                    data = json.loads(state.collected_data)
+                    mandals = _get_children_by_code(
+                        session, data["constituency_code"], "constituency", "mandal"
+                    )
+                    choice = _parse_choice(text_body, len(mandals))
+                    if choice is None:
+                        await send_text(
+                            from_number,
+                            "Invalid choice. Please reply with a number from the list:\n"
+                            + _format_numbered_list(mandals),
+                        )
+                    else:
+                        selected = mandals[choice - 1]
+                        data["mandal_code"] = selected.code
+                        data["mandal_name"] = selected.name
+                        state.collected_data = json.dumps(data)
+                        state.current_step = "awaiting_booth"
+                        state.updated_at = datetime.now(timezone.utc)
+                        session.add(state)
+                        session.commit()
+                        booths = _get_children_by_code(
+                            session, selected.code, "mandal", "booth"
+                        )
+                        if not booths:
+                            await send_text(
+                                from_number,
+                                "Sorry, no booths are registered in your area yet. "
+                                "Please contact your Booth President to register manually.",
+                            )
+                        else:
+                            await send_text(
+                                from_number,
+                                f"Which booth in {selected.name}?\n"
+                                + _format_numbered_list(booths, show_code=True),
+                            )
+
+                elif state.current_step == "awaiting_booth":
+                    data = json.loads(state.collected_data)
+                    booths = _get_children_by_code(
+                        session, data["mandal_code"], "mandal", "booth"
+                    )
+                    choice = _parse_choice(text_body, len(booths))
+                    if choice is None:
+                        await send_text(
+                            from_number,
+                            "Invalid choice. Please reply with a number from the list:\n"
+                            + _format_numbered_list(booths, show_code=True),
+                        )
+                    else:
+                        selected = booths[choice - 1]
+                        name = data.get("name", "")
+                        volunteer = Volunteer(
+                            phone=from_number,
+                            name=name,
+                            booth_id=selected.code,
+                            status="active",
+                        )
+                        session.add(volunteer)
+                        session.delete(state)
+                        session.commit()
+                        await send_text(
+                            from_number,
+                            f"\u2705 Registration complete! Welcome to the team, {name}.\n"
+                            f"Your booth: {selected.name} ({selected.code})\n"
+                            "You will receive task assignments here.",
+                        )
+
+                else:
+                    state.current_step = "awaiting_name"
+                    state.collected_data = "{}"
                     state.updated_at = datetime.now(timezone.utc)
                     session.add(state)
                     session.commit()
                     await send_text(
                         from_number,
-                        f"Thanks {text_body}! What is your Booth ID? (e.g. B-42)",
-                    )
-
-                elif state.current_step == "awaiting_booth":
-                    data = json.loads(state.collected_data)
-                    name = data.get("name", "")
-                    volunteer = Volunteer(
-                        phone=from_number,
-                        name=name,
-                        booth_id=text_body,
-                        status="active",
-                    )
-                    session.add(volunteer)
-                    session.delete(state)
-                    session.commit()
-                    await send_text(
-                        from_number,
-                        f"\u2705 Registration complete! Welcome to the team, {name}. "
-                        "You will receive task assignments here.",
+                        "Let's restart. What is your full name?",
                     )
 
             else:
@@ -307,10 +571,19 @@ async def receive_whatsapp_message(request: Request):
                         )
 
                 else:
-                    await send_text(
-                        from_number,
-                        "Reply DONE or send a photo to complete your current task.",
-                    )
+                    # Treat anything else as a question to the LLM
+                    try:
+                        # ask_election_question does synchronous network/DB calls,
+                        # wrap it in to_thread to avoid blocking the event loop.
+                        llm_response = await asyncio.to_thread(ask_election_question, text_body, None, volunteer)
+                        answer = llm_response.get("answer", "I couldn't process your question right now.")
+                        await send_text(from_number, answer)
+                    except Exception as llm_error:
+                        logger.error(f"Error calling LLM from WhatsApp: {llm_error}", exc_info=True)
+                        await send_text(
+                            from_number,
+                            "Sorry, I encountered an issue processing your request.",
+                        )
 
     except Exception as e:
         logger.error(f"Error processing WhatsApp webhook: {e}", exc_info=True)

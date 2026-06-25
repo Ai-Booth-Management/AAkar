@@ -243,6 +243,12 @@ function VolunteerManagement({ boothId }) {
   // Proof modal
   const [proofTaskId, setProofTaskId] = useState(null);
 
+  // Register volunteer
+  const [registerName, setRegisterName] = useState('');
+  const [registerPhone, setRegisterPhone] = useState('');
+  const [registering, setRegistering] = useState(false);
+  const [registerResult, setRegisterResult] = useState(null);
+
   // Section toggle
   const [activeSection, setActiveSection] = useState('assign');
 
@@ -302,6 +308,36 @@ function VolunteerManagement({ boothId }) {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!registerName.trim() || !registerPhone.trim()) return;
+    setRegistering(true);
+    setRegisterResult(null);
+    try {
+      const res = await fetch('/api/v1/volunteers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: registerPhone.trim(),
+          name: registerName.trim(),
+          booth_id: boothId,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || `Server error ${res.status}`);
+      }
+      setRegisterResult({ ok: true, msg: '✅ Volunteer registered! They will be notified via WhatsApp.' });
+      setRegisterName('');
+      setRegisterPhone('');
+      setTimeout(fetchAll, 600);
+    } catch (err) {
+      setRegisterResult({ ok: false, msg: err.message });
+    } finally {
+      setRegistering(false);
+    }
+  };
+
   if (loading) return <div className="fade-in"><LoadingState /></div>;
   if (error) return <div className="fade-in"><ErrorState message={error} onRetry={fetchAll} /></div>;
 
@@ -346,6 +382,11 @@ function VolunteerManagement({ boothId }) {
           onClick={() => setActiveSection('roster')}
           style={{ flex: 1, justifyContent: 'center' }}
         >ROSTER ({volunteers.length})</button>
+        <button
+          className={`btn ${activeSection === 'register' ? 'btn-primary' : ''}`}
+          onClick={() => setActiveSection('register')}
+          style={{ flex: 1, justifyContent: 'center' }}
+        >REGISTER</button>
       </div>
 
       {/* ── ASSIGN TASK Section ── */}
@@ -503,6 +544,60 @@ function VolunteerManagement({ boothId }) {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── REGISTER VOLUNTEER Section ── */}
+      {activeSection === 'register' && (
+        <div className="dash-section">
+          <div className="dash-section-head"><h3>Register New Volunteer</h3></div>
+          <div className="dash-section-body">
+            <form onSubmit={handleRegister}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>Volunteer Name *</label>
+                <input
+                  type="text"
+                  value={registerName}
+                  onChange={e => setRegisterName(e.target.value)}
+                  required
+                  placeholder="Full name"
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={labelStyle}>Phone Number *</label>
+                <input
+                  type="tel"
+                  value={registerPhone}
+                  onChange={e => setRegisterPhone(e.target.value)}
+                  required
+                  placeholder="e.g. 919876543210"
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ marginBottom: 16, fontSize: 11, color: 'var(--gray-400)', fontWeight: 600 }}>
+                Booth: {boothId || 'Not assigned'}
+              </div>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={registering || !registerName.trim() || !registerPhone.trim()}
+                style={{ width: '100%', justifyContent: 'center', padding: '14px 0', fontSize: 13 }}
+              >
+                {registering ? 'REGISTERING\u2026' : '\uD83D\uDCF1  REGISTER VOLUNTEER'}
+              </button>
+              {registerResult && (
+                <div style={{
+                  marginTop: 12, padding: '12px 16px', borderRadius: 'var(--radius)',
+                  background: registerResult.ok ? 'var(--green-50)' : 'var(--red-50)',
+                  color: registerResult.ok ? 'var(--green-500)' : 'var(--red-500)',
+                  fontSize: 13, fontWeight: 700,
+                }}>
+                  {registerResult.msg}
+                </div>
+              )}
+            </form>
           </div>
         </div>
       )}

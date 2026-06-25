@@ -18,6 +18,8 @@ from app.api.v1.endpoints.audit import router as audit_router
 from app.api.v1.endpoints.action_tracker import router as action_tracker_router
 from app.api.v1.endpoints.summary import router as summary_router
 from app.api.v1.endpoints.campaign import router as campaign_router
+from app.api.v1.endpoints.ask_election import router as ask_election_router
+
 from app.domain.whatsapp_service import router as whatsapp_router
 from app.api.v1.endpoints.volunteers import router as volunteers_router
 from app.api.v1.endpoints.broadcasts import router as broadcasts_router
@@ -797,6 +799,7 @@ app.include_router(upload_router, prefix="/api/v1/upload", tags=["Upload"])
 app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(summary_router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(ask_router, prefix="/api/v1", tags=["Ask"])
+app.include_router(ask_election_router, prefix="/api/v1", tags=["Ask Election"])
 app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"])
 app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"])
 app.include_router(drishti_router, prefix="/api/v1/drishti", tags=["Project Drishti"])
