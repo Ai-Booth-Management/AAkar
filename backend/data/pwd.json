@@ -1,0 +1,1972 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "updated_by": "officer@innovateindia.gov",
+    "last_updated": "2026-06-16T20:51:27.479053Z"
+  },
+  "department": "Public Works Department (PWD)",
+  "reporting_month": "June",
+  "reporting_year": 2026,
+  "district_data": [
+    {
+      "district_id": "DIST_01",
+      "district_name": "Central Delhi",
+      "projects": {
+        "total": 4,
+        "active": 4,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-009",
+            "name": "Bridge Safety Audit & Retrofit",
+            "type": "Bridges",
+            "contractor": "NBCC India",
+            "executing_agency": "PWD Zone 1",
+            "budget_allocated": 480000000.0,
+            "budget_released": 400000000.0,
+            "budget_utilized": 350000000.0,
+            "progress": 72,
+            "start_date": "2026-01-15",
+            "deadline": "2026-11-30",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Er. Suresh Bhatia",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Structural assessment",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Carbon fiber wrap",
+                "stage": "In Progress",
+                "deadline": "2026-08-30",
+                "progress": 60
+              },
+              {
+                "name": "Load testing",
+                "stage": "Assigned",
+                "deadline": "2026-11-15",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-014",
+            "name": "Government Building Seismic Retrofit",
+            "type": "Buildings",
+            "contractor": "ECC Construction",
+            "executing_agency": "PWD Zone 1",
+            "budget_allocated": 520000000.0,
+            "budget_released": 450000000.0,
+            "budget_utilized": 380000000.0,
+            "progress": 70,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-15",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Er. Ashish Pandey",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Structural survey",
+                "stage": "Completed",
+                "deadline": "2026-02-01",
+                "progress": 100
+              },
+              {
+                "name": "Jacketing of columns",
+                "stage": "In Progress",
+                "deadline": "2026-09-01",
+                "progress": 55
+              },
+              {
+                "name": "Bracing installation",
+                "stage": "Assigned",
+                "deadline": "2026-12-01",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-016",
+            "name": "Pedestrian Subway — ITO Junction",
+            "type": "Buildings",
+            "contractor": "Shapoorji Pallonji",
+            "executing_agency": "PWD Zone 1",
+            "budget_allocated": 290000000.0,
+            "budget_released": 250000000.0,
+            "budget_utilized": 200000000.0,
+            "progress": 62,
+            "start_date": "2026-02-01",
+            "deadline": "2026-10-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Rekha Devi",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Excavation",
+                "stage": "Completed",
+                "deadline": "2026-03-15",
+                "progress": 100
+              },
+              {
+                "name": "Box culvert casting",
+                "stage": "In Progress",
+                "deadline": "2026-08-01",
+                "progress": 50
+              },
+              {
+                "name": "Interior finishing",
+                "stage": "Assigned",
+                "deadline": "2026-10-20",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-025",
+            "name": "Heritage Building Restoration — Red Fort Precinct",
+            "type": "Buildings",
+            "contractor": "ASI Conservation Unit",
+            "executing_agency": "PWD Heritage Wing",
+            "budget_allocated": 420000000.0,
+            "budget_released": 350000000.0,
+            "budget_utilized": 280000000.0,
+            "progress": 65,
+            "start_date": "2026-01-20",
+            "deadline": "2027-01-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Alok Nath",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Conservation assessment",
+                "stage": "Completed",
+                "deadline": "2026-02-28",
+                "progress": 100
+              },
+              {
+                "name": "Stone restoration",
+                "stage": "In Progress",
+                "deadline": "2026-10-31",
+                "progress": 45
+              },
+              {
+                "name": "Facade cleaning",
+                "stage": "Assigned",
+                "deadline": "2027-01-15",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 1600000000.0,
+        "released": 1300000000.0,
+        "utilized": 950000000.0,
+        "remaining": 350000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 12.5,
+          "ongoing": 3.2
+        },
+        "flyovers": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "buildings": {
+          "completed": 5.0,
+          "ongoing": 3.0
+        },
+        "drainage": {
+          "completed": 8.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 1200.0,
+          "ongoing": 150.0
+        }
+      },
+      "complaints": {
+        "total": 52,
+        "resolved": 40,
+        "pending": 12,
+        "high_priority": 8,
+        "categories": {
+          "Road Damage": 15,
+          "Water Logging": 12,
+          "Bridge Damage": 2,
+          "Street Light Failure": 8,
+          "Footpath Damage": 5,
+          "Drainage Issues": 6,
+          "Encroachment": 3,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 4,
+        "pending_reports": 2,
+        "pending_requests": 3,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 4
+          },
+          {
+            "label": "7-15 Days",
+            "count": 3
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 1
+          }
+        ]
+      },
+      "analytics": {
+        "score": 76,
+        "trend": 2
+      },
+      "officer_notes": {
+        "remarks": "All projects progressing well. Heritage restoration requires additional ASI clearances.",
+        "risks": "Monsoon season may delay outdoor construction by 2-3 weeks.",
+        "recommendations": "Fast-track bridge retrofit completion before monsoon onset."
+      }
+    },
+    {
+      "district_id": "DIST_02",
+      "district_name": "East Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-004",
+            "name": "Smart Street Lighting — Phase III",
+            "type": "Lighting",
+            "contractor": "Philips India",
+            "executing_agency": "PWD Electrical",
+            "budget_allocated": 180000000.0,
+            "budget_released": 160000000.0,
+            "budget_utilized": 145000000.0,
+            "progress": 82,
+            "start_date": "2026-02-01",
+            "deadline": "2026-07-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Sunita Yadav",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Pole installation",
+                "stage": "Completed",
+                "deadline": "2026-04-01",
+                "progress": 100
+              },
+              {
+                "name": "LED fitting & wiring",
+                "stage": "In Progress",
+                "deadline": "2026-06-30",
+                "progress": 78
+              },
+              {
+                "name": "Smart controller setup",
+                "stage": "Assigned",
+                "deadline": "2026-07-25",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-017",
+            "name": "Road Resurfacing — Vikas Marg",
+            "type": "Roads",
+            "contractor": "Gammon India",
+            "executing_agency": "PWD Zone 2",
+            "budget_allocated": 190000000.0,
+            "budget_released": 180000000.0,
+            "budget_utilized": 170000000.0,
+            "progress": 90,
+            "start_date": "2026-03-01",
+            "deadline": "2026-07-10",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Arun Malik",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Pothole repair",
+                "stage": "Completed",
+                "deadline": "2026-05-01",
+                "progress": 100
+              },
+              {
+                "name": "Overlay laying",
+                "stage": "In Progress",
+                "deadline": "2026-07-05",
+                "progress": 88
+              }
+            ]
+          },
+          {
+            "id": "PWD-024",
+            "name": "Road Safety — Crash Barriers NH-24",
+            "type": "Roads",
+            "contractor": "Tata Projects",
+            "executing_agency": "PWD Zone 2",
+            "budget_allocated": 95000000.0,
+            "budget_released": 85000000.0,
+            "budget_utilized": 50000000.0,
+            "progress": 48,
+            "start_date": "2026-01-15",
+            "deadline": "2026-07-31",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Er. Sanjay Rawat",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Survey & design",
+                "stage": "Completed",
+                "deadline": "2026-03-01",
+                "progress": 100
+              },
+              {
+                "name": "Barrier fabrication",
+                "stage": "In Progress",
+                "deadline": "2026-06-30",
+                "progress": 55
+              },
+              {
+                "name": "Installation",
+                "stage": "Assigned",
+                "deadline": "2026-07-25",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 465000000.0,
+        "released": 425000000.0,
+        "utilized": 365000000.0,
+        "remaining": 60000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 8.5,
+          "ongoing": 4.2
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 5.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 1800.0,
+          "ongoing": 300.0
+        }
+      },
+      "complaints": {
+        "total": 38,
+        "resolved": 25,
+        "pending": 13,
+        "high_priority": 6,
+        "categories": {
+          "Road Damage": 10,
+          "Water Logging": 8,
+          "Street Light Failure": 12,
+          "Footpath Damage": 3,
+          "Drainage Issues": 4,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 3
+          },
+          {
+            "label": "7-15 Days",
+            "count": 2
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 69,
+        "trend": 8
+      },
+      "officer_notes": {
+        "remarks": "NH-24 crash barrier project facing material supply delays.",
+        "risks": "Barrier fabrication vendor capacity constrained.",
+        "recommendations": "Explore alternate vendors for crash barrier steel components."
+      }
+    },
+    {
+      "district_id": "DIST_03",
+      "district_name": "New Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "PWD-006",
+            "name": "Footpath Redevelopment — Connaught Place",
+            "type": "Roads",
+            "contractor": "DLF Construction",
+            "executing_agency": "PWD NDMC",
+            "budget_allocated": 280000000.0,
+            "budget_released": 260000000.0,
+            "budget_utilized": 240000000.0,
+            "progress": 88,
+            "start_date": "2026-01-05",
+            "deadline": "2026-08-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Kavita Singh",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Old pavement removal",
+                "stage": "Completed",
+                "deadline": "2026-02-28",
+                "progress": 100
+              },
+              {
+                "name": "Granite tile laying",
+                "stage": "Completed",
+                "deadline": "2026-05-15",
+                "progress": 100
+              },
+              {
+                "name": "Ramp & bollard installation",
+                "stage": "In Progress",
+                "deadline": "2026-07-30",
+                "progress": 65
+              }
+            ]
+          },
+          {
+            "id": "PWD-015",
+            "name": "Waterlogging Mitigation — Minto Road",
+            "type": "Drainage",
+            "contractor": "Hindustan Construction",
+            "executing_agency": "PWD NDMC",
+            "budget_allocated": 380000000.0,
+            "budget_released": 200000000.0,
+            "budget_utilized": 120000000.0,
+            "progress": 28,
+            "start_date": "2026-02-15",
+            "deadline": "2026-07-30",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Er. Amit Saxena",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Pump station upgrade",
+                "stage": "In Progress",
+                "deadline": "2026-06-30",
+                "progress": 40
+              },
+              {
+                "name": "Storm drain widening",
+                "stage": "Assigned",
+                "deadline": "2026-07-20",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 660000000.0,
+        "released": 460000000.0,
+        "utilized": 360000000.0,
+        "remaining": 100000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 6.0,
+          "ongoing": 2.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 3.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 4.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 900.0,
+          "ongoing": 100.0
+        }
+      },
+      "complaints": {
+        "total": 35,
+        "resolved": 28,
+        "pending": 7,
+        "high_priority": 5,
+        "categories": {
+          "Road Damage": 8,
+          "Water Logging": 10,
+          "Footpath Damage": 6,
+          "Street Light Failure": 5,
+          "Drainage Issues": 4,
+          "Other": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 1,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 81,
+        "trend": 1
+      },
+      "officer_notes": {
+        "remarks": "Minto Road waterlogging mitigation is critical before monsoon.",
+        "risks": "Incomplete pump station upgrade before monsoon will cause major flooding.",
+        "recommendations": "Deploy emergency contractors for Minto Road pump station."
+      }
+    },
+    {
+      "district_id": "DIST_04",
+      "district_name": "North Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-007",
+            "name": "Drainage Rehabilitation — Wazirabad",
+            "type": "Drainage",
+            "contractor": "HCC Ltd",
+            "executing_agency": "PWD Zone 3",
+            "budget_allocated": 350000000.0,
+            "budget_released": 300000000.0,
+            "budget_utilized": 210000000.0,
+            "progress": 52,
+            "start_date": "2026-01-20",
+            "deadline": "2026-10-15",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Deepak Gupta",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Pipeline mapping",
+                "stage": "Completed",
+                "deadline": "2026-03-01",
+                "progress": 100
+              },
+              {
+                "name": "Old pipe replacement",
+                "stage": "In Progress",
+                "deadline": "2026-08-01",
+                "progress": 48
+              },
+              {
+                "name": "Manhole reconstruction",
+                "stage": "Assigned",
+                "deadline": "2026-10-01",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-021",
+            "name": "Overhead Water Tank — Burari",
+            "type": "Buildings",
+            "contractor": "Simplex Infra",
+            "executing_agency": "PWD Zone 3",
+            "budget_allocated": 270000000.0,
+            "budget_released": 240000000.0,
+            "budget_utilized": 180000000.0,
+            "progress": 60,
+            "start_date": "2026-02-01",
+            "deadline": "2026-09-30",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Naresh Tandon",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Foundation work",
+                "stage": "Completed",
+                "deadline": "2026-03-31",
+                "progress": 100
+              },
+              {
+                "name": "Column & staging",
+                "stage": "In Progress",
+                "deadline": "2026-07-31",
+                "progress": 55
+              },
+              {
+                "name": "Tank construction",
+                "stage": "Assigned",
+                "deadline": "2026-09-20",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 620000000.0,
+        "released": 540000000.0,
+        "utilized": 390000000.0,
+        "remaining": 150000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 10.0,
+          "ongoing": 3.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 3.0,
+          "ongoing": 2.0
+        },
+        "drainage": {
+          "completed": 6.0,
+          "ongoing": 3.0
+        },
+        "lighting": {
+          "completed": 800.0,
+          "ongoing": 150.0
+        }
+      },
+      "complaints": {
+        "total": 30,
+        "resolved": 22,
+        "pending": 8,
+        "high_priority": 4,
+        "categories": {
+          "Road Damage": 8,
+          "Water Logging": 7,
+          "Street Light Failure": 6,
+          "Drainage Issues": 5,
+          "Footpath Damage": 2,
+          "Other": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 1,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 84,
+        "trend": 3
+      },
+      "officer_notes": {
+        "remarks": "Wazirabad drainage rehabilitation progressing on schedule.",
+        "risks": "Pipe material delivery delays possible due to monsoon logistics.",
+        "recommendations": "Stockpile drainage materials before monsoon onset."
+      }
+    },
+    {
+      "district_id": "DIST_05",
+      "district_name": "North East Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 2,
+        "list": [
+          {
+            "id": "PWD-005",
+            "name": "Yamuna Flood Protection Wall",
+            "type": "Bridges",
+            "contractor": "L&T Infrastructure",
+            "executing_agency": "PWD Flood Control",
+            "budget_allocated": 950000000.0,
+            "budget_released": 600000000.0,
+            "budget_utilized": 380000000.0,
+            "progress": 33,
+            "start_date": "2025-11-01",
+            "deadline": "2026-07-15",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Er. Vinod Kumar",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Geo-technical survey",
+                "stage": "Completed",
+                "deadline": "2026-01-15",
+                "progress": 100
+              },
+              {
+                "name": "Sheet piling work",
+                "stage": "In Progress",
+                "deadline": "2026-06-01",
+                "progress": 45
+              },
+              {
+                "name": "RCC wall construction",
+                "stage": "Assigned",
+                "deadline": "2026-07-01",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-019",
+            "name": "Sewage Treatment Plant Expansion",
+            "type": "Drainage",
+            "contractor": "VA Tech WABAG",
+            "executing_agency": "PWD Zone 4",
+            "budget_allocated": 880000000.0,
+            "budget_released": 500000000.0,
+            "budget_utilized": 280000000.0,
+            "progress": 25,
+            "start_date": "2025-10-15",
+            "deadline": "2026-08-01",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Er. Ramesh Chandra",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Environmental clearance",
+                "stage": "Completed",
+                "deadline": "2026-01-31",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-06-30",
+                "progress": 30
+              },
+              {
+                "name": "Equipment installation",
+                "stage": "Assigned",
+                "deadline": "2026-07-25",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 1830000000.0,
+        "released": 1100000000.0,
+        "utilized": 660000000.0,
+        "remaining": 440000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 5.0,
+          "ongoing": 2.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 1.0
+        },
+        "buildings": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "drainage": {
+          "completed": 3.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 500.0,
+          "ongoing": 100.0
+        }
+      },
+      "complaints": {
+        "total": 45,
+        "resolved": 28,
+        "pending": 17,
+        "high_priority": 10,
+        "categories": {
+          "Road Damage": 12,
+          "Water Logging": 15,
+          "Bridge Damage": 3,
+          "Street Light Failure": 5,
+          "Drainage Issues": 8,
+          "Encroachment": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 3,
+        "pending_reports": 2,
+        "pending_requests": 2,
+        "delayed_cases": 2,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 3
+          },
+          {
+            "label": "15-30 Days",
+            "count": 2
+          },
+          {
+            "label": "30+ Days",
+            "count": 2
+          }
+        ]
+      },
+      "analytics": {
+        "score": 56,
+        "trend": -2
+      },
+      "officer_notes": {
+        "remarks": "Both critical projects need urgent intervention. Yamuna wall must be operational before monsoon.",
+        "risks": "Monsoon flooding risk extremely high if wall not completed by July.",
+        "recommendations": "Deploy additional workforce for 24x7 construction on Yamuna wall."
+      }
+    },
+    {
+      "district_id": "DIST_06",
+      "district_name": "North West Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-008",
+            "name": "Road Resurfacing — GT Karnal Road",
+            "type": "Roads",
+            "contractor": "IRB Infra",
+            "executing_agency": "PWD Zone 5",
+            "budget_allocated": 220000000.0,
+            "budget_released": 200000000.0,
+            "budget_utilized": 190000000.0,
+            "progress": 91,
+            "start_date": "2026-01-15",
+            "deadline": "2026-07-20",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Manoj Tiwari",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Milling old surface",
+                "stage": "Completed",
+                "deadline": "2026-03-15",
+                "progress": 100
+              },
+              {
+                "name": "Base course laying",
+                "stage": "Completed",
+                "deadline": "2026-05-01",
+                "progress": 100
+              },
+              {
+                "name": "Bituminous top coat",
+                "stage": "In Progress",
+                "deadline": "2026-07-15",
+                "progress": 85
+              }
+            ]
+          },
+          {
+            "id": "PWD-018",
+            "name": "School Building Renovation Batch-V",
+            "type": "Buildings",
+            "contractor": "CPWD",
+            "executing_agency": "PWD Zone 5",
+            "budget_allocated": 240000000.0,
+            "budget_released": 220000000.0,
+            "budget_utilized": 200000000.0,
+            "progress": 78,
+            "start_date": "2026-02-01",
+            "deadline": "2026-08-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Sangeeta Roy",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Structural repair",
+                "stage": "Completed",
+                "deadline": "2026-04-01",
+                "progress": 100
+              },
+              {
+                "name": "Classroom renovation",
+                "stage": "In Progress",
+                "deadline": "2026-07-15",
+                "progress": 70
+              },
+              {
+                "name": "Toilet block upgrade",
+                "stage": "Assigned",
+                "deadline": "2026-08-25",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 460000000.0,
+        "released": 420000000.0,
+        "utilized": 390000000.0,
+        "remaining": 30000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 15.0,
+          "ongoing": 2.5
+        },
+        "flyovers": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 4.0,
+          "ongoing": 2.0
+        },
+        "drainage": {
+          "completed": 5.0,
+          "ongoing": 1.0
+        },
+        "lighting": {
+          "completed": 1100.0,
+          "ongoing": 100.0
+        }
+      },
+      "complaints": {
+        "total": 25,
+        "resolved": 20,
+        "pending": 5,
+        "high_priority": 2,
+        "categories": {
+          "Road Damage": 8,
+          "Footpath Damage": 5,
+          "Street Light Failure": 4,
+          "Water Logging": 4,
+          "Drainage Issues": 3,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 0,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 90,
+        "trend": 4
+      },
+      "officer_notes": {
+        "remarks": "GT Karnal Road resurfacing nearing completion. School renovation on schedule.",
+        "risks": "Low risk. Both projects have adequate material supply.",
+        "recommendations": "Begin planning for Phase VI school renovation batch."
+      }
+    },
+    {
+      "district_id": "DIST_07",
+      "district_name": "Shahdara",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-011",
+            "name": "Shahdara Flyover Extension",
+            "type": "Flyovers",
+            "contractor": "Afcons Infrastructure",
+            "executing_agency": "PWD Zone 6",
+            "budget_allocated": 680000000.0,
+            "budget_released": 550000000.0,
+            "budget_utilized": 400000000.0,
+            "progress": 58,
+            "start_date": "2025-12-01",
+            "deadline": "2026-11-15",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Er. Pankaj Mishra",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Pier construction",
+                "stage": "Completed",
+                "deadline": "2026-04-15",
+                "progress": 100
+              },
+              {
+                "name": "Girder launching",
+                "stage": "In Progress",
+                "deadline": "2026-08-15",
+                "progress": 55
+              },
+              {
+                "name": "Approach road",
+                "stage": "Assigned",
+                "deadline": "2026-11-01",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-023",
+            "name": "Boundary Wall — Shahdara Sports Complex",
+            "type": "Buildings",
+            "contractor": "Local PWD",
+            "executing_agency": "PWD Zone 6",
+            "budget_allocated": 85000000.0,
+            "budget_released": 80000000.0,
+            "budget_utilized": 75000000.0,
+            "progress": 95,
+            "start_date": "2026-03-01",
+            "deadline": "2026-06-30",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Vikram Chauhan",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Masonry work",
+                "stage": "Completed",
+                "deadline": "2026-05-15",
+                "progress": 100
+              },
+              {
+                "name": "Plastering & painting",
+                "stage": "In Progress",
+                "deadline": "2026-06-25",
+                "progress": 90
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 765000000.0,
+        "released": 630000000.0,
+        "utilized": 475000000.0,
+        "remaining": 155000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 7.0,
+          "ongoing": 2.0
+        },
+        "flyovers": {
+          "completed": 1.0,
+          "ongoing": 1.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 4.0,
+          "ongoing": 1.0
+        },
+        "lighting": {
+          "completed": 600.0,
+          "ongoing": 80.0
+        }
+      },
+      "complaints": {
+        "total": 28,
+        "resolved": 18,
+        "pending": 10,
+        "high_priority": 4,
+        "categories": {
+          "Road Damage": 8,
+          "Bridge Damage": 4,
+          "Street Light Failure": 5,
+          "Water Logging": 5,
+          "Footpath Damage": 3,
+          "Other": 3
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 1,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 80,
+        "trend": -1
+      },
+      "officer_notes": {
+        "remarks": "Flyover extension girder launching phase critical. Sports complex wall nearing completion.",
+        "risks": "Flyover girder launching requires traffic diversion coordination with police.",
+        "recommendations": "Coordinate with traffic police for phased night closures."
+      }
+    },
+    {
+      "district_id": "DIST_08",
+      "district_name": "South Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 2,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-001",
+            "name": "Ring Road Flyover Reconstruction",
+            "type": "Flyovers",
+            "contractor": "L&T Infrastructure",
+            "executing_agency": "PWD Zone 7",
+            "budget_allocated": 850000000.0,
+            "budget_released": 720000000.0,
+            "budget_utilized": 580000000.0,
+            "progress": 68,
+            "start_date": "2026-01-15",
+            "deadline": "2026-12-31",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Er. Rajesh Sharma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Foundation work",
+                "stage": "Completed",
+                "deadline": "2026-03-15",
+                "progress": 100
+              },
+              {
+                "name": "Pillar erection",
+                "stage": "In Progress",
+                "deadline": "2026-07-30",
+                "progress": 72
+              },
+              {
+                "name": "Deck slab casting",
+                "stage": "Assigned",
+                "deadline": "2026-10-15",
+                "progress": 0
+              },
+              {
+                "name": "Railing & finishing",
+                "stage": "Assigned",
+                "deadline": "2026-12-20",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-002",
+            "name": "AIIMS Road Upgrade & Widening",
+            "type": "Roads",
+            "contractor": "Dilip Buildcon",
+            "executing_agency": "PWD Zone 7",
+            "budget_allocated": 420000000.0,
+            "budget_released": 380000000.0,
+            "budget_utilized": 310000000.0,
+            "progress": 45,
+            "start_date": "2025-11-01",
+            "deadline": "2026-08-15",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Er. Priya Mehta",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Land acquisition clearance",
+                "stage": "Completed",
+                "deadline": "2026-02-01",
+                "progress": 100
+              },
+              {
+                "name": "Utility shifting",
+                "stage": "In Progress",
+                "deadline": "2026-06-30",
+                "progress": 60
+              },
+              {
+                "name": "Road widening work",
+                "stage": "Assigned",
+                "deadline": "2026-08-01",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-026",
+            "name": "Johri Enclave Road Widening",
+            "type": "Roads",
+            "contractor": "Gayatri Projects",
+            "executing_agency": "PWD Zone 7",
+            "budget_allocated": 300000000.0,
+            "budget_released": 180000000.0,
+            "budget_utilized": 90000000.0,
+            "progress": 22,
+            "start_date": "2026-02-15",
+            "deadline": "2026-08-30",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Er. Anita Rana",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Land clearance",
+                "stage": "In Progress",
+                "deadline": "2026-07-01",
+                "progress": 35
+              },
+              {
+                "name": "Road construction",
+                "stage": "Assigned",
+                "deadline": "2026-08-20",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 1570000000.0,
+        "released": 1280000000.0,
+        "utilized": 980000000.0,
+        "remaining": 300000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 18.0,
+          "ongoing": 8.0
+        },
+        "flyovers": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "bridges": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 4.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 7.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 1400.0,
+          "ongoing": 200.0
+        }
+      },
+      "complaints": {
+        "total": 48,
+        "resolved": 32,
+        "pending": 16,
+        "high_priority": 9,
+        "categories": {
+          "Road Damage": 14,
+          "Water Logging": 10,
+          "Street Light Failure": 8,
+          "Footpath Damage": 6,
+          "Drainage Issues": 5,
+          "Encroachment": 3,
+          "Other": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 3,
+        "pending_reports": 2,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 3
+          },
+          {
+            "label": "7-15 Days",
+            "count": 2
+          },
+          {
+            "label": "15-30 Days",
+            "count": 2
+          },
+          {
+            "label": "30+ Days",
+            "count": 1
+          }
+        ]
+      },
+      "analytics": {
+        "score": 58,
+        "trend": -3
+      },
+      "officer_notes": {
+        "remarks": "Two road widening projects delayed due to land acquisition issues.",
+        "risks": "Johri Enclave land disputes may escalate to legal proceedings.",
+        "recommendations": "Escalate land acquisition to Revenue Department for expedited clearance."
+      }
+    },
+    {
+      "district_id": "DIST_09",
+      "district_name": "South East Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-003",
+            "name": "Barapullah Drain Improvement Phase-II",
+            "type": "Drainage",
+            "contractor": "NCC Limited",
+            "executing_agency": "PWD Zone 8",
+            "budget_allocated": 620000000.0,
+            "budget_released": 500000000.0,
+            "budget_utilized": 420000000.0,
+            "progress": 55,
+            "start_date": "2025-12-01",
+            "deadline": "2026-09-30",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Er. Anil Verma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Desilting phase",
+                "stage": "Completed",
+                "deadline": "2026-01-31",
+                "progress": 100
+              },
+              {
+                "name": "Retaining wall construction",
+                "stage": "In Progress",
+                "deadline": "2026-06-15",
+                "progress": 80
+              },
+              {
+                "name": "Outfall channel work",
+                "stage": "Accepted",
+                "deadline": "2026-09-01",
+                "progress": 10
+              }
+            ]
+          },
+          {
+            "id": "PWD-010",
+            "name": "Multi-Level Parking — Lajpat Nagar",
+            "type": "Buildings",
+            "contractor": "JMC Projects",
+            "executing_agency": "PWD Zone 8",
+            "budget_allocated": 750000000.0,
+            "budget_released": 500000000.0,
+            "budget_utilized": 320000000.0,
+            "progress": 38,
+            "start_date": "2026-01-01",
+            "deadline": "2027-03-31",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Neeraj Jain",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Piling work",
+                "stage": "Completed",
+                "deadline": "2026-04-01",
+                "progress": 100
+              },
+              {
+                "name": "Basement construction",
+                "stage": "In Progress",
+                "deadline": "2026-09-30",
+                "progress": 40
+              },
+              {
+                "name": "Superstructure",
+                "stage": "Assigned",
+                "deadline": "2027-02-28",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 1370000000.0,
+        "released": 1000000000.0,
+        "utilized": 740000000.0,
+        "remaining": 260000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 9.0,
+          "ongoing": 3.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 3.0,
+          "ongoing": 2.0
+        },
+        "drainage": {
+          "completed": 6.0,
+          "ongoing": 2.0
+        },
+        "lighting": {
+          "completed": 700.0,
+          "ongoing": 120.0
+        }
+      },
+      "complaints": {
+        "total": 32,
+        "resolved": 24,
+        "pending": 8,
+        "high_priority": 5,
+        "categories": {
+          "Road Damage": 9,
+          "Water Logging": 7,
+          "Bridge Damage": 3,
+          "Street Light Failure": 5,
+          "Drainage Issues": 5,
+          "Footpath Damage": 2,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 1,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 84,
+        "trend": 5
+      },
+      "officer_notes": {
+        "remarks": "Barapullah drain improvement showing good progress. Multi-level parking on track.",
+        "risks": "Parking construction foundation requires constant dewatering.",
+        "recommendations": "Maintain dewatering pumps to ensure uninterrupted basement construction."
+      }
+    },
+    {
+      "district_id": "DIST_10",
+      "district_name": "South West Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-013",
+            "name": "Cycle Track — Outer Ring Road",
+            "type": "Roads",
+            "contractor": "KNR Constructions",
+            "executing_agency": "PWD Zone 9",
+            "budget_allocated": 150000000.0,
+            "budget_released": 130000000.0,
+            "budget_utilized": 110000000.0,
+            "progress": 75,
+            "start_date": "2026-02-01",
+            "deadline": "2026-09-15",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Rohit Soni",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Marking & barricading",
+                "stage": "Completed",
+                "deadline": "2026-04-01",
+                "progress": 100
+              },
+              {
+                "name": "Track construction",
+                "stage": "In Progress",
+                "deadline": "2026-08-15",
+                "progress": 65
+              },
+              {
+                "name": "Signage & landscaping",
+                "stage": "Assigned",
+                "deadline": "2026-09-10",
+                "progress": 0
+              }
+            ]
+          },
+          {
+            "id": "PWD-022",
+            "name": "Solar Rooftop — Govt. Offices Phase-II",
+            "type": "Buildings",
+            "contractor": "Adani Solar",
+            "executing_agency": "PWD Electrical",
+            "budget_allocated": 120000000.0,
+            "budget_released": 110000000.0,
+            "budget_utilized": 95000000.0,
+            "progress": 80,
+            "start_date": "2026-01-15",
+            "deadline": "2026-08-15",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Pooja Sethi",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Roof survey",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Panel installation",
+                "stage": "In Progress",
+                "deadline": "2026-07-30",
+                "progress": 75
+              },
+              {
+                "name": "Grid connection",
+                "stage": "Assigned",
+                "deadline": "2026-08-10",
+                "progress": 0
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 270000000.0,
+        "released": 240000000.0,
+        "utilized": 205000000.0,
+        "remaining": 35000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 11.0,
+          "ongoing": 4.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 4.0,
+          "ongoing": 1.0
+        },
+        "lighting": {
+          "completed": 650.0,
+          "ongoing": 80.0
+        }
+      },
+      "complaints": {
+        "total": 22,
+        "resolved": 17,
+        "pending": 5,
+        "high_priority": 2,
+        "categories": {
+          "Road Damage": 6,
+          "Water Logging": 5,
+          "Street Light Failure": 4,
+          "Footpath Damage": 3,
+          "Drainage Issues": 2,
+          "Other": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 0,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 90,
+        "trend": 2
+      },
+      "officer_notes": {
+        "remarks": "Both projects progressing well. Solar rooftop showing excellent results.",
+        "risks": "Cycle track construction may face monsoon delays.",
+        "recommendations": "Prioritize cycle track asphalting before monsoon season."
+      }
+    },
+    {
+      "district_id": "DIST_11",
+      "district_name": "West Delhi",
+      "projects": {
+        "total": 2,
+        "active": 2,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 0,
+        "list": [
+          {
+            "id": "PWD-012",
+            "name": "Stormwater Harvesting Network",
+            "type": "Drainage",
+            "contractor": "Nagarjuna Construction",
+            "executing_agency": "PWD Zone 10",
+            "budget_allocated": 310000000.0,
+            "budget_released": 290000000.0,
+            "budget_utilized": 270000000.0,
+            "progress": 85,
+            "start_date": "2026-01-01",
+            "deadline": "2026-08-20",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Er. Shalini Kapoor",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Recharge pit excavation",
+                "stage": "Completed",
+                "deadline": "2026-03-01",
+                "progress": 100
+              },
+              {
+                "name": "Pipeline network",
+                "stage": "Completed",
+                "deadline": "2026-06-01",
+                "progress": 100
+              },
+              {
+                "name": "Filtration units",
+                "stage": "In Progress",
+                "deadline": "2026-08-10",
+                "progress": 70
+              }
+            ]
+          },
+          {
+            "id": "PWD-020",
+            "name": "Community Hall Construction — Nangloi",
+            "type": "Buildings",
+            "contractor": "CPWD",
+            "executing_agency": "PWD Zone 10",
+            "budget_allocated": 160000000.0,
+            "budget_released": 150000000.0,
+            "budget_utilized": 140000000.0,
+            "progress": 92,
+            "start_date": "2025-12-15",
+            "deadline": "2026-07-15",
+            "status": "On Track",
+            "priority": "Low",
+            "officer": "Er. Mohan Das",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Structure complete",
+                "stage": "Completed",
+                "deadline": "2026-04-30",
+                "progress": 100
+              },
+              {
+                "name": "Interior & electrical",
+                "stage": "Completed",
+                "deadline": "2026-06-15",
+                "progress": 100
+              },
+              {
+                "name": "Landscaping",
+                "stage": "In Progress",
+                "deadline": "2026-07-10",
+                "progress": 80
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 470000000.0,
+        "released": 440000000.0,
+        "utilized": 410000000.0,
+        "remaining": 30000000.0
+      },
+      "infrastructure": {
+        "roads": {
+          "completed": 14.0,
+          "ongoing": 2.0
+        },
+        "flyovers": {
+          "completed": 0.0,
+          "ongoing": 0.0
+        },
+        "bridges": {
+          "completed": 1.0,
+          "ongoing": 0.0
+        },
+        "buildings": {
+          "completed": 3.0,
+          "ongoing": 1.0
+        },
+        "drainage": {
+          "completed": 8.0,
+          "ongoing": 1.0
+        },
+        "lighting": {
+          "completed": 1000.0,
+          "ongoing": 80.0
+        }
+      },
+      "complaints": {
+        "total": 20,
+        "resolved": 16,
+        "pending": 4,
+        "high_priority": 2,
+        "categories": {
+          "Road Damage": 6,
+          "Water Logging": 4,
+          "Street Light Failure": 3,
+          "Footpath Damage": 3,
+          "Drainage Issues": 2,
+          "Other": 2
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 0,
+        "pending_requests": 1,
+        "delayed_cases": 0,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 92,
+        "trend": 6
+      },
+      "officer_notes": {
+        "remarks": "Both projects nearing completion. West Delhi is the best-performing district this quarter.",
+        "risks": "Minimal risk. Focus on quality assurance for final handover.",
+        "recommendations": "Schedule pre-handover quality inspections for both projects."
+      }
+    }
+  ]
+}

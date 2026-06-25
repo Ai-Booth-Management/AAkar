@@ -14,6 +14,7 @@
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
     "vis-data": "^8.0.4",
     "vis-network": "^10.1.0"
   },

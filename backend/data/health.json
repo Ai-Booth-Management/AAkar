@@ -1,0 +1,2036 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "updated_by": "health_officer@innovateindia.gov",
+    "last_updated": "2026-06-25T11:15:00.000Z"
+  },
+  "department": "Department of Health & Family Welfare",
+  "reporting_month": "June",
+  "reporting_year": 2026,
+  "district_data": [
+    {
+      "district_id": "DIST_01",
+      "district_name": "Central Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-001",
+            "name": "Central Delhi PHC Infrastructure Refurbishment",
+            "type": "Primary Health Centers",
+            "contractor": "EPIL Construction",
+            "executing_agency": "Health Zone 01",
+            "budget_allocated": 120000000.0,
+            "budget_released": 100000000.0,
+            "budget_utilized": 95000000.0,
+            "progress": 52,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-13",
+            "status": "Critical",
+            "priority": "Medium",
+            "officer": "Dr. S. K. Sen",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-13",
+                "progress": 52
+              }
+            ]
+          },
+          {
+            "id": "HLT-002",
+            "name": "Central Delhi Pediatric ICU Bed Addition",
+            "type": "ICU Units",
+            "contractor": "Philips Healthcare",
+            "executing_agency": "Health Zone 01",
+            "budget_allocated": 150000000.0,
+            "budget_released": 140000000.0,
+            "budget_utilized": 130000000.0,
+            "progress": 69,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-20",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Vikram Seth",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-20",
+                "progress": 69
+              }
+            ]
+          },
+          {
+            "id": "HLT-003",
+            "name": "Central Delhi Neonatal Care Unit Refit",
+            "type": "Maternity Centers",
+            "contractor": "GE Healthcare",
+            "executing_agency": "Health Zone 01",
+            "budget_allocated": 90000000.0,
+            "budget_released": 85000000.0,
+            "budget_utilized": 80000000.0,
+            "progress": 86,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-27",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Sunita Rao",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-27",
+                "progress": 86
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 360000000.0,
+        "released": 325000000.0,
+        "utilized": 305000000.0,
+        "remaining": 55000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 1.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "icu_beds": {
+          "completed": 80.0,
+          "ongoing": 30.0
+        },
+        "ventilators": {
+          "completed": 20.0,
+          "ongoing": 10.0
+        },
+        "medicine_stock": {
+          "completed": 87.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 90.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 48,
+        "resolved": 42,
+        "pending": 6,
+        "high_priority": 5,
+        "categories": {
+          "Medicine Shortage": 5,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 5,
+          "Sanitation Issue": 7,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 0,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 91,
+        "trend": 1
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in Central Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for Central Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_02",
+      "district_name": "East Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-004",
+            "name": "East Delhi Radiology Wing MRI Installation",
+            "type": "Diagnostics Centers",
+            "contractor": "Wipro GE Medical",
+            "executing_agency": "Health Zone 02",
+            "budget_allocated": 180000000.0,
+            "budget_released": 170000000.0,
+            "budget_utilized": 160000000.0,
+            "progress": 47,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-06",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Dr. Rajiv Nayar",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-11-06",
+                "progress": 47
+              }
+            ]
+          },
+          {
+            "id": "HLT-005",
+            "name": "East Delhi Basic Life Support Vehicle Addition",
+            "type": "Ambulance Procurement",
+            "contractor": "Tata Motors Ltd",
+            "executing_agency": "Health Zone 02",
+            "budget_allocated": 30000000.0,
+            "budget_released": 30000000.0,
+            "budget_utilized": 28000000.0,
+            "progress": 64,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-13",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Rakesh Yadav",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-12-13",
+                "progress": 64
+              }
+            ]
+          },
+          {
+            "id": "HLT-006",
+            "name": "East Delhi Geriatric Care Facility Setup",
+            "type": "Specialty Clinics",
+            "contractor": "Apollo Hospitals Group",
+            "executing_agency": "Health Zone 02",
+            "budget_allocated": 110000000.0,
+            "budget_released": 100000000.0,
+            "budget_utilized": 90000000.0,
+            "progress": 81,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-20",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Vikas Bahl",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-20",
+                "progress": 81
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 320000000.0,
+        "released": 300000000.0,
+        "utilized": 278000000.0,
+        "remaining": 42000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 4.0
+        },
+        "icu_beds": {
+          "completed": 140.0,
+          "ongoing": 45.0
+        },
+        "ventilators": {
+          "completed": 35.0,
+          "ongoing": 16.0
+        },
+        "medicine_stock": {
+          "completed": 76.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 96.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 34,
+        "resolved": 25,
+        "pending": 9,
+        "high_priority": 3,
+        "categories": {
+          "Medicine Shortage": 6,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 3,
+          "Sanitation Issue": 9,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 3,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 4
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 82,
+        "trend": -3
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in East Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for East Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_03",
+      "district_name": "New Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-007",
+            "name": "New Delhi Trauma Center Upgrade",
+            "type": "Hospitals",
+            "contractor": "L&T Construction",
+            "executing_agency": "Health Zone 03",
+            "budget_allocated": 600000000.0,
+            "budget_released": 500000000.0,
+            "budget_utilized": 480000000.0,
+            "progress": 42,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-27",
+            "status": "Delayed",
+            "priority": "Medium",
+            "officer": "Dr. Meena Gupta",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-27",
+                "progress": 42
+              }
+            ]
+          },
+          {
+            "id": "HLT-008",
+            "name": "New Delhi Mohalla Clinic Setup Phase 3",
+            "type": "Primary Health Centers",
+            "contractor": "HLL Lifecare",
+            "executing_agency": "Health Zone 03",
+            "budget_allocated": 80000000.0,
+            "budget_released": 75000000.0,
+            "budget_utilized": 70000000.0,
+            "progress": 59,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-06",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Dr. Amit Verma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-06",
+                "progress": 59
+              }
+            ]
+          },
+          {
+            "id": "HLT-009",
+            "name": "New Delhi New Critical Care Block",
+            "type": "ICU Units",
+            "contractor": "Siemens Healthineers",
+            "executing_agency": "Health Zone 03",
+            "budget_allocated": 350000000.0,
+            "budget_released": 320000000.0,
+            "budget_utilized": 280000000.0,
+            "progress": 76,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-13",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Anil Malhotra",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-13",
+                "progress": 76
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 1030000000.0,
+        "released": 895000000.0,
+        "utilized": 830000000.0,
+        "remaining": 200000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 0.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 3.0
+        },
+        "icu_beds": {
+          "completed": 50.0,
+          "ongoing": 10.0
+        },
+        "ventilators": {
+          "completed": 10.0,
+          "ongoing": 7.0
+        },
+        "medicine_stock": {
+          "completed": 85.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 87.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 20,
+        "resolved": 8,
+        "pending": 12,
+        "high_priority": 1,
+        "categories": {
+          "Medicine Shortage": 7,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 1,
+          "Sanitation Issue": 1,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 3
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 94,
+        "trend": 0
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in New Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for New Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_04",
+      "district_name": "North Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-010",
+            "name": "North Delhi Maternal & Child Health Wing Upgrade",
+            "type": "Maternity Centers",
+            "contractor": "HSCC India",
+            "executing_agency": "Health Zone 04",
+            "budget_allocated": 220000000.0,
+            "budget_released": 200000000.0,
+            "budget_utilized": 180000000.0,
+            "progress": 37,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-20",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Dr. Preeti Ahluwalia",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-20",
+                "progress": 37
+              }
+            ]
+          },
+          {
+            "id": "HLT-011",
+            "name": "North Delhi Central Pathology Lab Upgrade",
+            "type": "Diagnostics Centers",
+            "contractor": "Transasia Bio-Medicals",
+            "executing_agency": "Health Zone 04",
+            "budget_allocated": 70000000.0,
+            "budget_released": 65000000.0,
+            "budget_utilized": 60000000.0,
+            "progress": 54,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-27",
+            "status": "Critical",
+            "priority": "Medium",
+            "officer": "Dr. Neha Kapoor",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-27",
+                "progress": 54
+              }
+            ]
+          },
+          {
+            "id": "HLT-012",
+            "name": "North Delhi Advanced Life Support Ambulance Procurement",
+            "type": "Ambulance Procurement",
+            "contractor": "Force Motors",
+            "executing_agency": "Health Zone 04",
+            "budget_allocated": 50000000.0,
+            "budget_released": 50000000.0,
+            "budget_utilized": 45000000.0,
+            "progress": 71,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-06",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Sanjay Dutt",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-10-06",
+                "progress": 71
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 340000000.0,
+        "released": 315000000.0,
+        "utilized": 285000000.0,
+        "remaining": 55000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 1.0,
+          "ongoing": 1.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 2.0
+        },
+        "icu_beds": {
+          "completed": 110.0,
+          "ongoing": 25.0
+        },
+        "ventilators": {
+          "completed": 25.0,
+          "ongoing": 13.0
+        },
+        "medicine_stock": {
+          "completed": 94.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 93.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 41,
+        "resolved": 38,
+        "pending": 3,
+        "high_priority": 4,
+        "categories": {
+          "Medicine Shortage": 8,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 4,
+          "Sanitation Issue": 3,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 85,
+        "trend": 3
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in North Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for North Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_05",
+      "district_name": "North East Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-013",
+            "name": "North East Delhi Diabetic Care Center Upgrade",
+            "type": "Specialty Clinics",
+            "contractor": "Max Healthcare",
+            "executing_agency": "Health Zone 05",
+            "budget_allocated": 60000000.0,
+            "budget_released": 55000000.0,
+            "budget_utilized": 50000000.0,
+            "progress": 88,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-13",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Pooja Joshi",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-13",
+                "progress": 88
+              }
+            ]
+          },
+          {
+            "id": "HLT-014",
+            "name": "North East Delhi Emergency Wing Modernization",
+            "type": "Hospitals",
+            "contractor": "NBCC India Ltd",
+            "executing_agency": "Health Zone 05",
+            "budget_allocated": 450000000.0,
+            "budget_released": 400000000.0,
+            "budget_utilized": 350000000.0,
+            "progress": 49,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-20",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Dr. Rajesh Sharma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-20",
+                "progress": 49
+              }
+            ]
+          },
+          {
+            "id": "HLT-015",
+            "name": "North East Delhi PHC Infrastructure Refurbishment",
+            "type": "Primary Health Centers",
+            "contractor": "EPIL Construction",
+            "executing_agency": "Health Zone 05",
+            "budget_allocated": 120000000.0,
+            "budget_released": 100000000.0,
+            "budget_utilized": 95000000.0,
+            "progress": 66,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-27",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. S. K. Sen",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-27",
+                "progress": 66
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 630000000.0,
+        "released": 555000000.0,
+        "utilized": 495000000.0,
+        "remaining": 135000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 2.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "icu_beds": {
+          "completed": 20.0,
+          "ongoing": 40.0
+        },
+        "ventilators": {
+          "completed": 0.0,
+          "ongoing": 4.0
+        },
+        "medicine_stock": {
+          "completed": 83.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 84.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 27,
+        "resolved": 21,
+        "pending": 6,
+        "high_priority": 2,
+        "categories": {
+          "Medicine Shortage": 1,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 2,
+          "Sanitation Issue": 5,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 0,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 76,
+        "trend": -1
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in North East Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for North East Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_06",
+      "district_name": "North West Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 0,
+        "list": [
+          {
+            "id": "HLT-016",
+            "name": "North West Delhi Pediatric ICU Bed Addition",
+            "type": "ICU Units",
+            "contractor": "Philips Healthcare",
+            "executing_agency": "Health Zone 06",
+            "budget_allocated": 150000000.0,
+            "budget_released": 140000000.0,
+            "budget_utilized": 130000000.0,
+            "progress": 83,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-06",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Vikram Seth",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-06",
+                "progress": 83
+              }
+            ]
+          },
+          {
+            "id": "HLT-017",
+            "name": "North West Delhi Neonatal Care Unit Refit",
+            "type": "Maternity Centers",
+            "contractor": "GE Healthcare",
+            "executing_agency": "Health Zone 06",
+            "budget_allocated": 90000000.0,
+            "budget_released": 85000000.0,
+            "budget_utilized": 80000000.0,
+            "progress": 44,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-13",
+            "status": "Delayed",
+            "priority": "Medium",
+            "officer": "Dr. Sunita Rao",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-13",
+                "progress": 44
+              }
+            ]
+          },
+          {
+            "id": "HLT-018",
+            "name": "North West Delhi Radiology Wing MRI Installation",
+            "type": "Diagnostics Centers",
+            "contractor": "Wipro GE Medical",
+            "executing_agency": "Health Zone 06",
+            "budget_allocated": 180000000.0,
+            "budget_released": 170000000.0,
+            "budget_utilized": 160000000.0,
+            "progress": 61,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-20",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Rajiv Nayar",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-10-20",
+                "progress": 61
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 420000000.0,
+        "released": 395000000.0,
+        "utilized": 370000000.0,
+        "remaining": 50000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 0.0,
+          "ongoing": 1.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 4.0
+        },
+        "icu_beds": {
+          "completed": 80.0,
+          "ongoing": 55.0
+        },
+        "ventilators": {
+          "completed": 15.0,
+          "ongoing": 10.0
+        },
+        "medicine_stock": {
+          "completed": 92.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 90.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 48,
+        "resolved": 39,
+        "pending": 9,
+        "high_priority": 5,
+        "categories": {
+          "Medicine Shortage": 2,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 5,
+          "Sanitation Issue": 7,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 3,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 4
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 88,
+        "trend": 2
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in North West Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for North West Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_07",
+      "district_name": "Shahdara",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-019",
+            "name": "Shahdara Basic Life Support Vehicle Addition",
+            "type": "Ambulance Procurement",
+            "contractor": "Tata Motors Ltd",
+            "executing_agency": "Health Zone 07",
+            "budget_allocated": 30000000.0,
+            "budget_released": 30000000.0,
+            "budget_utilized": 28000000.0,
+            "progress": 78,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-27",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Rakesh Yadav",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-11-27",
+                "progress": 78
+              }
+            ]
+          },
+          {
+            "id": "HLT-020",
+            "name": "Shahdara Geriatric Care Facility Setup",
+            "type": "Specialty Clinics",
+            "contractor": "Apollo Hospitals Group",
+            "executing_agency": "Health Zone 07",
+            "budget_allocated": 110000000.0,
+            "budget_released": 100000000.0,
+            "budget_utilized": 90000000.0,
+            "progress": 39,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-06",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Dr. Vikas Bahl",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-06",
+                "progress": 39
+              }
+            ]
+          },
+          {
+            "id": "HLT-021",
+            "name": "Shahdara Trauma Center Upgrade",
+            "type": "Hospitals",
+            "contractor": "L&T Construction",
+            "executing_agency": "Health Zone 07",
+            "budget_allocated": 600000000.0,
+            "budget_released": 500000000.0,
+            "budget_utilized": 480000000.0,
+            "progress": 56,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-13",
+            "status": "Critical",
+            "priority": "Medium",
+            "officer": "Dr. Meena Gupta",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-13",
+                "progress": 56
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 740000000.0,
+        "released": 630000000.0,
+        "utilized": 598000000.0,
+        "remaining": 142000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 1.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 3.0
+        },
+        "icu_beds": {
+          "completed": 140.0,
+          "ongoing": 20.0
+        },
+        "ventilators": {
+          "completed": 30.0,
+          "ongoing": 16.0
+        },
+        "medicine_stock": {
+          "completed": 81.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 96.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 34,
+        "resolved": 22,
+        "pending": 12,
+        "high_priority": 3,
+        "categories": {
+          "Medicine Shortage": 3,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 3,
+          "Sanitation Issue": 9,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 3
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 79,
+        "trend": -2
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in Shahdara clinics.",
+        "risks": "Delay in medical supplier delivery for Shahdara.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_08",
+      "district_name": "South Delhi",
+      "projects": {
+        "total": 3,
+        "active": 2,
+        "completed": 1,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-022",
+            "name": "South Delhi Mohalla Clinic Setup Phase 3",
+            "type": "Primary Health Centers",
+            "contractor": "HLL Lifecare",
+            "executing_agency": "Health Zone 08",
+            "budget_allocated": 80000000.0,
+            "budget_released": 75000000.0,
+            "budget_utilized": 70000000.0,
+            "progress": 73,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-20",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Amit Verma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-20",
+                "progress": 73
+              }
+            ]
+          },
+          {
+            "id": "HLT-023",
+            "name": "South Delhi New Critical Care Block",
+            "type": "ICU Units",
+            "contractor": "Siemens Healthineers",
+            "executing_agency": "Health Zone 08",
+            "budget_allocated": 350000000.0,
+            "budget_released": 320000000.0,
+            "budget_utilized": 280000000.0,
+            "progress": 100,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-27",
+            "status": "Completed",
+            "priority": "Medium",
+            "officer": "Dr. Anil Malhotra",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "Completed",
+                "deadline": "2026-12-27",
+                "progress": 100
+              }
+            ]
+          },
+          {
+            "id": "HLT-024",
+            "name": "South Delhi Maternal & Child Health Wing Upgrade",
+            "type": "Maternity Centers",
+            "contractor": "HSCC India",
+            "executing_agency": "Health Zone 08",
+            "budget_allocated": 220000000.0,
+            "budget_released": 200000000.0,
+            "budget_utilized": 180000000.0,
+            "progress": 51,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-06",
+            "status": "Critical",
+            "priority": "High",
+            "officer": "Dr. Preeti Ahluwalia",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-06",
+                "progress": 51
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 650000000.0,
+        "released": 595000000.0,
+        "utilized": 530000000.0,
+        "remaining": 120000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 2.0
+        },
+        "icu_beds": {
+          "completed": 50.0,
+          "ongoing": 35.0
+        },
+        "ventilators": {
+          "completed": 5.0,
+          "ongoing": 7.0
+        },
+        "medicine_stock": {
+          "completed": 90.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 87.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 20,
+        "resolved": 17,
+        "pending": 3,
+        "high_priority": 1,
+        "categories": {
+          "Medicine Shortage": 4,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 1,
+          "Sanitation Issue": 1,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 1,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 2
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 91,
+        "trend": 1
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in South Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for South Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_09",
+      "district_name": "South East Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 0,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-025",
+            "name": "South East Delhi Central Pathology Lab Upgrade",
+            "type": "Diagnostics Centers",
+            "contractor": "Transasia Bio-Medicals",
+            "executing_agency": "Health Zone 09",
+            "budget_allocated": 70000000.0,
+            "budget_released": 65000000.0,
+            "budget_utilized": 60000000.0,
+            "progress": 68,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-13",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. Neha Kapoor",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-13",
+                "progress": 68
+              }
+            ]
+          },
+          {
+            "id": "HLT-026",
+            "name": "South East Delhi Advanced Life Support Ambulance Procurement",
+            "type": "Ambulance Procurement",
+            "contractor": "Force Motors",
+            "executing_agency": "Health Zone 09",
+            "budget_allocated": 50000000.0,
+            "budget_released": 50000000.0,
+            "budget_utilized": 45000000.0,
+            "progress": 85,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-20",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Sanjay Dutt",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-12-20",
+                "progress": 85
+              }
+            ]
+          },
+          {
+            "id": "HLT-027",
+            "name": "South East Delhi Diabetic Care Center Upgrade",
+            "type": "Specialty Clinics",
+            "contractor": "Max Healthcare",
+            "executing_agency": "Health Zone 09",
+            "budget_allocated": 60000000.0,
+            "budget_released": 55000000.0,
+            "budget_utilized": 50000000.0,
+            "progress": 46,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-27",
+            "status": "Critical",
+            "priority": "Medium",
+            "officer": "Dr. Pooja Joshi",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-27",
+                "progress": 46
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 180000000.0,
+        "released": 170000000.0,
+        "utilized": 155000000.0,
+        "remaining": 25000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 0.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 1.0
+        },
+        "icu_beds": {
+          "completed": 110.0,
+          "ongoing": 50.0
+        },
+        "ventilators": {
+          "completed": 20.0,
+          "ongoing": 13.0
+        },
+        "medicine_stock": {
+          "completed": 79.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 93.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 41,
+        "resolved": 35,
+        "pending": 6,
+        "high_priority": 4,
+        "categories": {
+          "Medicine Shortage": 5,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 4,
+          "Sanitation Issue": 3,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 0,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 1
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 82,
+        "trend": -3
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in South East Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for South East Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_10",
+      "district_name": "South West Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 0,
+        "list": [
+          {
+            "id": "HLT-028",
+            "name": "South West Delhi Emergency Wing Modernization",
+            "type": "Hospitals",
+            "contractor": "NBCC India Ltd",
+            "executing_agency": "Health Zone 10",
+            "budget_allocated": 450000000.0,
+            "budget_released": 400000000.0,
+            "budget_utilized": 350000000.0,
+            "progress": 63,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-06",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Rajesh Sharma",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-06",
+                "progress": 63
+              }
+            ]
+          },
+          {
+            "id": "HLT-029",
+            "name": "South West Delhi PHC Infrastructure Refurbishment",
+            "type": "Primary Health Centers",
+            "contractor": "EPIL Construction",
+            "executing_agency": "Health Zone 10",
+            "budget_allocated": 120000000.0,
+            "budget_released": 100000000.0,
+            "budget_utilized": 95000000.0,
+            "progress": 80,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-13",
+            "status": "On Track",
+            "priority": "Medium",
+            "officer": "Dr. S. K. Sen",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-12-13",
+                "progress": 80
+              }
+            ]
+          },
+          {
+            "id": "HLT-030",
+            "name": "South West Delhi Pediatric ICU Bed Addition",
+            "type": "ICU Units",
+            "contractor": "Philips Healthcare",
+            "executing_agency": "Health Zone 10",
+            "budget_allocated": 150000000.0,
+            "budget_released": 140000000.0,
+            "budget_utilized": 130000000.0,
+            "progress": 41,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-20",
+            "status": "Delayed",
+            "priority": "High",
+            "officer": "Dr. Vikram Seth",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-10-20",
+                "progress": 41
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 720000000.0,
+        "released": 640000000.0,
+        "utilized": 575000000.0,
+        "remaining": 145000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 1.0,
+          "ongoing": 1.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 4.0
+        },
+        "icu_beds": {
+          "completed": 20.0,
+          "ongoing": 15.0
+        },
+        "ventilators": {
+          "completed": 35.0,
+          "ongoing": 4.0
+        },
+        "medicine_stock": {
+          "completed": 88.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 84.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 27,
+        "resolved": 18,
+        "pending": 9,
+        "high_priority": 2,
+        "categories": {
+          "Medicine Shortage": 6,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 2,
+          "Sanitation Issue": 5,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 3,
+        "pending_reports": 1,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 4
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 1
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 94,
+        "trend": 0
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in South West Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for South West Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    },
+    {
+      "district_id": "DIST_11",
+      "district_name": "West Delhi",
+      "projects": {
+        "total": 3,
+        "active": 3,
+        "completed": 0,
+        "delayed": 1,
+        "critical": 1,
+        "list": [
+          {
+            "id": "HLT-031",
+            "name": "West Delhi Neonatal Care Unit Refit",
+            "type": "Maternity Centers",
+            "contractor": "GE Healthcare",
+            "executing_agency": "Health Zone 11",
+            "budget_allocated": 90000000.0,
+            "budget_released": 85000000.0,
+            "budget_utilized": 80000000.0,
+            "progress": 58,
+            "start_date": "2026-01-10",
+            "deadline": "2026-11-27",
+            "status": "Critical",
+            "priority": "Medium",
+            "officer": "Dr. Sunita Rao",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Civil construction",
+                "stage": "In Progress",
+                "deadline": "2026-11-27",
+                "progress": 58
+              }
+            ]
+          },
+          {
+            "id": "HLT-032",
+            "name": "West Delhi Radiology Wing MRI Installation",
+            "type": "Diagnostics Centers",
+            "contractor": "Wipro GE Medical",
+            "executing_agency": "Health Zone 11",
+            "budget_allocated": 180000000.0,
+            "budget_released": 170000000.0,
+            "budget_utilized": 160000000.0,
+            "progress": 75,
+            "start_date": "2026-01-10",
+            "deadline": "2026-12-06",
+            "status": "On Track",
+            "priority": "High",
+            "officer": "Dr. Rajiv Nayar",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-12-06",
+                "progress": 75
+              }
+            ]
+          },
+          {
+            "id": "HLT-033",
+            "name": "West Delhi Basic Life Support Vehicle Addition",
+            "type": "Ambulance Procurement",
+            "contractor": "Tata Motors Ltd",
+            "executing_agency": "Health Zone 11",
+            "budget_allocated": 30000000.0,
+            "budget_released": 30000000.0,
+            "budget_utilized": 28000000.0,
+            "progress": 36,
+            "start_date": "2026-01-10",
+            "deadline": "2026-10-13",
+            "status": "Delayed",
+            "priority": "Medium",
+            "officer": "Dr. Rakesh Yadav",
+            "evidence": null,
+            "tasks": [
+              {
+                "name": "Site selection & approval",
+                "stage": "Completed",
+                "deadline": "2026-02-15",
+                "progress": 100
+              },
+              {
+                "name": "Equipment Procurement",
+                "stage": "In Progress",
+                "deadline": "2026-10-13",
+                "progress": 36
+              }
+            ]
+          }
+        ]
+      },
+      "funds": {
+        "allocated": 300000000.0,
+        "released": 285000000.0,
+        "utilized": 268000000.0,
+        "remaining": 32000000.0
+      },
+      "infrastructure": {
+        "hospitals": {
+          "completed": 2.0,
+          "ongoing": 2.0
+        },
+        "clinics": {
+          "completed": 2.0,
+          "ongoing": 3.0
+        },
+        "icu_beds": {
+          "completed": 80.0,
+          "ongoing": 30.0
+        },
+        "ventilators": {
+          "completed": 10.0,
+          "ongoing": 10.0
+        },
+        "medicine_stock": {
+          "completed": 77.0,
+          "ongoing": 0.0
+        },
+        "immunization": {
+          "completed": 90.0,
+          "ongoing": 0.0
+        }
+      },
+      "complaints": {
+        "total": 48,
+        "resolved": 36,
+        "pending": 12,
+        "high_priority": 5,
+        "categories": {
+          "Medicine Shortage": 7,
+          "Staff Absence": 3,
+          "Equipment Malfunction": 5,
+          "Sanitation Issue": 7,
+          "Other": 1
+        }
+      },
+      "administrative_backlog": {
+        "pending_approvals": 2,
+        "pending_reports": 0,
+        "pending_requests": 2,
+        "delayed_cases": 1,
+        "age_buckets": [
+          {
+            "label": "0-7 Days",
+            "count": 3
+          },
+          {
+            "label": "7-15 Days",
+            "count": 1
+          },
+          {
+            "label": "15-30 Days",
+            "count": 0
+          },
+          {
+            "label": "30+ Days",
+            "count": 0
+          }
+        ]
+      },
+      "analytics": {
+        "score": 85,
+        "trend": 3
+      },
+      "officer_notes": {
+        "remarks": "Special health drive conducted in West Delhi clinics.",
+        "risks": "Delay in medical supplier delivery for West Delhi.",
+        "recommendations": "Direct buffer stocks from central warehouse."
+      }
+    }
+  ]
+}

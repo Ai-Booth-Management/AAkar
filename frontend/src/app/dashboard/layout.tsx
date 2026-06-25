@@ -111,6 +111,22 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    id: 'department',
+    label: 'Department',
+    path: '/dashboard/department/pwd',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 21h18" />
+        <path d="M5 21V7l7-4 7 4v14" />
+        <path d="M9 21v-4h6v4" />
+        <path d="M9 10h1" />
+        <path d="M14 10h1" />
+        <path d="M9 14h1" />
+        <path d="M14 14h1" />
+      </svg>
+    ),
+  },
 ];
 
 const ABOUT_ITEM = {
@@ -149,6 +165,8 @@ const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard/heatmap': 'District Heatmap Analysis',
   '/dashboard/about': 'About System',
   '/dashboard/settings': 'Settings',
+  '/dashboard/department/pwd': 'Public Works Department (PWD)',
+  '/dashboard/department/health': 'Department of Health & Family Welfare',
 };
 
 // Next.js static asset import is imported inside components.
@@ -161,6 +179,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [expanded] = useState(true);
+  const [deptMenuOpen, setDeptMenuOpen] = useState(pathname.startsWith('/dashboard/department'));
 
   const userRole = (currentUser?.role || '').toLowerCase();
   const isAuthorized = currentUser && (userRole === 'official' || userRole === 'cm' || userRole === 'dm');
@@ -170,6 +189,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push("/login");
     }
   }, [currentUser, loading, router, isAuthorized]);
+
+  useEffect(() => {
+    if (pathname.startsWith('/dashboard/department')) {
+      setDeptMenuOpen(true);
+    }
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -203,8 +228,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentTitle = PAGE_TITLES[pathname] || 'Dashboard';
 
   const visibleNavItems = NAV_ITEMS.filter(item => {
+    if (item.id === 'department') {
+      return ['cm', 'dm', 'official'].includes(userRole);
+    }
     if (userRole === 'dm') {
-      return ['overview', 'ask', 'complaints', 'heatmap'].includes(item.id);
+      return ['overview', 'ask', 'complaints', 'heatmap', 'department'].includes(item.id);
     }
     return true;
   });
@@ -219,17 +247,90 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <nav className="sidebar-nav">
-            {visibleNavItems.map((item) => (
-              <Link
-                key={item.id}
-                href={item.path}
-                className={`nav-item ${pathname === item.path ? 'active' : ''}`}
-                style={{ textDecoration: 'none' }}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {visibleNavItems.map((item) => {
+              if (item.id === 'department') {
+                const isDeptActive = pathname.startsWith('/dashboard/department');
+                return (
+                  <div key={item.id} className="nav-item-wrapper" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      className={`nav-item ${isDeptActive ? 'active' : ''}`}
+                      onClick={() => setDeptMenuOpen(!deptMenuOpen)}
+                      style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                      <svg 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        style={{ 
+                          marginLeft: 'auto', 
+                          width: 12, 
+                          height: 12, 
+                          transform: deptMenuOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease',
+                          flexShrink: 0
+                        }}
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                    {deptMenuOpen && (
+                      <div className="sidebar-submenu" style={{ paddingLeft: '32px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px', marginBottom: '8px' }}>
+                        <Link
+                          href="/dashboard/department/pwd"
+                          className={`submenu-item ${pathname === '/dashboard/department/pwd' ? 'active' : ''}`}
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            padding: '6px 8px',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: pathname === '/dashboard/department/pwd' ? 'var(--amber-500)' : 'rgba(255, 255, 255, 0.6)',
+                            borderLeft: pathname === '/dashboard/department/pwd' ? '2px solid var(--amber-500)' : '2px solid transparent',
+                            paddingLeft: '10px'
+                          }}
+                        >
+                          🏛️ PWD Department
+                        </Link>
+                        <Link
+                          href="/dashboard/department/health"
+                          className={`submenu-item ${pathname === '/dashboard/department/health' ? 'active' : ''}`}
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            padding: '6px 8px',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: pathname === '/dashboard/department/health' ? 'var(--amber-500)' : 'rgba(255, 255, 255, 0.6)',
+                            borderLeft: pathname === '/dashboard/department/health' ? '2px solid var(--amber-500)' : '2px solid transparent',
+                            paddingLeft: '10px'
+                          }}
+                        >
+                          🏥 Health Department
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <Link
+                  key={item.id}
+                  href={item.path}
+                  className={`nav-item ${pathname === item.path ? 'active' : ''}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
