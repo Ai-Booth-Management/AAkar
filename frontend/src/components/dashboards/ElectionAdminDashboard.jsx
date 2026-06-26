@@ -189,47 +189,51 @@ function UserManagement() {
 
   const renderUserRow = (u) => (
     <tr key={u.id}>
-      <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.email}</td>
+      <td style={{ fontFamily: 'var(--font)', fontSize: 13, fontWeight: 700, color: 'var(--navy-900)' }}>{u.email}</td>
       <td style={{ fontWeight: 600 }}>{u.display_name || '—'}</td>
       <td>
-        <span className="pill" style={{
-          backgroundColor: (ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#6b7280') + '20',
-          color: ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#6b7280',
-          border: '1px solid ' + (ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#6b7280') + '40'
+        <span className="admin-badge" style={{
+          backgroundColor: (ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#64748b') + '15',
+          color: ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#64748b',
+          border: '1px solid ' + (ROLE_OPTIONS.find(r => r.value === u.role)?.color || '#64748b') + '30',
+          fontWeight: 800
         }}>
           {ROLE_OPTIONS.find(r => r.value === u.role)?.label || u.role}
         </span>
       </td>
-      <td style={{ fontSize: 12, color: 'var(--gray-600)' }}>{[u.state_id, u.district_id, u.constituency_id].filter(Boolean).join(' / ') || '—'}</td>
+      <td style={{ fontSize: 12, color: 'var(--gray-600)', fontWeight: 600 }}>{[u.state_id, u.district_id, u.constituency_id].filter(Boolean).join(' / ') || '—'}</td>
       <td>
-        <button className="btn-icon btn-icon-danger" onClick={() => handleDelete(u.id)} disabled={deleting === u.id} title={deleting === u.id ? 'Deleting...' : 'Delete user'}>
+        <button className="btn-icon btn-icon-danger" onClick={() => handleDelete(u.id)} disabled={deleting === u.id} title={deleting === u.id ? 'Deleting...' : 'Delete user'} style={{ borderRadius: 'var(--radius-sm)' }}>
           <Shield size={14} />
         </button>
       </td>
     </tr>
   );
 
-  const columns = ['Email', 'Name', 'Role', 'Hierarchy', ''];
+  const columns = ['Email', 'Name', 'Role', 'Hierarchy', 'Actions'];
 
   const categoryOrder = [...ROLE_OPTIONS, { value: '_other', label: 'Other Roles', color: '#6b7280' }];
 
   return (
     <div className="fade-in">
-      <div className="dash-page-header">
+      <div className="dash-page-header" style={{ borderBottom: '2px solid var(--navy-900)', paddingBottom: 24, marginBottom: 32 }}>
         <div>
-          <div className="dash-page-title"><UserCog size={22} style={{ display: 'inline', marginRight: 8 }} /> User Management</div>
-          <div className="dash-page-subtitle" style={{ color: 'var(--gray-600)', fontWeight: 600 }}>Manage all platform users and their role assignments</div>
+          <div className="dash-page-title" style={{ fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.5px' }}>
+            <UserCog size={28} style={{ display: 'inline', marginRight: 12, color: 'var(--amber-500)' }} /> 
+            User Management
+          </div>
+          <div className="dash-page-subtitle" style={{ color: 'var(--gray-500)', fontWeight: 600, marginTop: 4 }}>Command and Control: Admin User Directory</div>
         </div>
         {mode === 'add' ? (
           <div className="dash-action-row">
-            <button className="btn btn-secondary" onClick={() => { setMode('view'); setError(''); }}>
-              <ArrowLeft size={14} /> Back
+            <button className="btn btn-secondary" onClick={() => { setMode('view'); setError(''); }} style={{ borderRadius: 'var(--radius-sm)', fontWeight: 800 }}>
+              <ArrowLeft size={14} /> BACK TO DIRECTORY
             </button>
           </div>
         ) : (
           <div className="dash-action-row">
-            <button className="btn btn-primary" onClick={() => { setForm({ email: '', password: '', display_name: '', role: 'STATE_ADMIN', state_id: '', district_id: '', constituency_id: '' }); setMode('add'); setHierarchy({ states: [], districts: [], constituencies: [] }); }}>
-              <Plus size={14} /> Add Member
+            <button className="btn btn-primary" onClick={() => { setForm({ email: '', password: '', display_name: '', role: 'STATE_ADMIN', state_id: '', district_id: '', constituency_id: '' }); setMode('add'); setHierarchy({ states: [], districts: [], constituencies: [] }); }} style={{ background: 'var(--navy-900)', color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '10px 20px', fontWeight: 800 }}>
+              <Plus size={16} /> NEW MEMBER
             </button>
           </div>
         )}
@@ -238,40 +242,48 @@ function UserManagement() {
       {error && <div className="dash-alert dash-alert-error">{error}</div>}
 
       {mode === 'add' ? (
-        <div className="dash-section" style={{ maxWidth: 480 }}>
-          <div className="dash-section-head"><h3>Create New User</h3></div>
-          <div className="dash-section-body">
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div className="form-group">
-                <label>Email *</label>
-                <input type="email" required placeholder="user@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+        <div className="admin-form-card" style={{ maxWidth: 600, margin: '0 auto' }}>
+          <div style={{ marginBottom: 32, borderBottom: '1px solid var(--gray-200)', paddingBottom: 16 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: 'var(--navy-900)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Member Enrollment</h3>
+            <p style={{ fontSize: 12, color: 'var(--gray-500)', fontWeight: 600 }}>Fill in the credentials and hierarchy assignment for the new official.</p>
+          </div>
+          <div>
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>Official Email Address</label>
+                <input type="email" required placeholder="name@aakar.gov.in" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} 
+                  style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 600 }} />
               </div>
               <div className="form-group">
-                <label>Password *</label>
-                <input type="text" required placeholder="set a password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+                <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>Initial Password</label>
+                <input type="text" required placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+                  style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 600 }} />
               </div>
               <div className="form-group">
-                <label>Display Name</label>
-                <input placeholder="Full name" value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} />
+                <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>Full Name (Display)</label>
+                <input placeholder="Hon. Official Name" value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })}
+                  style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 600 }} />
               </div>
-              <div className="form-group">
-                <label>Role</label>
-                <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value, state_id: '', district_id: '', constituency_id: '' })}>
-                  {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>System Role Authorization</label>
+                <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value, state_id: '', district_id: '', constituency_id: '' })}
+                  style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700, appearance: 'none', background: 'var(--gray-50)' }}>
+                  {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label.toUpperCase()}</option>)}
                 </select>
               </div>
 
               {form.role === 'ELECTION_ADMIN' && (
-                <div className="dash-alert" style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', fontSize: 11, padding: '8px 12px', margin: 0 }}>
-                  Election Admins have full system access and do not require hierarchy assignment.
+                <div style={{ gridColumn: 'span 2', background: 'var(--gray-100)', color: 'var(--navy-900)', padding: '16px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, borderLeft: '4px solid var(--amber-500)' }}>
+                  NOTICE: Election Administrators hold supreme system authority with no geographical restrictions.
                 </div>
               )}
 
               {ROLE_HIERARCHY[form.role]?.includes('state') && (
-                <div className="form-group">
-                  <label>State</label>
-                  <select value={form.state_id} onChange={e => handleStateChange(e.target.value)} required={form.role !== 'ELECTION_ADMIN'}>
-                    <option value="">— Select State —</option>
+                <div className="form-group" style={{ gridColumn: ROLE_HIERARCHY[form.role].length > 1 ? 'span 1' : 'span 2' }}>
+                  <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>State Jurisdiction</label>
+                  <select value={form.state_id} onChange={e => handleStateChange(e.target.value)} required={form.role !== 'ELECTION_ADMIN'}
+                    style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+                    <option value="">SELECT STATE</option>
                     {hierarchy.states.map(s => <option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}
                   </select>
                 </div>
@@ -279,9 +291,10 @@ function UserManagement() {
 
               {ROLE_HIERARCHY[form.role]?.includes('district') && form.state_id && (
                 <div className="form-group">
-                  <label>District</label>
-                  <select value={form.district_id} onChange={e => handleDistrictChange(e.target.value)} required>
-                    <option value="">— Select District —</option>
+                  <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>District Jurisdiction</label>
+                  <select value={form.district_id} onChange={e => handleDistrictChange(e.target.value)} required
+                    style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+                    <option value="">SELECT DISTRICT</option>
                     {hierarchy.districts.map(d => <option key={d.code} value={d.code}>{d.name} ({d.code})</option>)}
                   </select>
                 </div>
@@ -289,26 +302,30 @@ function UserManagement() {
 
               {ROLE_HIERARCHY[form.role]?.includes('constituency') && form.district_id && (
                 <div className="form-group">
-                  <label>Constituency</label>
-                  <select value={form.constituency_id} onChange={e => setForm({ ...form, constituency_id: e.target.value })} required>
-                    <option value="">— Select Constituency —</option>
+                  <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>Constituency Jurisdiction</label>
+                  <select value={form.constituency_id} onChange={e => setForm({ ...form, constituency_id: e.target.value })} required
+                    style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+                    <option value="">SELECT CONSTITUENCY</option>
                     {hierarchy.constituencies.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
                   </select>
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary" disabled={submitting} style={{ alignSelf: 'flex-end', marginTop: 4 }}>
-                {submitting ? 'Creating...' : 'Create User'}
-              </button>
+              <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <button type="submit" className="btn btn-primary" disabled={submitting} 
+                  style={{ background: 'var(--navy-900)', color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '14px 40px', fontWeight: 900, letterSpacing: '0.05em' }}>
+                  {submitting ? 'ENROLLING...' : 'ENROLL OFFICIAL'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       ) : (
-        <div className="dash-stats" style={{ marginBottom: 20 }}>
-          {[{ value: null, label: 'Total', color: '#6366f1' }, ...ROLE_OPTIONS, { value: '_other', label: 'Other', color: '#6b7280' }].map(opt => (
-            <div key={opt.label} className="dash-stat" style={{ borderTop: `3px solid ${opt.color || '#6366f1'}` }}>
-              <div className="ds-label" style={{ color: 'var(--gray-600)' }}>{opt.label}</div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--gray-900)', letterSpacing: '-0.5px' }}>{opt.value ? (roleCounts[opt.value] || 0) : users.length}</div>
+        <div className="dash-stats" style={{ marginBottom: 32, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }}>
+          {[{ value: null, label: 'TOTAL FORCE', color: 'var(--navy-900)' }, ...ROLE_OPTIONS].map(opt => (
+            <div key={opt.label} style={{ background: 'var(--white)', border: '1px solid var(--gray-200)', borderTop: `4px solid ${opt.color}`, padding: '16px 20px', borderRadius: 'var(--radius-sm)', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{opt.label}</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.5px' }}>{opt.value ? (roleCounts[opt.value] || 0) : users.length}</div>
             </div>
           ))}
         </div>
@@ -331,18 +348,20 @@ function UserManagement() {
       )}
 
       {mode === 'view' && !loading && users.length > 0 && (
-        <div className="dash-section">
-          <div className="dash-section-body" style={{ padding: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             {categoryOrder.filter(cat => !roleFilter || cat.value === roleFilter).map(cat => {
               const members = grouped[cat.value];
               if (!members || members.length === 0) return null;
               return (
-                  <div key={cat.value} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                  <div style={{ padding: '8px 20px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-200)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: cat.color || 'var(--gray-700)' }}>{cat.label}</span>
-                    <span className="pill" style={{ backgroundColor: (cat.color || '#6b7280') + '20', color: cat.color || '#6b7280', border: '1px solid ' + (cat.color || '#6b7280') + '40', fontSize: 9 }}>{members.length}</span>
+                  <div key={cat.value} className="admin-form-card" style={{ padding: 0, overflow: 'hidden' }}>
+                  <div className="admin-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--navy-900)' }}>{cat.label}</span>
+                      <span style={{ height: 16, width: 1, background: 'var(--gray-300)' }}></span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--gray-500)' }}>{members.length} AUTHORIZED OFFICIALS</span>
+                    </div>
                   </div>
-                  <table>
+                  <table className="admin-table" style={{ border: 'none' }}>
                     <thead>
                       <tr>{columns.map((c, i) => <th key={i}>{c}</th>)}</tr>
                     </thead>
@@ -353,7 +372,6 @@ function UserManagement() {
                 </div>
               );
             })}
-          </div>
         </div>
       )}
 
@@ -528,102 +546,113 @@ function ConstituencySetup() {
 
   return (
     <div className="fade-in">
-      <div className="dash-page-header">
+      <div className="dash-page-header" style={{ borderBottom: '2px solid var(--navy-900)', paddingBottom: 24, marginBottom: 32 }}>
         <div>
-          <div className="dash-page-title"><Globe size={22} style={{ display: 'inline', marginRight: 8 }} /> Constituency Setup</div>
-          <div className="dash-page-subtitle">View and manage constituencies, assign managers</div>
+          <div className="dash-page-title" style={{ fontSize: 24, fontWeight: 900, color: 'var(--navy-900)', letterSpacing: '-0.5px' }}>
+            <Globe size={28} style={{ display: 'inline', marginRight: 12, color: 'var(--amber-500)' }} /> 
+            Constituency Setup
+          </div>
+          <div className="dash-page-subtitle" style={{ color: 'var(--gray-500)', fontWeight: 600, marginTop: 4 }}>Demarcation & Authority: Manage Electoral Boundaries</div>
         </div>
       </div>
 
-      {error && <div className="dash-alert dash-alert-error">{error}</div>}
+      {error && <div className="dash-alert dash-alert-error" style={{ marginBottom: 24 }}>{error}</div>}
 
-      <div className="form-grid-2" style={{ marginBottom: 24 }}>
-        <div className="form-group">
-          <label>State</label>
-          <select value={selectedState} onChange={e => handleStateChange(e.target.value)}>
-            <option value="">— Select State —</option>
-            {states.map(s => <option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>District</label>
-          <select value={selectedDistrict} onChange={e => handleDistrictChange(e.target.value)} disabled={!selectedState}>
-            <option value="">— Select District —</option>
-            {districts.map(d => <option key={d.code} value={d.code}>{d.name} ({d.code})</option>)}
-          </select>
+      <div className="admin-form-card" style={{ marginBottom: 32, padding: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+          <div className="form-group">
+            <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>State Jurisdiction</label>
+            <select value={selectedState} onChange={e => handleStateChange(e.target.value)}
+              style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+              <option value="">SELECT STATE</option>
+              {states.map(s => <option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: 'var(--navy-900)', marginBottom: 8, display: 'block' }}>District Jurisdiction</label>
+            <select value={selectedDistrict} onChange={e => handleDistrictChange(e.target.value)} disabled={!selectedState}
+              style={{ width: '100%', padding: '12px', border: '2px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontWeight: 700 }}>
+              <option value="">SELECT DISTRICT</option>
+              {districts.map(d => <option key={d.code} value={d.code}>{d.name} ({d.code})</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
       {selectedDistrict && (
-        <div className="dash-section" style={{ marginBottom: 24 }}>
-          <div className="dash-section-head">
-            <h3>Constituencies — {districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict}</h3>
-            <button className="btn btn-primary" onClick={() => { setShowAddForm(true); setAddForm({ code: '', name: '' }); }} style={{ fontSize: 10 }}>
-              <Plus size={13} /> Add Constituency
+        <div className="admin-form-card" style={{ padding: 0, overflow: 'hidden', marginBottom: 24 }}>
+          <div className="admin-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--navy-900)' }}>
+                CONSTITUENCIES: {districts.find(d => d.code === selectedDistrict)?.name || selectedDistrict}
+              </span>
+            </div>
+            <button className="btn btn-primary" onClick={() => { setShowAddForm(true); setAddForm({ code: '', name: '' }); }} style={{ background: 'var(--amber-500)', color: 'var(--navy-900)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontWeight: 900, fontSize: 10 }}>
+              <Plus size={14} /> ADD CONSTITUENCY
             </button>
           </div>
-          <div className="dash-section-body" style={{ padding: 0 }}>
-            {showAddForm && (
-              <form onSubmit={handleAddConstituency} className="dash-inset-form">
-                <input required placeholder="Code (e.g. NWD-03)" value={addForm.code} onChange={e => setAddForm({ ...addForm, code: e.target.value })} />
-                <input required placeholder="Name (e.g. New Constituency)" value={addForm.name} onChange={e => setAddForm({ ...addForm, name: e.target.value })} />
-                <button type="submit" className="btn btn-primary" disabled={adding} style={{ fontSize: 10, whiteSpace: 'nowrap' }}>
-                  {adding ? 'Adding...' : 'Save'}
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)} style={{ fontSize: 10 }}>Cancel</button>
+          
+          {showAddForm && (
+            <div style={{ padding: '20px 24px', background: 'var(--gray-50)', borderBottom: '1px solid var(--gray-200)' }}>
+              <form onSubmit={handleAddConstituency} style={{ display: 'flex', gap: 16, alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 9, fontWeight: 900, color: 'var(--gray-500)', marginBottom: 4, display: 'block' }}>CONSTITUENCY CODE</label>
+                  <input required placeholder="CODE (e.g. NWD-03)" value={addForm.code} onChange={e => setAddForm({ ...addForm, code: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--gray-300)', borderRadius: 'var(--radius-sm)', fontSize: 13 }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 9, fontWeight: 900, color: 'var(--gray-500)', marginBottom: 4, display: 'block' }}>CONSTITUENCY NAME</label>
+                  <input required placeholder="NAME (e.g. Noida North)" value={addForm.name} onChange={e => setAddForm({ ...addForm, name: e.target.value })}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--gray-300)', borderRadius: 'var(--radius-sm)', fontSize: 13 }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="submit" className="btn btn-primary" disabled={adding} style={{ height: 38, background: 'var(--navy-900)', fontWeight: 800 }}>{adding ? '...' : 'SAVE'}</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)} style={{ height: 38, fontWeight: 800 }}>CANCEL</button>
+                </div>
               </form>
-            )}
+            </div>
+          )}
+
+          <div style={{ minHeight: 200 }}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: 36 }}><Loader2 size={24} className="spin" style={{ color: 'var(--gray-400)' }} /></div>
+              <div style={{ textAlign: 'center', padding: 48 }}><Loader2 size={32} className="spin" style={{ color: 'var(--navy-700)' }} /></div>
             ) : constituencies.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-400)', fontWeight: 600, fontSize: 13 }}>
-                No constituencies found in this district
+              <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray-400)', fontWeight: 800, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                No constituency data available for this district
               </div>
             ) : (
-              <table>
+              <table className="admin-table" style={{ border: 'none' }}>
                 <thead>
                   <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Incharge</th>
-                    <th style={{ width: 160 }}>Status</th>
+                    <th>Official Code</th>
+                    <th>Name of Constituency</th>
+                    <th>Constituency Incharge</th>
+                    <th style={{ width: 220 }}>Assignment Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {constituencies.map(c => (
                     <tr key={c.code}>
-                      <td style={{ fontFamily: 'monospace', fontWeight: 700 }}>{c.code}</td>
-                      <td style={{ fontWeight: 600 }}>{c.name}</td>
-                      <td>{inchages[c.code] || '—'}</td>
+                      <td style={{ fontFamily: 'var(--font)', fontWeight: 800, color: 'var(--navy-900)' }}>{c.code}</td>
+                      <td style={{ fontWeight: 700 }}>{c.name}</td>
+                      <td style={{ color: 'var(--gray-600)', fontWeight: 600 }}>{inchages[c.code] || '—'}</td>
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           {inchages[c.code] ? (
-                            <span className="pill" style={{ backgroundColor: '#05966920', color: '#059669', border: '1px solid #05966940' }}>ASSIGNED</span>
+                            <span className="admin-badge" style={{ backgroundColor: '#05966915', color: '#059669', border: '1px solid #05966930' }}>ASSIGNED</span>
                           ) : (
                             <>
-                              <span className="pill" style={{ backgroundColor: '#dc262620', color: '#dc2626', border: '1px solid #dc262640' }}>UNASSIGNED</span>
-                              <button className="btn btn-primary" style={{ fontSize: 9, padding: '4px 10px', height: 'auto', lineHeight: 1.5 }}
+                              <span className="admin-badge" style={{ backgroundColor: '#dc262615', color: '#dc2626', border: '1px solid #dc262630' }}>VACANT</span>
+                              <button className="btn btn-primary" style={{ background: 'var(--navy-900)', fontSize: 10, padding: '4px 12px', height: 'auto', fontWeight: 900 }}
                                 onClick={() => {
                                   sessionStorage.setItem('assign_prefill', JSON.stringify({ state: selectedState, district: selectedDistrict, constituency: c.code }));
                                   router.push('/election?tab=users');
                                 }}>
-                                ASSIGN
+                                ASSIGN OFFICIAL
                               </button>
                             </>
                           )}
                         </div>
-                        {assigningConstituency === c.code && (
-                          <form onSubmit={handleAssign} className="dash-inset-form" style={{ padding: '8px 0', border: 'none', marginTop: 8 }}>
-                            <select value={assigningUser} onChange={e => setAssigningUser(e.target.value)} style={{ flex: 1, fontSize: 10, padding: '4px 6px', borderRadius: 4, border: '1px solid var(--gray-200)' }}>
-                              <option value="">— Select MGR —</option>
-                              {unassignedMgrs.map(u => <option key={u.id} value={u.id}>{u.display_name || u.email}</option>)}
-                            </select>
-                            <button type="submit" className="btn btn-primary" disabled={assigning || !assigningUser} style={{ fontSize: 9, padding: '4px 8px', lineHeight: 1.4 }}>
-                              {assigning ? '...' : 'Go'}
-                            </button>
-                            <button type="button" className="btn btn-secondary" onClick={() => setAssigningConstituency(null)} style={{ fontSize: 9, padding: '4px 8px', lineHeight: 1.4 }}>✕</button>
-                          </form>
-                        )}
                       </td>
                     </tr>
                   ))}
@@ -635,9 +664,10 @@ function ConstituencySetup() {
       )}
 
       {!selectedDistrict && (
-        <div className="dash-section">
-          <div className="dash-section-body" style={{ textAlign: 'center', padding: '32px' }}>
-            <div className="ds-label" style={{ fontSize: 14 }}>Select a state and district above to view constituencies</div>
+        <div className="admin-form-card" style={{ textAlign: 'center', padding: '64px 32px' }}>
+          <Globe size={48} style={{ color: 'var(--gray-200)', margin: '0 auto 16px' }} />
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Select State and District Jurisdictions to Proceed
           </div>
         </div>
       )}

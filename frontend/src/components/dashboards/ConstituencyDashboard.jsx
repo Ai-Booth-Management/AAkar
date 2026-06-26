@@ -22,10 +22,11 @@ const ReadinessDashboard = dynamic(() => import('./ReadinessDashboard'), { ssr: 
 const TurnoutDashboard = dynamic(() => import('./TurnoutDashboard'), { ssr: false });
 const WhatsAppOS = dynamic(() => import('./WhatsAppOS'), { ssr: false });
 const RelocatedCampaignTracker = dynamic(() => import('./CampaignTracker'), { ssr: false });
+import AICopilot from '../shared/AICopilot';
 
 export default function ConstituencyDashboard({ tab, hierarchy }) {
   const lc = hierarchy.constituency || '';
-  const [activeTab, setActiveTab] = useState(tab || 'overview');
+  const [activeTab, setActiveTab ] = useState(tab || 'overview');
   
   React.useEffect(() => {
     if (tab) setActiveTab(tab);
@@ -33,8 +34,8 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':         return <ConstituencyOverview lc={lc} onSchedule={() => setActiveTab('campaign')} />;
-      case 'booths':           return <BoothRankings />;
+      case 'overview':         return <ConstituencyOverview lc={lc} hierarchy={hierarchy} />;
+      case 'booths':           return <BoothStatusDirectory lc={lc} hierarchy={hierarchy} />;
       case 'health':           return <BoothHealth />;
       case 'bosi':             return <BOSIDashboard hierarchy={hierarchy} />;
       case 'readiness':        return <ReadinessDashboard hierarchy={hierarchy} />;
@@ -46,91 +47,106 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
       case 'whatsapp_os':      return <WhatsAppOS hierarchy={hierarchy} />;
       case 'broadcast':        return <BroadcastPanel hierarchy={hierarchy} />;
       case 'manage-users':     return <ManageUsers role="CONSTITUENCY_MGR" hierarchy={hierarchy} />;
-      case 'ai-suggestions':   return <AIRecommendations />;
-      default:                 return <ConstituencyOverview lc={lc} onSchedule={() => setActiveTab('campaign')} />;
+      case 'ai-suggestions':   return <AICopilot hierarchy={hierarchy} />;
+      default:                 return <ConstituencyOverview lc={lc} hierarchy={hierarchy} />;
     }
   };
 
   return renderContent();
 }
 
-function ConstituencyOverview({ lc, onSchedule }) {
+function ConstituencyOverview({ lc, hierarchy }) {
   const [stats, setStats] = useState(null);
+  const [mandals, setMandals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   React.useEffect(() => {
     if (!lc) return;
-    fetch(`/api/v1/dashboard/stats?level=constituency&code=${lc}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    }).then(async r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    }).then(setStats).catch(() => {});
+    const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+    
+    Promise.all([
+      fetch(`/api/v1/dashboard/stats?level=constituency&code=${lc}`, { headers }).then(r => r.json()),
+      fetch(`/api/v1/dashboard/mandals?constituency_code=${lc}`, { headers }).then(r => r.json())
+    ]).then(([sData, mData]) => {
+      setStats(sData);
+      setMandals(mData);
+    }).catch(console.error)
+      .finally(() => setLoading(false));
   }, [lc]);
 
-  const d = stats || { booths: 0, volunteers: 0, mandals: 0 };
+  const d = stats || { booths: 0, volunteers: 0, mandals: 0, coverage_pct: 0, bosi_avg: 0 };
 
   return (
     <div className="fade-in">
       <div className="dash-banner">
         <div>
           <div className="dash-banner-title">{lc} — Strategic Command</div>
-          <div className="dash-banner-sub">Constituency Management &amp; Booth Optimization</div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-primary" onClick={onSchedule}>SCHEDULE CAMPAIGN</button>
-          <button className="btn" style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: 'var(--white)' }}>BROADCAST</button>
+          <div className="dash-banner-sub">Constituency Management &amp; Strategic Oversight</div>
         </div>
       </div>
 
       <div className="dash-stats">
-        <div className="dash-stat"><div className="ds-value">{d.booths}</div><div className="ds-label">Active Booths</div></div>
-        <div className="dash-stat"><div className="ds-value">{d.volunteers}</div><div className="ds-label">Volunteers</div></div>
-        <div className="dash-stat"><div className="ds-value">0%</div><div className="ds-label">Coverage</div></div>
-        <div className="dash-stat"><div className="ds-value">{d.mandals ?? 0}</div><div className="ds-label">Mandal Nodes</div></div>
-      </div>
-
-      <div className="dash-grid-2">
-        <div className="dash-section">
-          <div className="dash-section-head"><h3>Campaign Progress</h3></div>
-          <div className="dash-section-body">
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No campaign data available</div>
-          </div>
+        <div className="dash-stat">
+          <div className="ds-value">{d.mandals}</div>
+          <div className="ds-label">Mandal Nodes</div>
         </div>
-        <div className="dash-section">
-          <div className="dash-section-head"><h3>Top Concern</h3></div>
-          <div className="dash-section-body">
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No concerns reported</div>
-            <div style={{ marginTop: 16 }}>
-              <div className="summary-row"><span className="summary-label">Open Complaints</span><span className="summary-value">0</span></div>
-              <div className="summary-row"><span className="summary-label">Resolved This Week</span><span className="summary-value" style={{ color: 'var(--green-500)' }}>0</span></div>
-              <div className="summary-row"><span className="summary-label">Avg Resolution Time</span><span className="summary-value">0</span></div>
-            </div>
-          </div>
+        <div className="dash-stat">
+          <div className="ds-value">{d.booths}</div>
+          <div className="ds-label">Active Booths</div>
+        </div>
+        <div className="dash-stat">
+          <div className="ds-value">{d.coverage_pct}%</div>
+          <div className="ds-label">Area Covered</div>
+        </div>
+        <div className="dash-stat-dark">
+          <div className="ds-value">{d.bosi_avg}</div>
+          <div className="ds-label">Avg BOSI Score</div>
         </div>
       </div>
-    </div>
-  );
-}
 
-function BoothRankings() {
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">Booth Rankings</div></div>
-      <div className="dash-grid-2">
-        <div className="dash-section">
-          <div className="dash-section-head" style={{ background: 'var(--green-50)', borderBottom: '1px solid var(--green-100)' }}>
-            <h3 style={{ color: 'var(--green-500)' }}>Top Performing Booths</h3>
-          </div>
-          <div className="dash-section-body">
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No booth ranking data available</div>
-          </div>
+      <div className="dash-section">
+        <div className="dash-section-head">
+          <h3>Mandal Performance Index</h3>
+          <div className="pill pill-live">Regional Activity</div>
         </div>
-        <div className="dash-section">
-          <div className="dash-section-head" style={{ background: 'var(--red-50)', borderBottom: '1px solid var(--red-100)' }}>
-            <h3 style={{ color: 'var(--red-500)' }}>Critical Intervention Booths</h3>
-          </div>
-          <div className="dash-section-body">
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No critical booth data available</div>
-          </div>
+        <div className="dash-section-body" style={{ padding: 0, overflowX: 'auto' }}>
+          {loading ? (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)', fontWeight: 600 }}>Loading Mandal data...</div>
+          ) : (
+            <table className="dash-table">
+              <thead>
+                <tr>
+                  <th>Mandal Name</th>
+                  <th>Incharge</th>
+                  <th>% Area Covered</th>
+                  <th>Volunteers</th>
+                  <th>BOSI Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mandals.map(m => (
+                  <tr key={m.code}>
+                    <td style={{ fontWeight: 700 }}>{m.name}</td>
+                    <td style={{ fontSize: 13, fontWeight: 600 }}>{m.incharge}</td>
+                    <td>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                         <div className="progress-track" style={{ width: 60, height: 6 }}>
+                           <div className="progress-fill" style={{ width: `${m.coverage_pct}%`, height: '100%' }} />
+                         </div>
+                         <span style={{ fontSize: 11, fontWeight: 700 }}>{m.coverage_pct}%</span>
+                       </div>
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 600 }}>{m.volunteers}</td>
+                    <td>
+                      <span className={`pill ${m.score > 70 ? 'pill-live' : m.score > 40 ? 'pill-blue' : 'pill-red'}`}>
+                        {m.score}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
@@ -148,117 +164,139 @@ function BoothHealth() {
   );
 }
 
-function CampaignTracker() {
-  const [showForm, setShowForm] = useState(false);
-  const [campaigns, setCampaigns] = useState([]);
+function BoothStatusDirectory({ lc }) {
+  const [boothData, setBoothData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedMandal, setExpandedMandal] = useState(null);
 
-  const [newCampaign, setNewCampaign] = useState({ title: '', zone: '', date: '', goal: '' });
-
-  const handleSchedule = (e) => {
-    e.preventDefault();
-    if (!newCampaign.title) return;
-    setCampaigns([{ 
-      id: Date.now(), 
-      ...newCampaign, 
-      rsvps: 0, 
-      status: 'Planned' 
-    }, ...campaigns]);
-    setShowForm(false);
-    setNewCampaign({ title: '', zone: '', date: '', goal: '' });
-  };
+  React.useEffect(() => {
+    if (!lc) return;
+    const headers = { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+    fetch(`/api/v1/dashboard/constituency/booths?constituency_code=${lc}`, { headers })
+      .then(r => r.json())
+      .then(setBoothData)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [lc]);
 
   return (
     <div className="fade-in">
       <div className="dash-page-header">
-        <div className="dash-page-title">Campaign Tracker</div>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'CANCEL' : 'SCHEDULE NEW'}
-        </button>
+        <div className="dash-page-title">Booth Status Directory</div>
       </div>
 
-      {showForm && (
-        <div className="dash-section fade-in" style={{ border: '2px solid var(--blue-500)', background: 'var(--blue-50)' }}>
-          <div className="dash-section-head"><h3>Schedule New Campaign</h3></div>
-          <div className="dash-section-body">
-            <form onSubmit={handleSchedule} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div className="form-group">
-                <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', marginBottom: 4, display: 'block' }}>Campaign Title</label>
-                <input type="text" className="broadcast-area" style={{ padding: 12 }} placeholder="e.g. Farmers Meet" value={newCampaign.title} onChange={e => setNewCampaign({...newCampaign, title: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', marginBottom: 4, display: 'block' }}>Sector / Zone</label>
-                <input type="text" className="broadcast-area" style={{ padding: 12 }} placeholder="e.g. Block B" value={newCampaign.zone} onChange={e => setNewCampaign({...newCampaign, zone: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', marginBottom: 4, display: 'block' }}>Target Date</label>
-                <input type="date" className="broadcast-area" style={{ padding: 12 }} value={newCampaign.date} onChange={e => setNewCampaign({...newCampaign, date: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label style={{ fontSize: 10, fontWeight: 800, color: 'var(--gray-500)', textTransform: 'uppercase', marginBottom: 4, display: 'block' }}>Primary Goal</label>
-                <input type="text" className="broadcast-area" style={{ padding: 12 }} placeholder="e.g. 500 RSVPs" value={newCampaign.goal} onChange={e => setNewCampaign({...newCampaign, goal: e.target.value})} />
-              </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }}>CONFIRM AND SCHEDULE</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Active &amp; Scheduled Campaigns</h3></div>
+      <div className="dash-section" style={{ marginTop: 24 }}>
         <div className="dash-section-body" style={{ padding: 0 }}>
-          <table>
-            <thead><tr><th>Campaign</th><th>Zone</th><th>Date</th><th>RSVPs</th><th>Status</th></tr></thead>
-            <tbody>
-              {campaigns.length > 0 ? campaigns.map(c => (
-                <tr key={c.id}>
-                  <td style={{ fontWeight: 700 }}>{c.title}</td>
-                  <td>{c.zone}</td>
-                  <td>{c.date}</td>
-                  <td>{c.rsvps}</td>
-                  <td>
-                    <span className={`badge ${c.status === 'Active' ? 'badge-low' : c.status === 'Confirmed' ? 'badge-med' : 'badge-high'}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                </tr>
-              )) : (
-                <tr><td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)' }}>No campaigns scheduled</td></tr>
-              )}
-            </tbody>
-          </table>
+          {loading ? (
+             <div style={{ padding: 80, textAlign: 'center', color: 'var(--gray-400)', fontWeight: 600 }}>Processing booth performance analytics...</div>
+          ) : (
+            <div className="booth-directory">
+              {boothData.map(mb => (
+                <div key={mb.mandal_code} className="mandal-group" style={{ 
+                  borderBottom: '1px solid var(--navy-800)',
+                  background: expandedMandal === mb.mandal_code ? 'var(--navy-900)' : 'transparent'
+                }}>
+                  <div 
+                    className="mandal-header"
+                    onClick={() => setExpandedMandal(expandedMandal === mb.mandal_code ? null : mb.mandal_code)}
+                    style={{ 
+                      padding: '24px 32px', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ 
+                        fontSize: 18, 
+                        fontWeight: 900, 
+                        color: expandedMandal === mb.mandal_code ? 'var(--white)' : 'var(--navy-900)', 
+                        letterSpacing: '-0.02em' 
+                      }}>{mb.mandal_name}</div>
+                      <div style={{ 
+                        fontSize: 11, 
+                        color: expandedMandal === mb.mandal_code ? 'var(--amber-400)' : 'var(--amber-600)', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.05em' 
+                      }}>
+                        {mb.booths.length} Integrated Booths
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
+                      <div className="perf-summary" style={{ display: 'flex', gap: 24 }}>
+                         <div style={{ textAlign: 'right' }}>
+                           <div style={{ fontSize: 9, fontWeight: 800, color: expandedMandal === mb.mandal_code ? 'var(--gray-200)' : 'var(--gray-500)', textTransform: 'uppercase' }}>Reliability</div>
+                           <div style={{ fontSize: 18, fontWeight: 900, color: expandedMandal === mb.mandal_code ? 'var(--white)' : 'var(--blue-500)' }}>
+                             {(mb.booths.reduce((acc, b) => acc + b.score, 0) / (mb.booths.length || 1)).toFixed(1)}
+                           </div>
+                         </div>
+                      </div>
+                      <div className="arrow" style={{ 
+                        color: expandedMandal === mb.mandal_code ? 'var(--white)' : 'var(--navy-900)',
+                        opacity: 0.5,
+                        transform: expandedMandal === mb.mandal_code ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.4s ease'
+                      }}>▼</div>
+                    </div>
+                  </div>
+
+                  {expandedMandal === mb.mandal_code && (
+                    <div className="mandal-content fade-in" style={{ padding: '0 32px 32px 32px' }}>
+                      <table className="dash-table table-professional">
+                        <thead>
+                          <tr style={{ color: 'var(--gray-300)', textTransform: 'uppercase', fontSize: 10 }}>
+                            <th style={{ color: 'inherit' }}>Booth Identifier</th>
+                            <th style={{ textAlign: 'right', color: 'inherit' }}>Total Voters</th>
+                            <th style={{ textAlign: 'right', color: 'inherit' }}>Households</th>
+                            <th style={{ color: 'inherit' }}>Demographic Breakdown</th>
+                            <th style={{ color: 'inherit' }}>Ground Coverage</th>
+                            <th style={{ color: 'inherit' }}>BOSI Index</th>
+                            <th style={{ textAlign: 'center', color: 'inherit' }}>Staffing</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {mb.booths.map(b => (
+                            <tr key={b.code}>
+                              <td style={{ fontWeight: 800, color: 'var(--amber-400)' }}>{b.name}</td>
+                              <td style={{ textAlign: 'right', fontWeight: 700 }}>{b.voters.toLocaleString()}</td>
+                              <td style={{ textAlign: 'right', fontWeight: 600 }}>{b.households.toLocaleString()}</td>
+                              <td>
+                                <div style={{ fontSize: 11, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px' }}>
+                                  <div style={{ color: 'var(--blue-400)' }}><span style={{ opacity: 0.6 }}>Male:</span> {b.male}</div>
+                                  <div style={{ color: 'var(--blue-400)' }}><span style={{ opacity: 0.6 }}>Female:</span> {b.female}</div>
+                                  <div style={{ color: 'var(--amber-500)' }}><span style={{ opacity: 0.6 }}>Youth:</span> {b.youth}</div>
+                                  <div style={{ color: 'var(--amber-500)' }}><span style={{ opacity: 0.6 }}>Seniors:</span> {b.seniors}</div>
+                                </div>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                  <div className="prog-track" style={{ width: 60, height: 5, background: 'var(--navy-700)', borderRadius: 2 }}>
+                                    <div className="prog-fill" style={{ width: `${b.coverage_pct}%`, height: '100%', background: 'var(--blue-500)', borderRadius: 2 }} />
+                                  </div>
+                                  <span style={{ fontSize: 11, fontWeight: 900 }}>{b.coverage_pct}%</span>
+                                </div>
+                              </td>
+                              <td>
+                                <span className={`pill ${b.score > 70 ? 'pill-live' : b.score > 40 ? 'pill-blue' : 'pill-red'}`} style={{ fontWeight: 800 }}>
+                                  {b.score}
+                                </span>
+                              </td>
+                              <td style={{ textAlign: 'center', fontWeight: 900, color: 'var(--blue-400)', fontSize: 16 }}>{b.volunteers}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function AIRecommendations() {
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">AI Recommendations</div></div>
-      <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No recommendations at this time</div>
-    </div>
-  );
-}
-
-function ProgressRow({ label, pct, color }) {
-  const fillClass = color === 'green' ? 'progress-fill-green' : color === 'red' ? 'progress-fill-red' : color === 'amber' ? 'progress-fill-amber' : 'progress-fill';
-  return (
-    <div className="progress-row">
-      <span className="progress-label">{label}</span>
-      <div className="progress-track"><div className={`progress-fill ${fillClass}`} style={{ width: `${pct}%` }} /></div>
-      <span className="progress-pct">{pct}%</span>
-    </div>
-  );
-}
-
-function Legend({ color, label }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div style={{ width: 10, height: 10, background: color }} />
-      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--gray-600)', textTransform: 'uppercase' }}>{label}</span>
     </div>
   );
 }

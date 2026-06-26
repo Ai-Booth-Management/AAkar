@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "../index.css";
+import "../admin.css";
 import { AuthProvider } from "../contexts/AuthContext";
 
 // Use system font fallbacks to bypass offline build network failures

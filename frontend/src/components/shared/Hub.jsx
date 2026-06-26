@@ -7,6 +7,7 @@ const h = () => ({ 'Authorization': `Bearer ${token()}` });
 export default function Hub({ hierarchy, userRole }) {
   const [messages, setMessages] = useState([]);
   const [superior, setSuperior] = useState(null);
+  const [stats, setStats] = useState(null);
   const [reportMsg, setReportMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -16,8 +17,20 @@ export default function Hub({ hierarchy, userRole }) {
 
   useEffect(() => {
     fetchMessages();
+    fetchStats();
     if (canReport) fetchSuperior();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const level = hierarchy.booth ? 'booth' : hierarchy.mandal ? 'mandal' : hierarchy.constituency ? 'constituency' : 'state';
+      const code = hierarchy.booth || hierarchy.mandal || hierarchy.constituency || '';
+      const res = await fetch(`/api/v1/dashboard/stats?level=${level}&code=${code}`, { headers: h() });
+      if (!res.ok) return;
+      const data = await res.json();
+      setStats(data);
+    } catch (e) { console.error(e); }
+  };
 
   const fetchMessages = async () => {
     try {
@@ -66,16 +79,28 @@ export default function Hub({ hierarchy, userRole }) {
   const fromBelow = messages.filter(m => m.direction === 'from_below');
   const myReports = messages.filter(m => m.direction === 'my_report');
 
+  const voterCount = stats?.voters || 0;
+  const volunteerCount = stats?.volunteers || 0;
+
   return (
     <div className="fade-in">
       <div className="dash-page-header">
         <div>
-          <div className="dash-page-title">Hub</div>
-          <div className="dash-page-subtitle">Notifications &amp; Reports</div>
+          <div className="dash-page-title">Operational Overview</div>
+          <div className="dash-page-subtitle">Center for Local Coordination</div>
         </div>
       </div>
 
       <div className="dash-grid-2">
+        <div className="dash-section">
+          <div className="dash-section-head"><h3>Booth Vital Stats</h3></div>
+          <div className="dash-section-body" style={{ fontSize: 12 }}>
+            <div className="summary-row"><span className="summary-label">Registered Voters</span><span className="summary-value" style={{ color: 'var(--blue-600)', fontWeight: 800 }}>{voterCount}</span></div>
+            <div className="summary-row"><span className="summary-label">Active Volunteers</span><span className="summary-value" style={{ color: 'var(--amber-600)', fontWeight: 800 }}>{volunteerCount}</span></div>
+            <div className="summary-row"><span className="summary-label">Total Notifications</span><span className="summary-value">{messages.length}</span></div>
+          </div>
+        </div>
+
         {canReport && (
           <div className="dash-section">
             <div className="dash-section-head"><h3>Report an Issue</h3></div>
@@ -96,15 +121,15 @@ export default function Hub({ hierarchy, userRole }) {
                     placeholder="Describe the issue or message for your superior..."
                     value={reportMsg}
                     onChange={e => setReportMsg(e.target.value)}
-                    style={{ width: '100%', boxSizing: 'border-box' }}
+                    style={{ width: '100%', boxSizing: 'border-box', border: '1px solid var(--gray-200)', borderRadius: 'var(--radius)', padding: 12, fontSize: 13, fontFamily: 'inherit' }}
                   />
                   <button
                     className="btn btn-primary"
                     onClick={handleReport}
                     disabled={sending || !reportMsg.trim()}
-                    style={{ marginTop: 8 }}
+                    style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
                   >
-                    {sending ? 'SENDING...' : 'SEND REPORT'}
+                    {sending ? 'SENDING...' : '🚀 SEND REPORT'}
                   </button>
                 </>
               ) : (
@@ -115,19 +140,10 @@ export default function Hub({ hierarchy, userRole }) {
             </div>
           </div>
         )}
-
-        <div className="dash-section">
-          <div className="dash-section-head"><h3>Quick Overview</h3></div>
-          <div className="dash-section-body" style={{ fontSize: 12 }}>
-            <div className="summary-row"><span className="summary-label">From Above</span><span className="summary-value">{fromAbove.length}</span></div>
-            <div className="summary-row"><span className="summary-label">From Below</span><span className="summary-value">{fromBelow.length}</span></div>
-            <div className="summary-row"><span className="summary-label">My Reports</span><span className="summary-value">{myReports.length}</span></div>
-          </div>
-        </div>
       </div>
 
       <div className="dash-section" style={{ marginTop: 16 }}>
-        <div className="dash-section-head"><h3>All Notifications</h3></div>
+        <div className="dash-section-head"><h3>Communication Log</h3></div>
         <div className="dash-section-body" style={{ padding: 0 }}>
           <table>
             <thead>

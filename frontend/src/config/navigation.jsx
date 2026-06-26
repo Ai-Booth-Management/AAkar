@@ -12,6 +12,7 @@ export const ROLE_NAV = {
   STATE_ADMIN: [
     { id: 'overview', label: 'State Overview', icon: <Globe size={20} /> },
     { id: 'performance', label: 'Performance', icon: <TrendingUp size={20} /> },
+    { id: 'analytics', label: 'District Analytics', icon: <BarChart3 size={20} /> },
     { id: 'rankings', label: 'District Rankings', icon: <BarChart3 size={20} /> },
     { id: 'campaign', label: 'Campaign Management', icon: <Target size={20} /> },
     { id: 'manage-users', label: 'Manage Users', icon: <UserCog size={20} /> },
@@ -25,10 +26,8 @@ export const ROLE_NAV = {
     { id: 'constituencies', label: 'Constituency Stats', icon: <BarChart3 size={20} /> },
     { id: 'campaign', label: 'Campaign Management', icon: <Target size={20} /> },
     { id: 'issues', label: 'Local Issues', icon: <AlertTriangle size={20} /> },
-    { id: 'volunteers', label: 'Volunteer Analytics', icon: <Users size={20} /> },
     { id: 'manage-users', label: 'Manage Users', icon: <UserCog size={20} /> },
     { id: 'ai-suggestions', label: 'AI Suggestions', icon: <Zap size={20} /> },
-    { id: 'early_warning', label: 'Early Warning', icon: <Activity size={20} /> },
     { id: 'hub', label: 'Hub', icon: <MessageSquare size={20} /> },
     { id: 'broadcast', label: 'District Broadcast', icon: <Radio size={20} /> },
   ],
@@ -56,8 +55,7 @@ export const ROLE_NAV = {
     { id: 'hub', label: 'Hub', icon: <MessageSquare size={20} /> },
     { id: 'broadcast', label: 'Mandal Broadcast', icon: <Radio size={20} /> },
     { id: 'ai-suggestions', label: 'AI Suggestions', icon: <Zap size={20} /> },
-    { id: 'meetings', label: 'Meeting Tracker', icon: <CheckSquare size={20} /> },
-    { id: 'issues', label: 'Issue Board', icon: <AlertTriangle size={20} /> },
+    { id: 'complaints', label: 'Complaints', icon: <AlertTriangle size={20} /> },
   ],
   BOOTH_PRESIDENT: [
     { id: 'profile', label: 'Booth Profile', icon: <Shield size={20} /> },
@@ -66,10 +64,7 @@ export const ROLE_NAV = {
     { id: 'volunteers', label: 'Field Staff', icon: <Users size={20} /> },
     { id: 'volunteer-management', label: 'Volunteer Management', icon: <ClipboardList size={20} /> },
     { id: 'broadcast', label: 'Broadcast', icon: <Radio size={20} /> },
-    { id: 'activities', label: 'Live Activities', icon: <Activity size={20} /> },
-    { id: 'ai-suggestions', label: 'AI Suggestions', icon: <Zap size={20} /> },
-    { id: 'issues', label: 'Local Issues', icon: <AlertTriangle size={20} /> },
-    { id: 'knowledge', label: 'Intel Base', icon: <Search size={20} /> },
+    { id: 'management', label: 'Data Management', icon: <Database size={20} /> },
   ],
   VOLUNTEER: [
     { id: 'tasks', label: 'Daily Tasks', icon: <CheckSquare size={20} /> },
@@ -81,9 +76,7 @@ export const ROLE_NAV = {
   ],
   ELECTION_ADMIN: [
     { id: 'users', label: 'User Management', icon: <UserCog size={20} /> },
-    { id: 'data', label: 'Data Management', icon: <Database size={20} /> },
     { id: 'constituencies', label: 'Constituency Setup', icon: <Globe size={20} /> },
-    { id: 'settings', label: 'System Settings', icon: <Settings size={20} /> },
   ]
 };
 
