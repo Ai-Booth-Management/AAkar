@@ -3,6 +3,24 @@
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 from fastapi.testclient import TestClient
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def override_auth_dependency():
+    from app.main import app
+    from app.core.security import get_current_user
+    from app.domain.models.user import User
+
+    dummy_user = User(
+        email="test@aakar.gov.in",
+        hashed_password="...",
+        role="ELECTION_ADMIN",
+        display_name="Test Admin"
+    )
+    app.dependency_overrides[get_current_user] = lambda: dummy_user
+    yield
+    app.dependency_overrides.clear()
 
 
 # ─── Health endpoint ────────────────────────────────────────────────────
