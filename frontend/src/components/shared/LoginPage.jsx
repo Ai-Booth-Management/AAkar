@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
     const [view, setView] = useState('login');
     const [portalMode, setPortalMode] = useState('election');
-    const [userType, setUserType] = useState('booth');
+    const [userType, setUserType] = useState('BOOTH_PRESIDENT');
 
     const navy = "#0f172a";
     const gold = "#D4AF37";
@@ -61,7 +61,7 @@ export default function LoginPage() {
                 if (view === 'login') {
                     await login(emailInput, passwordInput);
                 } else {
-                    const role = boothId ? 'BOOTH_PRESIDENT' : (mandalId ? 'MANDAL_MGR' : 'OFFICIAL');
+                    const role = userType;
                     const hierarchy = {
                         state: stateId,
                         district: districtId,
@@ -98,6 +98,45 @@ export default function LoginPage() {
             router.push('/');
         } catch (err) {
             setError(err.message || 'Authentication failed.');
+        }
+        setLoading(false);
+    };
+
+    const handleDemoLogin = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        setLoading(true);
+        setError('');
+        const demoPassword = "password123";
+        let demoEmail = `demo_${userType.toLowerCase()}@innovateindia.gov`;
+        
+        try {
+            await login(demoEmail, demoPassword);
+            router.push('/');
+        } catch (err) {
+            try {
+                if (portalMode === 'election') {
+                    await signup(demoEmail, demoPassword, userType, { name: 'Demo ' + userType }, {
+                        state: 'DL', district: 'Central', constituency: 'ND-01', mandal: 'Demo Mandal', booth: '123'
+                    });
+                } else {
+                    await signup(demoEmail, demoPassword, userType.toUpperCase(), { name: 'Demo ' + userType });
+                }
+                router.push('/');
+            } catch (signupErr) {
+                try {
+                    demoEmail = `demo_${userType.toLowerCase()}_${Math.floor(Math.random() * 10000)}@innovateindia.gov`;
+                    if (portalMode === 'election') {
+                        await signup(demoEmail, demoPassword, userType, { name: 'Demo ' + userType }, {
+                            state: 'DL', district: 'Central', constituency: 'ND-01', mandal: 'Demo Mandal', booth: '123'
+                        });
+                    } else {
+                        await signup(demoEmail, demoPassword, userType.toUpperCase(), { name: 'Demo ' + userType });
+                    }
+                    router.push('/');
+                } catch (fallbackErr) {
+                    setError('Demo login failed: ' + fallbackErr.message);
+                }
+            }
         }
         setLoading(false);
     };
@@ -209,9 +248,49 @@ export default function LoginPage() {
                                             <FlatField label="Mandal" icon={<Building2 size={16} />} placeholder="Local Ward" value={mandalId} onChange={setMandalId} />
                                         </div>
                                         <FlatField label="Booth ID" icon={<Flag size={16} />} placeholder="Unique Code" value={boothId} onChange={setBoothId} />
+                                        
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontSize: '9px', fontWeight: 900, color: slate400, textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: '4px' }}>System Role</label>
+                                            <select 
+                                                value={userType} 
+                                                onChange={(e) => setUserType(e.target.value)}
+                                                style={{ width: '100%', backgroundColor: slate50, border: `1px solid ${slate200}`, borderRadius: '12px', padding: '16px', fontSize: '12px', fontWeight: 700, outline: 'none' }}
+                                            >
+                                                <option value="BOOTH_PRESIDENT">Booth President</option>
+                                                <option value="MANDAL_MGR">Mandal Manager</option>
+                                                <option value="CONSTITUENCY_MGR">Constituency Manager</option>
+                                                <option value="DISTRICT_ADMIN">District Admin</option>
+                                                <option value="STATE_ADMIN">State Admin</option>
+                                                <option value="ELECTION_ADMIN">Election Admin</option>
+                                                <option value="VOLUNTEER">Field Worker / Volunteer</option>
+                                            </select>
+                                        </div>
                                     </>
                                 )}
-                                {view === 'login' && <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />}
+                                {view === 'login' && (
+                                    <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <label style={{ fontSize: '9px', fontWeight: 900, color: slate400, textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: '4px' }}>System Role</label>
+                                                <button type="button" onClick={handleDemoLogin} style={{ background: 'none', border: 'none', color: gold, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer' }}>Bypass for Demo →</button>
+                                            </div>
+                                            <select 
+                                                value={userType} 
+                                                onChange={(e) => setUserType(e.target.value)}
+                                                style={{ width: '100%', backgroundColor: slate50, border: `1px solid ${slate200}`, borderRadius: '12px', padding: '16px', fontSize: '12px', fontWeight: 700, outline: 'none' }}
+                                            >
+                                                <option value="BOOTH_PRESIDENT">Booth President</option>
+                                                <option value="MANDAL_MGR">Mandal Manager</option>
+                                                <option value="CONSTITUENCY_MGR">Constituency Manager</option>
+                                                <option value="DISTRICT_ADMIN">District Admin</option>
+                                                <option value="STATE_ADMIN">State Admin</option>
+                                                <option value="ELECTION_ADMIN">Election Admin</option>
+                                                <option value="VOLUNTEER">Field Worker / Volunteer</option>
+                                            </select>
+                                        </div>
+                                        <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
+                                    </>
+                                )}
                                 <FlatField label="Security Key" icon={<Lock size={16} />} placeholder="••••••••" type="password" value={passwordInput} onChange={setPasswordInput} />
                                 {view === 'signup' && <FlatField label="Confirm Key" icon={<Lock size={16} />} placeholder="••••••••" type="password" value={confirmPasswordInput} onChange={setConfirmPasswordInput} />}
                             </>

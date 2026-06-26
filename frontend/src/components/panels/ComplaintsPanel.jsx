@@ -52,7 +52,9 @@ const ComplaintsPanel = () => {
     const fetchComplaints = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/complaints/`);
+            const res = await fetch(`${API_BASE}/complaints/`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             setComplaints(Array.isArray(data) ? data : []);
@@ -66,7 +68,10 @@ const ComplaintsPanel = () => {
 
     const handleResolve = async (id) => {
         try {
-            const res = await fetch(`${API_BASE}/complaints/resolve/${id}`, { method: 'POST' });
+            const res = await fetch(`${API_BASE}/complaints/resolve/${id}`, { 
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
             if (res.ok) {
                 setMessage({ type: 'success', text: `COMPLAINT #${id} RESOLVED & VOTER NOTIFIED.` });
                 setComplaints(prev => prev.map(c => 

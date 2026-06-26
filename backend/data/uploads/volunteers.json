@@ -1,0 +1,86 @@
+[
+  {
+    "phone": "910000000000",
+    "name": "Alice Smith",
+    "district": "North West Delhi",
+    "constituency": "Model Town",
+    "mandal": "Model Town Sector 1",
+    "booth_name": "Model Town Sector 1 Booth 1",
+    "booth_id": "MT-S1-B1",
+    "registered_at": "2026-06-25T20:44:36.146745+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "Bob",
+    "pincode": "110001",
+    "registered_at": "2026-06-25T20:59:43.780078+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "srinivas",
+    "pincode": "560001",
+    "aadhar": "1",
+    "registered_at": "2026-06-25T21:00:53.120426+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "Test User",
+    "pincode": "110001",
+    "state": "Delhi",
+    "district": "Central Delhi",
+    "aadhar": "123456789012",
+    "registered_at": "2026-06-25T21:09:03.891892+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "srinivas",
+    "pincode": "560013",
+    "state": "Karnataka",
+    "district": "Bangalore",
+    "aadhar": "2",
+    "registered_at": "2026-06-25T21:10:15.199841+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "Test Detailed",
+    "pincode": "560013",
+    "area_name": "Jalahalli",
+    "block": "Bangalore North",
+    "district": "Bangalore",
+    "division": "Bangalore West",
+    "region": "Bangalore HQ",
+    "circle": "Karnataka",
+    "state": "Karnataka",
+    "aadhar": "123412341234",
+    "registered_at": "2026-06-25T21:12:20.819208+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "lev",
+    "pincode": "560014",
+    "area_name": "Jalahalli East",
+    "block": "Bangalore North",
+    "district": "Bangalore",
+    "division": "Bangalore West",
+    "region": "Bangalore HQ",
+    "circle": "Karnataka",
+    "state": "Karnataka",
+    "aadhar": "3",
+    "registered_at": "2026-06-25T21:13:02.872065+00:00"
+  },
+  {
+    "phone": "917696138229",
+    "name": "j",
+    "address": "1 2 3",
+    "pincode": "160030",
+    "area_name": "Sector 29 (Chandigarh)",
+    "block": "Chandigarh",
+    "district": "Chandigarh",
+    "division": "Chandigarh",
+    "region": "Chandigarh HQ",
+    "circle": "Punjab",
+    "state": "Chandigarh",
+    "aadhar": "4",
+    "registered_at": "2026-06-25T21:15:12.115090+00:00"
+  }
+]

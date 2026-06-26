@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 
-const PDF_API = '/api/v1/upload/pdf';
-const CSV_API = '/api/v1/upload';
+const PDF_API = 'http://localhost:8000/api/v1/upload/pdf';
+const CSV_API = 'http://localhost:8000/api/v1/upload';
 
 const UploadPanel = () => {
   const [mode, setMode] = useState('voters');   // 'voters' | 'complaints'

@@ -67,7 +67,7 @@ GRAPH_API_URL = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
 # Simulation mode: when token is dummy, buffer replies for the simulator endpoint
 _simulated_replies: list[str] = []
 _sim_media_bytes: bytes | None = None
-_IS_SIMULATION = WHATSAPP_TOKEN in ("dummy_token", "")
+_IS_SIMULATION = WHATSAPP_TOKEN in ("dummy_token", "", "your_meta_whatsapp_access_token")
 
 
 # ---------------------------------------------------------------------------
@@ -75,13 +75,19 @@ _IS_SIMULATION = WHATSAPP_TOKEN in ("dummy_token", "")
 # ---------------------------------------------------------------------------
 
 
-def _parse_choice(text: str, max_val: int) -> int | None:
+def _parse_choice(text: str, nodes: list[HierarchyNode]) -> int | None:
     try:
         choice = int(text.strip())
-        if 1 <= choice <= max_val:
+        if 1 <= choice <= len(nodes):
             return choice
     except (ValueError, AttributeError):
         pass
+        
+    text_lower = text.strip().lower()
+    for i, node in enumerate(nodes, 1):
+        if node.name.lower() == text_lower:
+            return i
+            
     return None
 
 
@@ -317,6 +323,22 @@ async def receive_whatsapp_message(request: Request):
         text_body = msg.get("text", {}).get("body", "").strip()
 
         with Session(engine) as session:
+            # Handle reset for both registered and unregistered users
+            if text_body.lower() in ("reset", "restart"):
+                state = session.exec(
+                    select(ConversationState).where(ConversationState.phone == from_number)
+                ).first()
+                if state:
+                    session.delete(state)
+                volunteer_to_delete = session.exec(
+                    select(Volunteer).where(Volunteer.phone == from_number)
+                ).first()
+                if volunteer_to_delete:
+                    session.delete(volunteer_to_delete)
+                session.commit()
+                await send_text(from_number, "Conversation reset. Send 'hi' to start.")
+                return {"status": "received"}
+
             # Look up volunteer by phone number
             volunteer = session.exec(
                 select(Volunteer).where(Volunteer.phone == from_number)
@@ -349,170 +371,150 @@ async def receive_whatsapp_message(request: Request):
                 elif state.current_step == "awaiting_name":
                     data = json.loads(state.collected_data)
                     data["name"] = text_body
-                    data["state_code"] = "DL"
-                    data["state_name"] = "Delhi"
                     state.collected_data = json.dumps(data)
-                    state.current_step = "awaiting_district"
+                    state.current_step = "awaiting_pincode"
                     state.updated_at = datetime.now(timezone.utc)
                     session.add(state)
                     session.commit()
-                    districts = _get_children_by_code(
-                        session, "DL", "state", "district"
+                    await send_text(
+                        from_number,
+                        f"Thanks {text_body}! What is your Pincode?",
                     )
-                    if not districts:
-                        await send_text(
-                            from_number,
-                            "Sorry, no districts found. "
-                            "Please contact your Booth President to register manually.",
-                        )
-                    else:
-                        await send_text(
-                            from_number,
-                            f"Thanks {text_body}! Which district in Delhi?\n"
-                            + _format_numbered_list(districts),
-                        )
 
-                elif state.current_step == "awaiting_district":
-                    data = json.loads(state.collected_data)
-                    districts = _get_children_by_code(
-                        session, data["state_code"], "state", "district"
-                    )
-                    choice = _parse_choice(text_body, len(districts))
-                    if choice is None:
+                elif state.current_step == "awaiting_pincode":
+                    pincode = text_body
+                    
+                    # Validate pincode
+                    state_name = ""
+                    district_name = ""
+                    area_name = ""
+                    circle = ""
+                    division = ""
+                    region = ""
+                    block = ""
+                    is_valid = False
+                    try:
+                        async with httpx.AsyncClient() as client:
+                            resp = await client.get(f"https://api.postalpincode.in/pincode/{pincode}", timeout=5.0)
+                            if resp.status_code == 200:
+                                pin_data = resp.json()
+                                if pin_data and pin_data[0].get("Status") == "Success":
+                                    is_valid = True
+                                    post_office = pin_data[0]["PostOffice"][0]
+                                    state_name = post_office.get("State", "")
+                                    district_name = post_office.get("District", "")
+                                    area_name = post_office.get("Name", "")
+                                    circle = post_office.get("Circle", "")
+                                    division = post_office.get("Division", "")
+                                    region = post_office.get("Region", "")
+                                    block = post_office.get("Block", "")
+                    except Exception as e:
+                        logger.error(f"Error validating pincode: {e}")
+                        is_valid = True # Fallback if API is down
+                    
+                    if not is_valid:
                         await send_text(
                             from_number,
-                            "Invalid choice. Please reply with a number from the list:\n"
-                            + _format_numbered_list(districts),
+                            "Invalid pincode. Please try again with a valid 6-digit Pincode."
                         )
                     else:
-                        selected = districts[choice - 1]
-                        data["district_code"] = selected.code
-                        data["district_name"] = selected.name
+                        data = json.loads(state.collected_data)
+                        data["pincode"] = pincode
+                        data["state"] = state_name
+                        data["district"] = district_name
+                        data["area_name"] = area_name
+                        data["circle"] = circle
+                        data["division"] = division
+                        data["region"] = region
+                        data["block"] = block
                         state.collected_data = json.dumps(data)
-                        state.current_step = "awaiting_constituency"
+                        state.current_step = "awaiting_address"
                         state.updated_at = datetime.now(timezone.utc)
                         session.add(state)
                         session.commit()
-                        constituencies = _get_children_by_code(
-                            session, selected.code, "district", "constituency"
-                        )
-                        if not constituencies:
-                            await send_text(
-                                from_number,
-                                f"Sorry, no constituencies found in {selected.name}. "
-                                "Please contact your Booth President to register manually.",
-                            )
-                        else:
-                            await send_text(
-                                from_number,
-                                f"Which constituency in {selected.name}?\n"
-                                + _format_numbered_list(constituencies),
-                            )
+                        
+                        msg = f"Got it. What is your House/Flat No. and Street Name?"
+                        if state_name and district_name:
+                            msg = f"Valid pincode detected ({area_name}, {district_name}, {state_name}).\n" + msg
+                            
+                        await send_text(from_number, msg)
 
-                elif state.current_step == "awaiting_constituency":
+                elif state.current_step == "awaiting_address":
                     data = json.loads(state.collected_data)
-                    constituencies = _get_children_by_code(
-                        session, data["district_code"], "district", "constituency"
+                    data["address"] = text_body
+                    state.collected_data = json.dumps(data)
+                    state.current_step = "awaiting_aadhar"
+                    state.updated_at = datetime.now(timezone.utc)
+                    session.add(state)
+                    session.commit()
+                    
+                    await send_text(
+                        from_number,
+                        "Thanks! Finally, what is your Aadhar number?"
                     )
-                    choice = _parse_choice(text_body, len(constituencies))
-                    if choice is None:
-                        await send_text(
-                            from_number,
-                            "Invalid choice. Please reply with a number from the list:\n"
-                            + _format_numbered_list(constituencies),
-                        )
-                    else:
-                        selected = constituencies[choice - 1]
-                        data["constituency_code"] = selected.code
-                        data["constituency_name"] = selected.name
-                        state.collected_data = json.dumps(data)
-                        state.current_step = "awaiting_mandal"
-                        state.updated_at = datetime.now(timezone.utc)
-                        session.add(state)
-                        session.commit()
-                        mandals = _get_children_by_code(
-                            session, selected.code, "constituency", "mandal"
-                        )
-                        if not mandals:
-                            await send_text(
-                                from_number,
-                                f"Sorry, no areas found in {selected.name}. "
-                                "Please contact your Booth President to register manually.",
-                            )
-                        else:
-                            await send_text(
-                                from_number,
-                                f"Which area in {selected.name}?\n"
-                                + _format_numbered_list(mandals),
-                            )
 
-                elif state.current_step == "awaiting_mandal":
+                elif state.current_step == "awaiting_aadhar":
                     data = json.loads(state.collected_data)
-                    mandals = _get_children_by_code(
-                        session, data["constituency_code"], "constituency", "mandal"
+                    aadhar = text_body
+                    pincode = data.get("pincode", "")
+                    name = data.get("name", "")
+                    address = data.get("address", "")
+                    state_name = data.get("state", "")
+                    district_name = data.get("district", "")
+                    area_name = data.get("area_name", "")
+                    circle = data.get("circle", "")
+                    division = data.get("division", "")
+                    region = data.get("region", "")
+                    block = data.get("block", "")
+                    
+                    volunteer = Volunteer(
+                        phone=from_number,
+                        name=name,
+                        booth_id=None,  # Not using booth_id if we only ask pincode
+                        status="active",
                     )
-                    choice = _parse_choice(text_body, len(mandals))
-                    if choice is None:
-                        await send_text(
-                            from_number,
-                            "Invalid choice. Please reply with a number from the list:\n"
-                            + _format_numbered_list(mandals),
-                        )
-                    else:
-                        selected = mandals[choice - 1]
-                        data["mandal_code"] = selected.code
-                        data["mandal_name"] = selected.name
-                        state.collected_data = json.dumps(data)
-                        state.current_step = "awaiting_booth"
-                        state.updated_at = datetime.now(timezone.utc)
-                        session.add(state)
-                        session.commit()
-                        booths = _get_children_by_code(
-                            session, selected.code, "mandal", "booth"
-                        )
-                        if not booths:
-                            await send_text(
-                                from_number,
-                                "Sorry, no booths are registered in your area yet. "
-                                "Please contact your Booth President to register manually.",
-                            )
-                        else:
-                            await send_text(
-                                from_number,
-                                f"Which booth in {selected.name}?\n"
-                                + _format_numbered_list(booths, show_code=True),
-                            )
+                    session.add(volunteer)
+                    session.delete(state)
+                    session.commit()
+                    
+                    try:
+                        json_path = os.path.join("data", "uploads", "volunteers.json")
+                        os.makedirs(os.path.dirname(json_path), exist_ok=True)
+                        vol_data = []
+                        if os.path.exists(json_path):
+                            with open(json_path, "r") as f:
+                                try:
+                                    vol_data = json.load(f)
+                                except json.JSONDecodeError:
+                                    pass
+                        vol_data.append({
+                            "phone": from_number,
+                            "name": name,
+                            "address": address,
+                            "pincode": pincode,
+                            "area_name": area_name,
+                            "block": block,
+                            "district": district_name,
+                            "division": division,
+                            "region": region,
+                            "circle": circle,
+                            "state": state_name,
+                            "aadhar": aadhar,
+                            "registered_at": datetime.now(timezone.utc).isoformat()
+                        })
+                        with open(json_path, "w") as f:
+                            json.dump(vol_data, f, indent=2)
+                    except Exception as e:
+                        logger.error(f"Failed to save volunteer to JSON: {e}")
 
-                elif state.current_step == "awaiting_booth":
-                    data = json.loads(state.collected_data)
-                    booths = _get_children_by_code(
-                        session, data["mandal_code"], "mandal", "booth"
+                    await send_text(
+                        from_number,
+                        f"\u2705 Registration complete! Welcome to the team, {name}.\n"
+                        f"Your Pincode: {pincode}\n"
+                        f"Your Aadhar: {aadhar}\n"
+                        "You will receive task assignments here.",
                     )
-                    choice = _parse_choice(text_body, len(booths))
-                    if choice is None:
-                        await send_text(
-                            from_number,
-                            "Invalid choice. Please reply with a number from the list:\n"
-                            + _format_numbered_list(booths, show_code=True),
-                        )
-                    else:
-                        selected = booths[choice - 1]
-                        name = data.get("name", "")
-                        volunteer = Volunteer(
-                            phone=from_number,
-                            name=name,
-                            booth_id=selected.code,
-                            status="active",
-                        )
-                        session.add(volunteer)
-                        session.delete(state)
-                        session.commit()
-                        await send_text(
-                            from_number,
-                            f"✅ Registration complete! Welcome to the team, {name}.\n"
-                            f"Your booth: {selected.name} ({selected.code})\n"
-                            "You will receive task assignments here.",
-                        )
+
 
                 else:
                     state.current_step = "awaiting_name"

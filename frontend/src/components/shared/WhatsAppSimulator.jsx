@@ -11,12 +11,14 @@ export default function WhatsAppSimulator() {
   const [conversationState, setConversationState] = useState(null);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const sendMessage = async (opts = {}) => {
+    if (loading) return;
     const text = opts.text !== undefined ? opts.text : input.trim();
     const isImage = opts.isImage || false;
 
@@ -59,6 +61,9 @@ export default function WhatsAppSimulator() {
       setMessages(prev => [...prev, { from: 'bot', type: 'text', text: `Error: ${e.message}` }]);
     }
     setLoading(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
   const handleKeyDown = (e) => {
@@ -86,6 +91,15 @@ export default function WhatsAppSimulator() {
   const clearConversation = async () => {
     setMessages([{ from: 'bot', type: 'text', text: 'Conversation reset. Send "hi" to start again.' }]);
     setConversationState(null);
+    try {
+      await fetch('/api/v1/whatsapp/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, message: 'reset' }),
+      });
+    } catch (e) {
+      console.error('Failed to reset backend state', e);
+    }
   };
 
   return (
@@ -178,11 +192,11 @@ export default function WhatsAppSimulator() {
       <div style={{ padding: '10px 16px', background: '#f0f0f0', borderTop: '1px solid #ddd' }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
+            ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            disabled={loading}
             style={{
               flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #ccc',
               fontSize: 13, outline: 'none', fontFamily: 'inherit',
