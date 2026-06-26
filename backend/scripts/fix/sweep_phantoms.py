@@ -4,8 +4,9 @@ import pandas as pd
 from pathlib import Path
 
 # Add backend to path
-backend_dir = "/home/lev/repos/AAkar/backend"
+backend_dir = str(Path(__file__).resolve().parent.parent.parent)
 sys.path.append(backend_dir)
+import os
 from app.infrastructure.db.neo4j_client import neo4j_client
 from app.domain.services.graph_enrichment import update_booth_metrics
 

@@ -6,6 +6,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const API_BASE = '/api/v1/auth';
 const AuthContext = createContext();
 
+const mapRole = (role) => {
+  const r = (role || '').toUpperCase();
+  if (r === 'DM') return 'DISTRICT_ADMIN';
+  if (r === 'CM') return 'CONSTITUENCY_MGR';
+  return r;
+};
+
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -15,8 +22,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const session = localStorage.getItem('aakar_session') || localStorage.getItem('praja_session');
-    const token = localStorage.getItem('token') || localStorage.getItem('praja_token');
+    const session = localStorage.getItem('aakar_session');
+    const token = localStorage.getItem('token');
     if (!session || !token) {
       setLoading(false);
       return;
@@ -34,9 +41,7 @@ export function AuthProvider({ children }) {
       .then((res) => {
         if (!res.ok) {
           localStorage.removeItem('aakar_session');
-          localStorage.removeItem('praja_session');
           localStorage.removeItem('token');
-          localStorage.removeItem('praja_token');
           throw new Error('Token expired');
         }
         return res.json();
@@ -46,7 +51,7 @@ export function AuthProvider({ children }) {
           id: user.id,
           email: user.email,
           displayName: user.display_name || user.role,
-          role: (user.role || '').toUpperCase(),
+          role: mapRole(user.role),
           state_id: user.state_id,
           district_id: user.district_id,
           constituency_id: user.constituency_id,
@@ -56,9 +61,7 @@ export function AuthProvider({ children }) {
       })
       .catch(() => {
         localStorage.removeItem('aakar_session');
-        localStorage.removeItem('praja_session');
         localStorage.removeItem('token');
-        localStorage.removeItem('praja_token');
         setCurrentUser(null);
       })
       .finally(() => {
@@ -100,15 +103,13 @@ export function AuthProvider({ children }) {
       id: data.user.id,
       email: data.user.email,
       displayName: data.user.display_name || data.user.displayName || data.user.role,
-      role: (data.user.role || '').toUpperCase(),
+      role: mapRole(data.user.role),
       state_id: data.user.state_id,
       district_id: data.user.district_id,
       constituency_id: data.user.constituency_id,
       mandal_id: data.user.mandal_id,
       booth_id: data.user.booth_id,
     };
-    localStorage.setItem('praja_token', data.access_token);
-    localStorage.setItem('praja_session', '1');
     setCurrentUser(userObj);
     return { user: userObj };
   }
@@ -136,15 +137,13 @@ export function AuthProvider({ children }) {
       id: data.user.id,
       email: data.user.email,
       displayName: data.user.display_name || data.user.displayName || data.user.role,
-      role: (data.user.role || '').toUpperCase(),
+      role: mapRole(data.user.role),
       state_id: data.user.state_id,
       district_id: data.user.district_id,
       constituency_id: data.user.constituency_id,
       mandal_id: data.user.mandal_id,
       booth_id: data.user.booth_id,
     };
-    localStorage.setItem('praja_token', data.access_token);
-    localStorage.setItem('praja_session', '1');
     setCurrentUser(userObj);
     return { user: userObj };
   }
@@ -155,8 +154,6 @@ export function AuthProvider({ children }) {
     } catch (e) {
       console.error("Logout request failed", e);
     }
-    localStorage.removeItem('praja_token');
-    localStorage.removeItem('praja_session');
     localStorage.removeItem('aakar_session');
     localStorage.removeItem('token');
     setCurrentUser(null);

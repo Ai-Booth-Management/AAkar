@@ -11,7 +11,7 @@ const AiSummaryPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/admin/ai-summary', {
         headers: {
           'Authorization': `Bearer ${token}`

@@ -167,7 +167,7 @@ const AskPanel = () => {
     setSelectedNode(null);
     
     let targetQuestion = question.trim();
-    if (currentUser?.role === 'dm') {
+    if (currentUser?.role?.toUpperCase() === 'DM') {
       targetQuestion = `For the district of ${currentUser.displayName}, ${targetQuestion}`;
     }
     
@@ -198,7 +198,7 @@ const AskPanel = () => {
     setSelectedNode(null);
 
     let bodyData = { question: null, shortcut: shortcut };
-    if (currentUser?.role === 'dm') {
+    if (currentUser?.role?.toUpperCase() === 'DM') {
       const shortcutQuestions = {
         "SHOW_ALL_RELATIONSHIPS": "Show relationships between voters, booths, houses, areas, and complaints in the district: " + currentUser.displayName,
         "LIST_ALL_VOTERS": "List all voters in the district: " + currentUser.displayName,

@@ -1,13 +1,13 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pathlib import Path
 import pandas as pd
 from app.infrastructure.db.neo4j_client import neo4j_client
 from app.domain.services.graph_builder import process_voters, process_complaints
 
-UPLOADS_DIR = Path(__file__).resolve().parent.parent / "data" / "uploads"
+UPLOADS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "uploads"
 
 
 def main():

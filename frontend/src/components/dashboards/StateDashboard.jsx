@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Globe, Radio, FileText, Zap, Map, TrendingUp } from 'lucide-react';
-import HeatmapAnalysis from './HeatmapAnalysis';
+import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp } from 'lucide-react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -24,7 +23,6 @@ export default function StateDashboard({ tab, hierarchy }) {
     case 'overview':     return <StateOverview state={stateName} />;
     case 'performance':  return <PerformanceAnalytics />;
     case 'rankings':     return <DistrictRankings />;
-    case 'heatmap':      return <HeatmapAnalysis level="STATE" hierarchy={hierarchy} />;
     case 'campaign':     return <CampaignPanel />;
     case 'ai-suggestions': return null;
     case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;
@@ -179,29 +177,6 @@ function DistrictRankings() {
           <div className="dash-section-body">
             <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No intervention data available</div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function IssueHeatmap() {
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">Issue Heatmap — State Level</div></div>
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Issue Distribution by Severity</h3></div>
-        <div className="dash-section-body" style={{ padding: 0 }}>
-          <table>
-            <thead>
-              <tr><th>Issue Category</th><th>High Volume Districts</th><th>Med Volume Districts</th><th>Total Impacted Booths</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontWeight: 600 }}>No issue data available</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

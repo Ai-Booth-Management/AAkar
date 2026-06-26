@@ -59,8 +59,11 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     
-    # Normalize civic roles to lowercase for authorization compatibility
-    if user.role and user.role.lower() in ["official", "cm", "dm"]:
-        user.role = user.role.lower()
+    # Normalize roles for authorization compatibility
+    if user.role:
+        if user.role.lower() in ["official", "cm", "dm"]:
+            user.role = user.role.lower()
+        else:
+            user.role = user.role.upper()
         
     return user

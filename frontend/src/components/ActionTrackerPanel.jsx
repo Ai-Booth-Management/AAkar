@@ -30,7 +30,7 @@ const ActionTrackerPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/actions', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -79,7 +79,7 @@ const ActionTrackerPanel = () => {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch(`/api/v1/actions/${selectedInst.id}`, {
         method: 'PUT',
         headers: {
@@ -120,7 +120,7 @@ const ActionTrackerPanel = () => {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/actions', {
         method: 'POST',
         headers: {
@@ -190,8 +190,8 @@ const ActionTrackerPanel = () => {
     return matchStatus && matchPriority;
   });
 
-  const isDM = currentUser?.role === 'dm';
-  const isCM = currentUser?.role === 'cm';
+  const isDM = currentUser?.role?.toUpperCase() === 'DM';
+  const isCM = currentUser?.role?.toUpperCase() === 'CM';
 
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

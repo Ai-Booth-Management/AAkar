@@ -108,11 +108,13 @@ backend/
 │   └── uploads/                           # voters.csv, complaints.csv (gitignored)
 │
 └── scripts/
-    ├── seed_all.py                        # Run this after fresh clone to create users + hierarchy
-    ├── seed_hierarchy_delhi.py            # Delhi HierarchyNode rows
-    ├── seed_delhi_mandals.py              # Mandal rows
-    ├── seed_delhi_booths.py               # Booth rows
-    └── reset_db.py                        # Wipes SQLite and reseeds from scratch
+    ├── setup/                             # Seeding, resetting, and db initialization
+    │   ├── seed_all.py
+    │   ├── reset_db.py
+    │   └── …
+    ├── debug/                             # SQLite / Neo4j data diagnostics
+    ├── fix/                               # GeoJSON / consistency fix scripts
+    └── test/                              # Simulators and validation tests
 ```
 
 ### Frontend
@@ -218,7 +220,7 @@ const normConstit = (s) => (s || '').toLowerCase()
 
 ---
 
-## Default Login Credentials (after `python scripts/seed_all.py`)
+## Default Login Credentials (after `python scripts/setup/seed_all.py`)
 
 | Email | Password | Role |
 |-------|----------|------|

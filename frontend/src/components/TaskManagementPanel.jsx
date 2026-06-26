@@ -33,7 +33,7 @@ const TaskManagementPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/tasks/', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -76,7 +76,7 @@ const TaskManagementPanel = () => {
     }
 
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/tasks/', {
         method: 'POST',
         headers: {
@@ -113,7 +113,7 @@ const TaskManagementPanel = () => {
     setError(null);
     setSuccess(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch(`/api/v1/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
@@ -144,7 +144,7 @@ const TaskManagementPanel = () => {
     setError(null);
     setSuccess(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch(`/api/v1/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {

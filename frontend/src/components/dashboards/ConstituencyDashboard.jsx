@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from 'react';
-import HeatmapAnalysis from './HeatmapAnalysis';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -18,6 +17,12 @@ const CampaignPanel = dynamic(() => import('../CampaignPanel'), {
   )
 });
 
+const BOSIDashboard = dynamic(() => import('./BOSIDashboard'), { ssr: false });
+const ReadinessDashboard = dynamic(() => import('./ReadinessDashboard'), { ssr: false });
+const TurnoutDashboard = dynamic(() => import('./TurnoutDashboard'), { ssr: false });
+const WhatsAppOS = dynamic(() => import('./WhatsAppOS'), { ssr: false });
+const RelocatedCampaignTracker = dynamic(() => import('./CampaignTracker'), { ssr: false });
+
 export default function ConstituencyDashboard({ tab, hierarchy }) {
   const lc = hierarchy.constituency || '';
   const [activeTab, setActiveTab] = useState(tab || 'overview');
@@ -31,10 +36,14 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
       case 'overview':         return <ConstituencyOverview lc={lc} onSchedule={() => setActiveTab('campaign')} />;
       case 'booths':           return <BoothRankings />;
       case 'health':           return <BoothHealth />;
-      case 'heatmap':          return <HeatmapAnalysis level="CONSTITUENCY" hierarchy={hierarchy} />;
+      case 'bosi':             return <BOSIDashboard hierarchy={hierarchy} />;
+      case 'readiness':        return <ReadinessDashboard hierarchy={hierarchy} />;
+      case 'turnout':          return <TurnoutDashboard hierarchy={hierarchy} />;
       case 'campaigns':
       case 'campaign':         return <CampaignPanel />;
+      case 'campaign_tracker': return <RelocatedCampaignTracker hierarchy={hierarchy} />;
       case 'hub':              return <Hub hierarchy={hierarchy} userRole="CONSTITUENCY_MGR" />;
+      case 'whatsapp_os':      return <WhatsAppOS hierarchy={hierarchy} />;
       case 'broadcast':        return <BroadcastPanel hierarchy={hierarchy} />;
       case 'manage-users':     return <ManageUsers role="CONSTITUENCY_MGR" hierarchy={hierarchy} />;
       case 'ai-suggestions':   return <AIRecommendations />;
@@ -134,22 +143,6 @@ function BoothHealth() {
       <div className="dash-page-header"><div className="dash-page-title">Booth Health Scores</div></div>
       <div className="dash-grid-3">
         <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600, gridColumn: '1 / -1' }}>No health score data available</div>
-      </div>
-    </div>
-  );
-}
-
-function ConcernMap() {
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">Concern Map</div></div>
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Geographic Grievance Distribution</h3></div>
-        <div className="dash-section-body">
-          <div style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-200)', padding: 24 }}>
-            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No grievance data available</div>
-          </div>
-        </div>
       </div>
     </div>
   );

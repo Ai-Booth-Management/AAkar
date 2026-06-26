@@ -1,10 +1,11 @@
 """Run all seed scripts in order to set up a fresh database."""
 import sys, os, subprocess
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from sqlmodel import Session, create_engine, select
 from app.domain.models.user import User
-from app.domain.models.volunteer import Volunteer, Task, ConversationState
+from app.domain.models.volunteer import Volunteer, VolunteerTask, ConversationState
+from app.domain.models.task import Task
 from app.domain.models.hierarchy import HierarchyNode
 from app.infrastructure.db.sqlite_client import init_db
 from app.core.security import hash_password
@@ -17,7 +18,7 @@ def run(script_name, label):
     print(f"\n[{label}] Running {script_name}...")
     result = subprocess.run(
         [sys.executable, os.path.join(script_dir, script_name)],
-        capture_output=True, text=True, cwd=os.path.join(script_dir, '..')
+        capture_output=True, text=True, cwd=os.path.join(script_dir, '..', '..')
     )
     if result.returncode != 0:
         print(f"  ERROR: {result.stderr}")

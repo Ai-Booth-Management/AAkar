@@ -105,13 +105,16 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(user)
 
+    # Normalize role for client compatibility
+    user_role = user.role.lower() if user.role and user.role.lower() in ["official", "cm", "dm"] else (user.role.upper() if user.role else "")
+
     token = create_access_token({"sub": user.email})
     return TokenResponse(
         access_token=token,
         user={
             "id": user.id,
             "email": user.email,
-            "role": user.role,
+            "role": user_role,
             "displayName": user.display_name,
             "state_id": user.state_id,
             "district_id": user.district_id,
@@ -132,13 +135,16 @@ def login(body: LoginRequest, session: Session = Depends(get_session)):
             detail="invalid-credentials",
         )
 
+    # Normalize role for client compatibility
+    user_role = user.role.lower() if user.role and user.role.lower() in ["official", "cm", "dm"] else (user.role.upper() if user.role else "")
+
     token = create_access_token({"sub": user.email})
     return TokenResponse(
         access_token=token,
         user={
             "id": user.id,
             "email": user.email,
-            "role": user.role,
+            "role": user_role,
             "displayName": user.display_name,
             "state_id": user.state_id,
             "district_id": user.district_id,
@@ -153,7 +159,7 @@ def login(body: LoginRequest, session: Session = Depends(get_session)):
 def me(current_user: User = Depends(get_current_user)):
     """Return the currently authenticated user."""
     return UserResponse(
-        id=current_user.id,
+        id=current_user.id or 0,
         email=current_user.email,
         role=current_user.role,
         display_name=current_user.display_name,

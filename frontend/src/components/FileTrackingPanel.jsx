@@ -37,7 +37,7 @@ const FileTrackingPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/files/', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -84,7 +84,7 @@ const FileTrackingPanel = () => {
     }
 
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch('/api/v1/files/', {
         method: 'POST',
         headers: {
@@ -132,7 +132,7 @@ const FileTrackingPanel = () => {
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       const res = await fetch(`/api/v1/files/${selectedFile.id}/action`, {
         method: 'POST',
         headers: {

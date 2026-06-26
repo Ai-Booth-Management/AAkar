@@ -1,6 +1,6 @@
 """Add mandal/sector data for all Delhi constituencies."""
 import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from sqlmodel import Session, create_engine, select
 from app.domain.models.hierarchy import HierarchyNode

@@ -1,6 +1,6 @@
 """Add booth data: 2 booths per mandal in Delhi, plus BOOTH_PRESIDENT users."""
 import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from sqlmodel import Session, create_engine, select
 from app.domain.models.hierarchy import HierarchyNode

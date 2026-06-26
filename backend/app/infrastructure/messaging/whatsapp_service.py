@@ -10,10 +10,10 @@ WHAT THIS DOES
    volunteer REPLIES (e.g. they text "DONE" to confirm a task).
 
 HOW TO PLUG THIS IN
-- Drop this file into:  backend/app/domain/whatsapp_service.py
+- Drop this file into:  backend/app/infrastructure/messaging/whatsapp_service.py
 - Add the env vars below to your existing backend/.env
 - In your FastAPI app (main.py or wherever routers are registered), add:
-      from app.domain.whatsapp_service import router as whatsapp_router
+      from app.infrastructure.messaging.whatsapp_service import router as whatsapp_router
       app.include_router(whatsapp_router, prefix="/api/v1/whatsapp")
 
 ENV VARS NEEDED (add to backend/.env, same file that already has NEO4J_URI etc.)
@@ -95,12 +95,12 @@ def _get_children_by_code(
     ).first()
     if not parent:
         return []
-    return session.exec(
+    return list(session.exec(
         select(HierarchyNode).where(
             HierarchyNode.parent_id == parent.id,
             HierarchyNode.level == child_level,
         )
-    ).all()
+    ).all())
 
 
 def _format_numbered_list(nodes: list[HierarchyNode], show_code: bool = False) -> str:
@@ -217,7 +217,7 @@ async def simulate_whatsapp(body: dict):
         async def json(self):
             return mock_payload
 
-    await receive_whatsapp_message(_MockRequest())
+    await receive_whatsapp_message(_MockRequest())  # type: ignore[arg-type]
 
     replies = list(_simulated_replies)
     _simulated_replies = []
@@ -508,7 +508,7 @@ async def receive_whatsapp_message(request: Request):
                         session.commit()
                         await send_text(
                             from_number,
-                            f"\u2705 Registration complete! Welcome to the team, {name}.\n"
+                            f"✅ Registration complete! Welcome to the team, {name}.\n"
                             f"Your booth: {selected.name} ({selected.code})\n"
                             "You will receive task assignments here.",
                         )
@@ -530,7 +530,7 @@ async def receive_whatsapp_message(request: Request):
                     task = session.exec(
                         select(VolunteerTask)
                         .where(VolunteerTask.volunteer_id == volunteer.id, VolunteerTask.status == "assigned")
-                        .order_by(VolunteerTask.assigned_at.desc())
+                        .order_by(VolunteerTask.assigned_at.desc())  # type: ignore[attr-defined]
                     ).first()
 
                     if task:
@@ -538,7 +538,7 @@ async def receive_whatsapp_message(request: Request):
                         task.completed_at = datetime.now(timezone.utc)
                         session.add(task)
                         session.commit()
-                        await send_text(from_number, "\u2705 Task marked complete. Thank you!")
+                        await send_text(from_number, "✅ Task marked complete. Thank you!")
                     else:
                         await send_text(from_number, "No active task found for you right now.")
 
@@ -547,7 +547,7 @@ async def receive_whatsapp_message(request: Request):
                     task = session.exec(
                         select(VolunteerTask)
                         .where(VolunteerTask.volunteer_id == volunteer.id, VolunteerTask.status == "assigned")
-                        .order_by(VolunteerTask.assigned_at.desc())
+                        .order_by(VolunteerTask.assigned_at.desc())  # type: ignore[attr-defined]
                     ).first()
 
                     if task:
@@ -563,7 +563,7 @@ async def receive_whatsapp_message(request: Request):
                         task.completed_at = datetime.now(timezone.utc)
                         session.add(task)
                         session.commit()
-                        await send_text(from_number, "\u2705 Photo received. Task marked complete!")
+                        await send_text(from_number, "✅ Photo received. Task marked complete!")
                     else:
                         await send_text(
                             from_number,
@@ -577,7 +577,7 @@ async def receive_whatsapp_message(request: Request):
                         # wrap it in to_thread to avoid blocking the event loop.
                         llm_response = await asyncio.to_thread(ask_election_question, text_body, None, volunteer)
                         answer = llm_response.get("answer", "I couldn't process your question right now.")
-                        await send_text(from_number, answer)
+                        await send_text(from_number, str(answer))
                     except Exception as llm_error:
                         logger.error(f"Error calling LLM from WhatsApp: {llm_error}", exc_info=True)
                         await send_text(

@@ -18,7 +18,7 @@ const AuditPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       
       const queryParams = new URLSearchParams();
       if (officer.trim()) queryParams.append('officer', officer.trim());
@@ -74,7 +74,7 @@ const AuditPanel = () => {
     setDepartment('');
     setDate('');
     setTimeout(() => {
-      const token = localStorage.getItem('praja_token');
+      const token = localStorage.getItem('token');
       fetch(`/api/v1/audit/logs`, {
         headers: {
           'Authorization': `Bearer ${token}`

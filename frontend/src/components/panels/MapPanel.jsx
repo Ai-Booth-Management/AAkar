@@ -1,161 +1,46 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import MapSelector from './map/MapSelector';
+import MapReport from './map/MapReport';
+import MapLeaflet from './map/MapLeaflet';
+import { getDistrictFromEmail, getReportForDistrict, getAggregateReport } from './map/mapUtils';
 import 'leaflet/dist/leaflet.css';
-
-// DISTRICT_METRICS dictionary has been migrated to the SQLite Relational Database (RDB)
-
-const COLOR_MAP = {
-    "Very High": { fill: "#ef4444", border: "#b91c1c" },
-    "High": { fill: "#f97316", border: "#c2410c" },
-    "Medium": { fill: "#eab308", border: "#a16207" },
-    "Low": { fill: "#22c55e", border: "#15803d" },
-    "Very Low": { fill: "#16a34a", border: "#166534" }
-};
-
-const getDensityLevel = (activeCount) => {
-    if (activeCount >= 12) return "Very High";
-    if (activeCount >= 6) return "High";
-    if (activeCount >= 3) return "Medium";
-    if (activeCount >= 1) return "Low";
-    return "Very Low";
-};
-
-const getReportForDistrict = (districtMetrics, districtName, category) => {
-    const d = districtMetrics[districtName];
-    if (!d) return getAggregateReport(districtMetrics, category);
-    const lookupKey = category === "All" ? "Total" : category;
-    const total = d.complaints[lookupKey] || 0;
-    const active = d.active[lookupKey] || 0;
-    const solved = d.solved[lookupKey] || 0;
-
-    const categoryReports = {
-        "Sanitation": {
-            what: `• Sanitation grid overload: ${active} active dumpsite backlogs.\n• Waste clearance rate dropped by 14% this week.`,
-            where: `• ${districtName} high-density market zones.\n• Transit collection points.`,
-            who: d.details.Sanitation.who,
-            action: `• Cleared ${solved} dump locations.\n• Dispatched 2 additional municipal compactors.`,
-            pending: `• Procurement approval for 15 heavy-litter bins.`
-        },
-        "Water": {
-            what: `• Distribution supply pressure deficit affecting ${active} local supply nodes.\n• Supply lines pressure dropped below standard 1.4 bar.`,
-            where: `• ${districtName} Wards.\n• Low-lying residential clusters.`,
-            who: d.details.Water.who,
-            action: `• Serviced feeder control valves at zonal station.\n• Cleared and repaired ${solved} leakage points.`,
-            pending: `• Zonal permit for pipeline trenching and replacement.`
-        },
-        "Roads": {
-            what: `• Pavement structural degradation: ${active} active pothole sectors.\n• Vehicular transit speed dropped to average 18 km/h.`,
-            where: `• ${districtName} primary corridor loops.\n• Arterial highway connector lanes.`,
-            who: d.details.Roads.who,
-            action: `• Executed cold-mix patchwork overlay across ${solved} locations.`,
-            pending: `• Traffic Police NOC for hot-mix resurfacing phases.`
-        },
-        "Electricity": {
-            what: `• Voltage fluctuation anomalies: ${active} transformer sectors reporting overloading during peak hours.`,
-            where: `• ${districtName} Walled markets.\n• Inner localized alley circuits.`,
-            who: d.details.Electricity.who,
-            action: `• Rerouted load circuit to secondary transformer nodes.\n• Anchored and insulated ${solved} overhead sagging lines.`,
-            pending: `• Space allocation approval for underground transformer pods.`
-        },
-        "All": {
-            what: `• Total of ${total} registered hotline complaints (${active} active).\n• Sanitation (${d.complaints.Sanitation}) & Water leaks (${d.complaints.Water}) comprise 60% of logs.`,
-            where: `• ${districtName} residential wards & central markets.`,
-            who: `• ${districtName} Zonal Coordination Command Center`,
-            action: `• Resolved ${solved} hotline issues.\n• Dispatched municipal cleaners and water valve crews.`,
-            pending: `• Digging permits and road cutting NOCs from PWD.`
-        }
-    };
-
-    return categoryReports[category] || categoryReports["All"];
-};
-
-// Generates an aggregate report for NCT of Delhi overall
-const getAggregateReport = (districtMetrics, category) => {
-    let total = 0;
-    let solved = 0;
-    let active = 0;
-    let sanitation = 0;
-    let water = 0;
-
-    const lookupKey = category === "All" ? "Total" : category;
-
-    Object.values(districtMetrics).forEach(d => {
-        total += d.complaints[lookupKey] || 0;
-        solved += d.solved[lookupKey] || 0;
-        active += d.active[lookupKey] || 0;
-        sanitation += d.complaints.Sanitation || 0;
-        water += d.complaints.Water || 0;
-    });
-
-    const categoryReports = {
-        "Sanitation": {
-            what: `• Aggregate surge of ${total} sanitation complaints (${active} active).\n• Daily garbage output exceeded processing capacity by 15% in hotspots.`,
-            where: `• Central Delhi (15 cases) & South Delhi (8 cases).`,
-            who: `• Joint Commissioner of Waste Management & Zonal Directors`,
-            action: `• Cleared ${solved} garbage dumps.\n• Activated 4 municipal composters.`,
-            pending: `• Site clearance for solid waste treatment facility.`
-        },
-        "Water": {
-            what: `• Total of ${total} water supply complaints registered (${active} active).\n• Supply contamination reports in residential zones.`,
-            where: `• Central Delhi (13 cases) & South Delhi (8 cases).`,
-            who: `• DJB Chief Engineer & Zonal Superintendent Engineers`,
-            action: `• Resolved ${solved} water leakage cases.\n• Deployed auxiliary supply lines.`,
-            pending: `• Approvals for major reservoir trunk line replacement.`
-        },
-        "Roads": {
-            what: `• Pavement damage and potholes accumulate ${total} reports (${active} active).\n• Vehicle flow rate dropped by average 14% on affected arterials.`,
-            where: `• Central District (11 cases) & South District (6 cases).`,
-            who: `• PWD Delhi Chief Engineer & Municipal Corporation Works Division`,
-            action: `• Completed pothole filling on ${solved} locations.`,
-            pending: `• Financial allocation for secondary road hot-mix overlays.`
-        },
-        "Electricity": {
-            what: `• Substation load anomalies and wire sag reports total ${total} complaints (${active} active).\n• Evening peak load exceeded transformer capacity by 12%.`,
-            where: `• Central District Chandni Chowk (7 cases) & South District Neb Sarai (4 cases).`,
-            who: `• BSES Yamuna & BSES Rajdhani Distribution Executives`,
-            action: `• Rerouted supply lines at ${solved} stations.\n• Bundled sagging overhead cables.`,
-            pending: `• Municipal space allocation for transformer pods.`
-        },
-        "All": {
-            what: `• Civic hotline registered ${total} reports (${active} active).\n• Sanitation (${sanitation} complaints) & Water Supply (${water} complaints) form 60% of workload.`,
-            where: `• Central Delhi (46 cases) & South Delhi (26 cases).`,
-            who: `• Joint Municipal Commissioner & Departmental Nodal Officers`,
-            action: `• Resolved ${solved} reports across NCT.\n• Deployed waste clearance & water repair crews.`,
-            pending: `• Digging coordination permits and road cutting NOCs from Traffic Police.`
-        }
-    };
-
-    return categoryReports[category] || categoryReports["All"];
-};
-
-const getDistrictFromEmail = (email) => {
-    if (!email) return null;
-    const lowerEmail = email.toLowerCase();
-    if (lowerEmail.includes("north_west")) return "North West";
-    if (lowerEmail.includes("north_east")) return "North East";
-    if (lowerEmail.includes("new_delhi")) return "New Delhi";
-    if (lowerEmail.includes("south_west")) return "South West";
-    if (lowerEmail.includes("south_east")) return "South East";
-    if (lowerEmail.includes("north")) return "North";
-    if (lowerEmail.includes("shahdara")) return "Shahdara";
-    if (lowerEmail.includes("east")) return "East";
-    if (lowerEmail.includes("west")) return "West";
-    if (lowerEmail.includes("central")) return "Central";
-    if (lowerEmail.includes("south")) return "South";
-    return null;
-};
 
 const MapPanel = () => {
     const { currentUser } = useAuth();
     const [districtMetrics, setDistrictMetrics] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [geojsonData, setGeojsonData] = useState(null);
+    const [activeCategory, setActiveCategory] = useState("All"); // Sanitation, Water, Roads, Electricity, All
+    const [selectedDistrict, setSelectedDistrict] = useState(null);
+
+    // Map Overlays state
+    const [overlays, setOverlays] = useState({
+        projects: true,
+        health: true,
+        education: true
+    });
+
+    // Categories config
+    const categories = [
+        { key: "All", label: "All Civic Issues", color: "#64748b" },
+        { key: "Sanitation", label: "Sanitation", color: "#ef4444" },
+        { key: "Water", label: "Water Supply", color: "#3b82f6" },
+        { key: "Roads", label: "Road Infrastructure", color: "#f59e0b" },
+        { key: "Electricity", label: "Electricity", color: "#8b5cf6" }
+    ];
+
+    // Theme colors
+    const navy = "#04122e";
+    const navyLight = "#1a2744";
+    const saffron = "#D4A843";
 
     const fetchMetrics = async () => {
         setLoading(true);
         setError(null);
         try {
-            const token = localStorage.getItem('praja_token');
+            const token = localStorage.getItem('token');
             const res = await fetch('/api/v1/heatmap/metrics', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -221,36 +106,6 @@ const MapPanel = () => {
         fetchMetrics();
     }, [currentUser]);
 
-    const mapRef = useRef(null);
-    const mapContainerRef = useRef(null);
-    const geojsonLayerRef = useRef(null);
-
-    const [geojsonData, setGeojsonData] = useState(null);
-    const [activeCategory, setActiveCategory] = useState("All"); // Sanitation, Water, Roads, Electricity, All
-    
-    const [selectedDistrict, setSelectedDistrict] = useState(null);
-
-    // Map Overlays state
-    const [overlays, setOverlays] = useState({
-        projects: true,
-        health: true,
-        education: true
-    });
-
-    // Categories config
-    const categories = [
-        { key: "All", label: "All Civic Issues", color: "#64748b" },
-        { key: "Sanitation", label: "Sanitation", color: "#ef4444" },
-        { key: "Water", label: "Water Supply", color: "#3b82f6" },
-        { key: "Roads", label: "Road Infrastructure", color: "#f59e0b" },
-        { key: "Electricity", label: "Electricity", color: "#8b5cf6" }
-    ];
-
-    // Theme colors
-    const navy = "#04122e";
-    const navyLight = "#1a2744";
-    const saffron = "#D4A843";
-
     // Load Local Delhi GeoJSON File
     useEffect(() => {
         fetch('/delhi_districts.geojson')
@@ -262,221 +117,17 @@ const MapPanel = () => {
             .catch(err => console.error(err));
     }, []);
 
-    // Initialize Map
+    // Lock district if role is dm
     useEffect(() => {
-        if (typeof window !== 'undefined' && mapContainerRef.current && !mapRef.current) {
-            const L = require('leaflet');
-            
-            // Strict bounds for Delhi NCT
-            const southWest = L.latLng(28.38, 76.80);
-            const northEast = L.latLng(28.90, 77.40);
-            const bounds = L.latLngBounds(southWest, northEast);
-
-            const map = L.map(mapContainerRef.current, {
-                center: [28.6139, 77.2090],
-                zoom: 11,
-                minZoom: 11,
-                maxZoom: 15,
-                maxBounds: bounds,
-                maxBoundsViscosity: 1.0,
-                zoomControl: false,
-                scrollWheelZoom: false
-            });
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-
-            L.control.zoom({ position: 'topleft' }).addTo(map);
-            mapRef.current = map;
+        if (currentUser && currentUser.role && currentUser.role.toLowerCase() === 'dm' && currentUser.email) {
+            const assigned = getDistrictFromEmail(currentUser.email);
+            if (assigned) {
+                setSelectedDistrict(assigned);
+            }
         }
+    }, [currentUser]);
 
-        return () => {
-            if (mapRef.current) {
-                mapRef.current.remove();
-                mapRef.current = null;
-            }
-        };
-    }, []);
-
-    // Map Styling & Layer Refresh
-    useEffect(() => {
-        if (!mapRef.current || !geojsonData) return;
-        const L = require('leaflet');
-        const map = mapRef.current;
-
-        // Clear existing geojson layer
-        if (geojsonLayerRef.current) {
-            map.removeLayer(geojsonLayerRef.current);
-        }
-
-        // Clear existing custom markers
-        map.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        });
-
-        // Add choropleth layer
-        const layer = L.geoJSON(geojsonData, {
-            style: (feature) => {
-                const dtName = feature.properties.dtname;
-                const d = districtMetrics[dtName];
-                const lookupKey = activeCategory === "All" ? "Total" : activeCategory;
-                const activeCount = d ? d.active[lookupKey] : 0;
-                const density = getDensityLevel(activeCount);
-                const colors = COLOR_MAP[density] || { fill: "#cbd5e1", border: "#94a3b8" };
-
-                const isSelected = selectedDistrict === dtName;
-                const hasSelection = selectedDistrict !== null;
-
-                if (hasSelection) {
-                    if (isSelected) {
-                        return {
-                            color: saffron,
-                            weight: 4,
-                            fillColor: colors.fill,
-                            fillOpacity: 0.85
-                        };
-                    } else {
-                        // Grayed out fully
-                        return {
-                            color: "#cbd5e1",
-                            weight: 1,
-                            fillColor: "#f1f5f9",
-                            fillOpacity: 0.15
-                        };
-                    }
-                }
-
-                return {
-                    color: colors.border,
-                    weight: 2,
-                    fillColor: colors.fill,
-                    fillOpacity: 0.65
-                };
-            },
-            onEachFeature: (feature, layer) => {
-                const dtName = feature.properties.dtname;
-                const d = districtMetrics[dtName];
-                if (!d) return;
-
-                layer.on({
-                    click: (e) => {
-                        setSelectedDistrict(dtName);
-                        map.fitBounds(e.target.getBounds());
-                    },
-                    mouseover: (e) => {
-                        const l = e.target;
-                        if (selectedDistrict === null || selectedDistrict === dtName) {
-                            l.setStyle({ fillOpacity: 0.8 });
-                        }
-                    },
-                    mouseout: (e) => {
-                        const l = e.target;
-                        if (selectedDistrict === null) {
-                            l.setStyle({ fillOpacity: 0.65 });
-                        } else if (selectedDistrict === dtName) {
-                            l.setStyle({ fillOpacity: 0.85 });
-                        }
-                    }
-                });
-
-                // Calculate centroid dynamically using Leaflet bounds
-                const center = layer.getBounds().getCenter();
-
-                // Draw Projects layer markers (only for selected district, or all if none is selected)
-                const shouldShowMarker = selectedDistrict === null || selectedDistrict === dtName;
-
-                if (shouldShowMarker && overlays.projects && d.project && d.project.name !== "N/A") {
-                    const color = d.project.status === "Active" ? '#22c55e' : '#3b82f6';
-                    const pulseHtml = `
-                        <div style="position: relative; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;">
-                            <div style="position: absolute; width: 100%; height: 100%; background-color: ${color}; opacity: 0.6; animation: pulse 2s infinite; border-radius: 50%;"></div>
-                            <div style="width: 8px; height: 8px; background-color: ${color}; border: 1.5px solid white; border-radius: 50%;"></div>
-                        </div>
-                    `;
-                    const customIcon = L.divIcon({
-                        html: pulseHtml,
-                        className: 'custom-leaflet-icon',
-                        iconSize: [14, 14]
-                    });
-
-                    L.marker([center.lat, center.lng + 0.015], { icon: customIcon })
-                        .bindPopup(`
-                            <div style="font-family: sans-serif; padding: 4px; font-size: 11px;">
-                                <h4 style="margin: 0 0 4px 0; color: #04122e; text-transform: uppercase; font-weight: 800;">${d.project.name}</h4>
-                                <div style="color: #64748b; margin-bottom: 4px;">Location: ${dtName} District</div>
-                                <div style="display: inline-block; padding: 2px 6px; font-weight: 800; font-size: 9px; color: white; background: ${color}; text-transform: uppercase;">
-                                    ${d.project.status}
-                                </div>
-                            </div>
-                        `).addTo(map);
-                }
-
-                // Draw Health Alerts Layer
-                if (shouldShowMarker && overlays.health && d.alerts && d.alerts.health > 0) {
-                    const pulseHtml = `
-                        <div style="position: relative; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center;">
-                            <div style="position: absolute; width: 100%; height: 100%; background-color: #06b6d4; opacity: 0.5; border-radius: 50%;"></div>
-                            <div style="width: 6px; height: 6px; background-color: #06b6d4; border: 1px solid white; border-radius: 50%;"></div>
-                        </div>
-                    `;
-                    const customIcon = L.divIcon({
-                        html: pulseHtml,
-                        className: 'custom-leaflet-icon',
-                        iconSize: [12, 12]
-                    });
-
-                    L.marker([center.lat - 0.01, center.lng - 0.01], { icon: customIcon })
-                        .bindPopup(`
-                            <div style="font-family: sans-serif; padding: 4px; font-size: 11px;">
-                                <h4 style="margin: 0 0 4px 0; color: #04122e; text-transform: uppercase; font-weight: 800;">Health Service Alerts</h4>
-                                <div style="font-weight: 700; color: #0891b2;">Active Alerts: ${d.alerts.health} Cases</div>
-                                <div style="font-size: 10px; color: #64748b; margin-top: 4px;">District: ${dtName}</div>
-                            </div>
-                        `).addTo(map);
-                }
-
-                // Draw Education Alerts Layer
-                if (shouldShowMarker && overlays.education && d.alerts && d.alerts.education > 0) {
-                    const pulseHtml = `
-                        <div style="position: relative; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center;">
-                            <div style="position: absolute; width: 100%; height: 100%; background-color: #8b5cf6; opacity: 0.5; border-radius: 50%;"></div>
-                            <div style="width: 6px; height: 6px; background-color: #8b5cf6; border: 1px solid white; border-radius: 50%;"></div>
-                        </div>
-                    `;
-                    const customIcon = L.divIcon({
-                        html: pulseHtml,
-                        className: 'custom-leaflet-icon',
-                        iconSize: [12, 12]
-                    });
-
-                    L.marker([center.lat + 0.01, center.lng - 0.01], { icon: customIcon })
-                        .bindPopup(`
-                            <div style="font-family: sans-serif; padding: 4px; font-size: 11px;">
-                                <h4 style="margin: 0 0 4px 0; color: #04122e; text-transform: uppercase; font-weight: 800;">Education Welfare Alerts</h4>
-                                <div style="font-weight: 700; color: #7c3aed;">Active Alerts: ${d.alerts.education} Cases</div>
-                                <div style="font-size: 10px; color: #64748b; margin-top: 4px;">District: ${dtName}</div>
-                            </div>
-                        `).addTo(map);
-                }
-            }
-        }).addTo(map);
-
-        geojsonLayerRef.current = layer;
-
-        // Reset style highlights on click outside
-        map.on('click', (e) => {
-            if (e.originalEvent.target.id === mapContainerRef.current.id || e.originalEvent.target.tagName === 'svg') {
-                setSelectedDistrict(null);
-                map.setView([28.6139, 77.2090], 11);
-            }
-        });
-
-    }, [geojsonData, activeCategory, selectedDistrict, overlays, districtMetrics]);
-
-        // Aggregate statistics helper
+    // Aggregate statistics helper
     const getAggregateStats = () => {
         let total = 0;
         let solved = 0;
@@ -551,49 +202,26 @@ const MapPanel = () => {
 
     const breakdown = getCategoryBreakdown();
 
+    if (loading && Object.keys(districtMetrics).length === 0) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', color: '#64748b' }}>
+                Loading boundary metrics...
+            </div>
+        );
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, fontFamily: '"Public Sans", "Inter", sans-serif', background: '#f8fafc', padding: '16px 0' }}>
+            {error && <div className="error-msg" style={{ margin: 0, padding: 12 }}>{error}</div>}
             
             {/* Header controls & Pills */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-                <div>
-                    <h2 style={{ margin: 0, color: navy, fontSize: '22px', fontWeight: '900', letterSpacing: '-0.03em' }}>
-                        Civic Hotline Hotspots
-                    </h2>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
-                        Select a category to filter active voter reports and assigned command metrics
-                    </p>
-                </div>
-                
-                {/* Category Pills */}
-                <div style={{ display: 'flex', gap: 8, background: '#e2e8f0', padding: 4, borderRadius: 6 }}>
-                    {categories.map(cat => (
-                        <button
-                            key={cat.key}
-                            onClick={() => {
-                                setActiveCategory(cat.key);
-                                if (currentUser?.role !== 'dm') {
-                                    setSelectedDistrict(null); // Reset selection to prevent mismatch
-                                }
-                            }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                padding: '8px 16px',
-                                borderRadius: 4,
-                                fontSize: '12px',
-                                fontWeight: '800',
-                                cursor: 'pointer',
-                                transition: 'all 0.15s ease',
-                                background: activeCategory === cat.key ? navy : 'transparent',
-                                color: activeCategory === cat.key ? '#ffffff' : '#475569'
-                            }}
-                        >
-                            {cat.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <MapSelector
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                categories={categories}
+                currentUser={currentUser}
+                setSelectedDistrict={setSelectedDistrict}
+            />
 
             {/* Emerging Trend Warning banner */}
             <div style={{
@@ -619,80 +247,14 @@ const MapPanel = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, minHeight: 480 }}>
                 
                 {/* Map Card */}
-                <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-                    <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '900', color: navy, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                                Interactive Boundary Mapper
-                            </span>
-                            <span style={{ fontSize: '10px', color: '#64748b', marginTop: 2 }}>Click on district boundary polygons to view accountability logs</span>
-                        </div>
-                        <span style={{ fontSize: '10px', fontWeight: '800', padding: '3px 8px', background: '#e2e8f0', color: '#475569', borderRadius: 2 }}>DELHI_NCT</span>
-                    </div>
-
-                    <div style={{ flex: 1, position: 'relative', height: '100%', minHeight: 380 }}>
-                        {/* Leaflet map container */}
-                        <div id="leaflet-map" ref={mapContainerRef} style={{ width: '100%', height: '100%', minHeight: 380 }} />
-
-                        {/* Floating Map Legend (Bottom-Left) */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: 20,
-                            left: 20,
-                            background: '#ffffff',
-                            border: '1px solid #e2e8f0',
-                            padding: '12px 16px',
-                            zIndex: 1000,
-                            borderRadius: 4,
-                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 8
-                        }}>
-                            <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em' }}>DENSITY</span>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '11px', fontWeight: '700', color: '#475569' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 10, height: 10, background: '#ef4444', borderRadius: 2 }} />
-                                    Very High
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 10, height: 10, background: '#f97316', borderRadius: 2 }} />
-                                    High
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 10, height: 10, background: '#eab308', borderRadius: 2 }} />
-                                    Medium
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 10, height: 10, background: '#22c55e', borderRadius: 2 }} />
-                                    Low
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 10, height: 10, background: '#16a34a', borderRadius: 2 }} />
-                                    Very Low
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Updated overlay label (Bottom-Right) */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: 20,
-                            right: 20,
-                            background: '#ffffff',
-                            border: '1px solid #e2e8f0',
-                            padding: '8px 12px',
-                            zIndex: 1000,
-                            borderRadius: 4,
-                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            color: '#475569'
-                        }}>
-                            Last Updated Today, 08:30 AM
-                        </div>
-                    </div>
-                </div>
+                <MapLeaflet
+                    geojsonData={geojsonData}
+                    activeCategory={activeCategory}
+                    selectedDistrict={selectedDistrict}
+                    setSelectedDistrict={setSelectedDistrict}
+                    overlays={overlays}
+                    districtMetrics={districtMetrics}
+                />
 
                 {/* Right Statistics & Details Sidebar */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -809,58 +371,7 @@ const MapPanel = () => {
                     </div>
 
                     {/* Civic Accountability Details Section - INFORMATIONAL REPORT TO THE DM */}
-                    <div className="card" style={{ background: navyLight, color: '#ffffff', border: '1px solid ' + navy, borderRadius: 4, padding: 20 }}>
-                        <h3 style={{ margin: '0 0 16px 0', color: saffron, fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 8 }}>
-                            Informational Report to the DM
-                        </h3>
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: '12px' }}>
-                            <div>
-                                <span style={{ display: 'block', fontSize: '10px', color: saffron, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    INCIDENT SUMMARY
-                                </span>
-                                <span style={{ display: 'block', marginTop: 3, fontWeight: '600', color: '#f1f5f9', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
-                                    {details.what}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span style={{ display: 'block', fontSize: '10px', color: saffron, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    AFFECTED LOCATIONS
-                                </span>
-                                <span style={{ display: 'block', marginTop: 3, fontWeight: '600', color: '#f1f5f9', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
-                                    {details.where}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span style={{ display: 'block', fontSize: '10px', color: saffron, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    ACCOUNTABLE OFFICER
-                                </span>
-                                <span style={{ display: 'block', marginTop: 3, fontWeight: '800', color: '#ffffff', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
-                                    {details.who}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span style={{ display: 'block', fontSize: '10px', color: saffron, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    COMPLETED ACTIONS
-                                </span>
-                                <span style={{ display: 'block', marginTop: 3, fontWeight: '600', color: '#f1f5f9', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
-                                    {details.action}
-                                </span>
-                            </div>
-
-                            <div>
-                                <span style={{ display: 'block', fontSize: '10px', color: saffron, fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    PENDING BLOCKERS
-                                </span>
-                                <span style={{ display: 'block', marginTop: 3, fontWeight: '600', color: '#f1f5f9', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
-                                    {details.pending}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <MapReport details={details} />
                 </div>
             </div>
 

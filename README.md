@@ -112,7 +112,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Seed the database with Delhi hierarchy + admin users
-python scripts/seed_all.py
+python scripts/setup/seed_all.py
 
 # Run the API server
 uvicorn app.main:app --reload

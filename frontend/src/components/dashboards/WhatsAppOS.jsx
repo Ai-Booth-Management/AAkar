@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { Send, Mic, Phone, Video, MoreVertical, CheckCheck, Camera, Paperclip, CheckSquare, Users, BarChart3, Clock } from 'lucide-react';
-import logo from '../assets/logo.png';
+import logo from '../../assets/logo.png';
 
 export default function WhatsAppOS({ hierarchy }) {
     const [messages, setMessages] = useState([
