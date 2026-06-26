@@ -37,3 +37,15 @@ class ConversationState(SQLModel, table=True):
     current_step: str = Field(default="awaiting_name")
     collected_data: str = Field(default="{}")  # JSON blob
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class VolunteerBroadcastLog(SQLModel, table=True):
+    """Persists a log of each WhatsApp broadcast sent to volunteers."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    sender_id: int
+    sender_name: Optional[str] = None
+    booth_id: Optional[str] = None
+    message: str
+    recipient_count: int
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

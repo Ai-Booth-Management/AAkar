@@ -2,7 +2,7 @@
 
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlmodel import Session, select, func
@@ -142,11 +142,16 @@ async def create_volunteer(
             detail=f"Booth '{body.booth_id}' not found in hierarchy.",
         )
 
-    phone = body.phone.strip()
-    if not phone.startswith("91") or len(phone) < 10 or len(phone) > 15:
+    import re
+    # Clean phone: remove non-digits
+    phone = re.sub(r"\D", "", body.phone)
+    if len(phone) == 10:
+        phone = "91" + phone
+    
+    if len(phone) < 12 or len(phone) > 13: # 91 + 10 digits = 12
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid phone number. Must start with 91 and be 10-15 digits.",
+            detail="Invalid phone number. Provide 10 digits or 91 + 10 digits.",
         )
 
     existing = session.exec(
@@ -185,6 +190,168 @@ async def create_volunteer(
         "booth_id": volunteer.booth_id,
         "status": volunteer.status,
     }
+
+
+@router.post("/volunteers/upload")
+async def upload_volunteers(
+    booth_id: str,
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Batch register volunteers from an Excel (.xlsx) file.
+    Backend converts the Excel data to JSON and then processes it.
+    Expected columns: Name, Phone.
+    """
+    import openpyxl
+    import json
+    import io
+    import re
+    
+    contents = await file.read()
+    
+    # Check extension
+    filename = file.filename.lower()
+    if not filename.endswith('.xlsx'):
+        raise HTTPException(status_code=400, detail="Only .xlsx (Excel) files are supported.")
+
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(contents), data_only=True)
+        sheet = wb.active
+        
+        # Step 1: Convert Excel to JSON-like list of dicts
+        headers = [cell.value for cell in sheet[1]]
+        data_json = []
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), 2):
+            row_dict = {}
+            for col_idx, cell_value in enumerate(row):
+                if col_idx < len(headers) and headers[col_idx]:
+                    row_dict[str(headers[col_idx]).strip().lower()] = cell_value
+            data_json.append(row_dict)
+        
+        # Step 2: Process the JSON data
+        added = 0
+        errors = []
+        
+        for row in data_json:
+            name = row.get("name") or row.get("volunteer name") or row.get("full name")
+            raw_phone = row.get("phone") or row.get("mobile") or row.get("contact")
+            
+            if not name or not raw_phone:
+                continue
+                
+            try:
+                # Phone cleaning
+                phone = re.sub(r"\D", "", str(raw_phone))
+                if len(phone) == 10:
+                    phone = "91" + phone
+                
+                if len(phone) < 12 or len(phone) > 13:
+                    errors.append(f"Invalid phone: {raw_phone}")
+                    continue
+                    
+                # Check duplication
+                existing = session.exec(select(Volunteer).where(Volunteer.phone == phone)).first()
+                if existing:
+                    continue
+                    
+                vol = Volunteer(
+                    phone=phone,
+                    name=str(name).strip(),
+                    booth_id=booth_id,
+                    status="active"
+                )
+                session.add(vol)
+                
+                # Send welcome notification
+                try:
+                    await send_text(
+                        phone,
+                        f"Welcome to AAkar, {str(name).strip()}! You've been registered as a team volunteer. "
+                        "You will receive tasks here."
+                    )
+                except Exception as notify_err:
+                    logger.warning(f"Notification failed for {name}: {notify_err}")
+
+                added += 1
+            except Exception as e:
+                errors.append(f"Error processing {name}: {str(e)}")
+                
+        session.commit()
+        return {
+            "status": "success", 
+            "added": added, 
+            "errors": errors,
+            "processed_json_count": len(data_json)
+        }
+
+    except Exception as e:
+        logger.error(f"Excel processing failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to process Excel file: {str(e)}")
+
+
+class BroadcastRequest(BaseModel):
+    volunteer_ids: list[int]
+    message: str
+
+@router.post("/volunteers/broadcast")
+async def broadcast_to_volunteers(
+    req: BroadcastRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Sends a WhatsApp message to multiple selected volunteers and logs it."""
+    volunteers = session.exec(select(Volunteer).where(Volunteer.id.in_(req.volunteer_ids))).all()
+
+    success_count = 0
+    errors = []
+
+    for vol in volunteers:
+        try:
+            await send_text(vol.phone, req.message)
+            success_count += 1
+        except Exception as e:
+            errors.append(f"Failed for {vol.name or vol.phone}: {str(e)}")
+
+    # Persist the broadcast log regardless of WhatsApp delivery status
+    if success_count > 0 or volunteers:
+        from app.domain.models.volunteer import VolunteerBroadcastLog
+        log = VolunteerBroadcastLog(
+            sender_id=current_user.id,
+            sender_name=current_user.display_name or current_user.email,
+            booth_id=getattr(current_user, 'booth_id', None),
+            message=req.message.strip(),
+            recipient_count=len(volunteers),
+        )
+        session.add(log)
+        session.commit()
+
+    return {"status": "complete", "sent": success_count, "errors": errors}
+
+
+@router.get("/volunteers/broadcasts/history")
+def get_volunteer_broadcast_history(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """Returns the broadcast history sent by the current user to volunteers."""
+    from app.domain.models.volunteer import VolunteerBroadcastLog
+    logs = session.exec(
+        select(VolunteerBroadcastLog)
+        .where(VolunteerBroadcastLog.sender_id == current_user.id)
+        .order_by(VolunteerBroadcastLog.sent_at.desc())
+        .limit(50)
+    ).all()
+    return [
+        {
+            "id": log.id,
+            "message": log.message,
+            "recipient_count": log.recipient_count,
+            "sent_at": log.sent_at.isoformat() if log.sent_at else None,
+            "sender_name": log.sender_name,
+        }
+        for log in logs
+    ]
 
 
 @router.get("/volunteers/{volunteer_id}/tasks")

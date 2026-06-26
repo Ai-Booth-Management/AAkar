@@ -20,18 +20,6 @@ const NAV_ITEMS = [
     ),
   },
   {
-    id: 'upload',
-    label: 'Upload',
-    path: '/dashboard/upload',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" y1="3" x2="12" y2="15" />
-      </svg>
-    ),
-  },
-  {
     id: 'ask',
     label: 'Ask AI',
     path: '/dashboard/ask',
@@ -126,29 +114,16 @@ const ABOUT_ITEM = {
   ),
 };
 
-const SETTINGS_ITEM = {
-  id: 'settings',
-  label: 'Settings',
-  path: '/dashboard/settings',
-  icon: (
-    <img
-      src="https://img.icons8.com/?size=100&id=2969&format=png&color=FFFFFF"
-      alt="Settings"
-    />
-  ),
-};
 
 const PAGE_TITLES: { [key: string]: string } = {
   '/dashboard': 'Overview',
   '/dashboard/network': 'Threat Intelligence Network',
   '/dashboard/ask': 'Ask AI',
-  '/dashboard/upload': 'Upload Data',
   '/dashboard/drives': 'Drive Management',
   '/dashboard/complaints': 'Voter Complaints Registry',
   '/dashboard/schemes': 'Voter Specific Schemes',
   '/dashboard/heatmap': 'District Heatmap Analysis',
   '/dashboard/about': 'About System',
-  '/dashboard/settings': 'Settings',
 };
 
 // Next.js static asset import is imported inside components.
@@ -242,14 +217,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               {ABOUT_ITEM.icon}
               <span>{ABOUT_ITEM.label}</span>
-            </Link>
-            <Link
-              href={SETTINGS_ITEM.path}
-              className={`nav-item ${pathname === SETTINGS_ITEM.path ? 'active' : ''}`}
-              style={{ textDecoration: 'none' }}
-            >
-              {SETTINGS_ITEM.icon}
-              <span>{SETTINGS_ITEM.label}</span>
             </Link>
             {/* Logout Button */}
             <div className="nav-item" onClick={handleLogout} style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px', cursor: 'pointer' }}>
