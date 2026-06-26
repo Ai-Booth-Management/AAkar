@@ -1,16 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Globe, Radio, FileText, Zap, Map, TrendingUp } from 'lucide-react';
-import HeatmapAnalysis from './HeatmapAnalysis';
+import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp } from 'lucide-react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
+import dynamic from 'next/dynamic';
+
+const CampaignPanel = dynamic(() => import('../CampaignPanel'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '24px', height: '24px', border: '3px solid #e2e8f0', borderTopColor: '#0f172a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading Campaign Engine...</span>
+      </div>
+    </div>
+  )
+});
 
 export default function StateDashboard({ tab, hierarchy }) {
   const stateName = hierarchy.state || '';
   switch (tab) {
     case 'overview':     return <StateOverview state={stateName} />;
+    case 'performance':  return null;
+    case 'rankings':     return null;
     case 'analytics':    return <DistrictAnalytics state={stateName} />;
-    case 'heatmap':      return <HeatmapAnalysis level="STATE" hierarchy={hierarchy} />;
+    case 'campaign':     return <CampaignPanel />;
     case 'ai-suggestions': return null;
     case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;
     case 'manage-users': return <ManageUsers role="STATE_ADMIN" hierarchy={hierarchy} />;
@@ -383,29 +397,6 @@ function DistrictAnalytics({ state }) {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function IssueHeatmap() {
-  return (
-    <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">Issue Heatmap — State Level</div></div>
-      <div className="dash-section">
-        <div className="dash-section-head"><h3>Issue Distribution by Severity</h3></div>
-        <div className="dash-section-body" style={{ padding: 0 }}>
-          <table>
-            <thead>
-              <tr><th>Issue Category</th><th>High Volume Districts</th><th>Med Volume Districts</th><th>Total Impacted Booths</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontWeight: 600 }}>No issue data available</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

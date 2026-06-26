@@ -148,7 +148,7 @@ def _write_csv_backup(row: dict) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 #  GET  /
 # ─────────────────────────────────────────────────────────────────────────────
-@router.get("/")
+@router.get("")
 async def list_complaints(skip: int = 0, limit: int = 100):
     """Retrieve complaints from Neo4j (falls back to CSV)."""
     try:
@@ -259,7 +259,7 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
 # ─────────────────────────────────────────────────────────────────────────────
 #  POST  /  (legacy endpoint — kept for backward compatibility)
 # ─────────────────────────────────────────────────────────────────────────────
-@router.post("/")
+@router.post("")
 async def lodge_complaint_legacy(request: LegacyComplaintRequest):
     """Original lodge-complaint endpoint preserved for existing clients."""
     try:

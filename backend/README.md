@@ -83,7 +83,7 @@ To test WhatsApp integrations locally, you have two options:
 **Option A: The Fast Way (Simulation)**
 You do not need a Meta account. Simply run the provided simulation script in a separate terminal while your backend is running:
 ```bash
-python scripts/simulate_webhook.py
+python scripts/test/simulate_webhook.py
 ```
 This bypasses Meta entirely and sends production-accurate JSON payloads directly to your local endpoint.
 

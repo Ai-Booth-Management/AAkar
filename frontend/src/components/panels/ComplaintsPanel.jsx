@@ -93,7 +93,7 @@ const ComplaintsPanel = () => {
     };
 
     const { currentUser } = useAuth();
-    const isDM = currentUser?.role === 'dm';
+    const isDM = currentUser?.role?.toUpperCase() === 'DM';
 
     const getDistrictFromEmail = (email) => {
         if (!email) return null;

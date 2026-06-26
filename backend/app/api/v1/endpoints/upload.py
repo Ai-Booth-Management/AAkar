@@ -15,7 +15,7 @@ UPLOADS_DIR = Path(__file__).resolve().parents[4] / "data" / "uploads"
 API_UPLOAD_IN_PROGRESS = False
 
 
-@router.post("/")
+@router.post("")
 async def upload_csv(file: UploadFile = File(...), file_type: str = "voters"):
     """Upload a CSV file and process it into the graph."""
     try:

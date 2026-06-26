@@ -19,9 +19,9 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:3000"  # comma-separated origins
 
     # WhatsApp
-    WHATSAPP_TOKEN: str
-    WHATSAPP_PHONE_NUMBER_ID: str
-    WHATSAPP_VERIFY_TOKEN: str
+    WHATSAPP_TOKEN: str = "dummy_token"
+    WHATSAPP_PHONE_NUMBER_ID: str = "dummy_id"
+    WHATSAPP_VERIFY_TOKEN: str = "dummy_verify"
 
     # Database
     DATABASE_URL: str = "sqlite:///./data/app.db"

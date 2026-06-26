@@ -3,8 +3,21 @@ import React, { useState } from 'react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
+import dynamic from 'next/dynamic';
 import AICopilot from '../shared/AICopilot';
 import { useRouter } from 'next/navigation';
+
+const CampaignPanel = dynamic(() => import('../CampaignPanel'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '24px', height: '24px', border: '3px solid #e2e8f0', borderTopColor: '#0f172a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading Campaign Engine...</span>
+      </div>
+    </div>
+  )
+});
 
 export default function MandalDashboard({ tab, hierarchy }) {
   const mandal = hierarchy.mandal || '';
@@ -18,11 +31,12 @@ export default function MandalDashboard({ tab, hierarchy }) {
     switch (tab) {
       case 'overview':     return <MandalOverview mandal={mandal} onTabChange={handleTabChange} />;
       case 'booth_status': return <BoothStatusTable mandal={mandal} />;
+      case 'campaign':     return <CampaignPanel />;
       case 'manage-users': return <ManageUsers role="MANDAL_MGR" hierarchy={hierarchy} />;
       case 'hub':          return <Hub hierarchy={hierarchy} userRole="MANDAL_MGR" />;
       case 'volunteers':   return <VolunteerView mandal={mandal} onTabChange={handleTabChange} />;
       case 'broadcast':    return <BroadcastPanel hierarchy={hierarchy} />;
-      case 'complaints':    return <ComplaintBoard mandal={mandal} />;
+      case 'complaints':   return <ComplaintBoard mandal={mandal} />;
       case 'ai-suggestions': return null;
       default:             return <MandalOverview mandal={mandal} onTabChange={handleTabChange} />;
     }

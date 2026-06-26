@@ -1,0 +1,1452 @@
+[
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 1",
+    "Ward_No": "CANT_1",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 2",
+    "Ward_No": "CANT_2",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 4",
+    "Ward_No": "CANT_4",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 5",
+    "Ward_No": "CANT_5",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 6",
+    "Ward_No": "CANT_6",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 7",
+    "Ward_No": "CANT_7",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 8",
+    "Ward_No": "CANT_8",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "DELHI CANTT CHARGE 3",
+    "Ward_No": "CANT_3",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 1",
+    "Ward_No": "NDMC_1",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 2",
+    "Ward_No": "NDMC_2",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 3",
+    "Ward_No": "NDMC_3",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 4",
+    "Ward_No": "NDMC_4",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 5",
+    "Ward_No": "NDMC_5",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 7",
+    "Ward_No": "NDMC_7",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 8",
+    "Ward_No": "NDMC_8",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 9",
+    "Ward_No": "NDMC_9",
+    "Constituency": "Delhi Cantt"
+  },
+  {
+    "Ward_Name": "NDMC CHARGE 6",
+    "Ward_No": "NDMC_6",
+    "Constituency": "New Delhi"
+  },
+  {
+    "Ward_Name": "CHANDNI CHOWK",
+    "Ward_No": "80",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "MINTO ROAD",
+    "Ward_No": "81",
+    "Constituency": "Matia Mahal"
+  },
+  {
+    "Ward_Name": "KUCHA PANDIT",
+    "Ward_No": "82",
+    "Constituency": "Ballimaran"
+  },
+  {
+    "Ward_Name": "BAZAR SITARAM",
+    "Ward_No": "83",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "IDGAH ROAD",
+    "Ward_No": "85",
+    "Constituency": "Ballimaran"
+  },
+  {
+    "Ward_Name": "KHYALA",
+    "Ward_No": "108",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "JANAK PURI NORTH",
+    "Ward_No": "109",
+    "Constituency": "Hari Nagar"
+  },
+  {
+    "Ward_Name": "MUKHERJEE NAGAR",
+    "Ward_No": "11",
+    "Constituency": "Timarpur"
+  },
+  {
+    "Ward_Name": "JANAK PURI WEST",
+    "Ward_No": "117",
+    "Constituency": "Janakpuri"
+  },
+  {
+    "Ward_Name": "JANAK PURI SOUTH",
+    "Ward_No": "118",
+    "Constituency": "Janakpuri"
+  },
+  {
+    "Ward_Name": "MILAP NAGAR",
+    "Ward_No": "119",
+    "Constituency": "Uttam Nagar"
+  },
+  {
+    "Ward_Name": "SITA PURI",
+    "Ward_No": "120",
+    "Constituency": "Uttam Nagar"
+  },
+  {
+    "Ward_Name": "CHHAWLA",
+    "Ward_No": "133",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "NANGLI SAKRAVATI",
+    "Ward_No": "134",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "KAKRAULA",
+    "Ward_No": "135",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "KHERA",
+    "Ward_No": "140",
+    "Constituency": "Najafgarh"
+  },
+  {
+    "Ward_Name": "DILSHAD GARDEN",
+    "Ward_No": "241",
+    "Constituency": "Seemapuri (SC)"
+  },
+  {
+    "Ward_Name": "NEW SEEMA PURI",
+    "Ward_No": "242",
+    "Constituency": "Seemapuri (SC)"
+  },
+  {
+    "Ward_Name": "NAND NAGRI",
+    "Ward_No": "243",
+    "Constituency": "Seemapuri (SC)"
+  },
+  {
+    "Ward_Name": "SUNDER NAGARI",
+    "Ward_No": "244",
+    "Constituency": "Seemapuri (SC)"
+  },
+  {
+    "Ward_Name": "DURGA PURI",
+    "Ward_No": "245",
+    "Constituency": "Rohtas Nagar"
+  },
+  {
+    "Ward_Name": "ASHOK NAGAR",
+    "Ward_No": "246",
+    "Constituency": "Rohtas Nagar"
+  },
+  {
+    "Ward_Name": "RAM NAGAR",
+    "Ward_No": "247",
+    "Constituency": "Rohtas Nagar"
+  },
+  {
+    "Ward_Name": "WELCOME COLONY",
+    "Ward_No": "248",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "CHAUHAN BANGER",
+    "Ward_No": "249",
+    "Constituency": "Seelam Pur"
+  },
+  {
+    "Ward_Name": "ZAFFRABAD",
+    "Ward_No": "250",
+    "Constituency": "Seelam Pur"
+  },
+  {
+    "Ward_Name": "MAUJPUR",
+    "Ward_No": "252",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "GHONDA",
+    "Ward_No": "255",
+    "Constituency": "Ghonda"
+  },
+  {
+    "Ward_Name": "YAMUNA VIHAR",
+    "Ward_No": "256",
+    "Constituency": "Ghonda"
+  },
+  {
+    "Ward_Name": "SUBHASH MOHALLA",
+    "Ward_No": "257",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "KARDAM PURI",
+    "Ward_No": "258",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "JANTA COLONY",
+    "Ward_No": "259",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "BABAR PUR",
+    "Ward_No": "260",
+    "Constituency": "Babarpur"
+  },
+  {
+    "Ward_Name": "JIWANPUR",
+    "Ward_No": "261",
+    "Constituency": "Mustafabad"
+  },
+  {
+    "Ward_Name": "GOKALPUR",
+    "Ward_No": "262",
+    "Constituency": "Gokalpur (SC)"
+  },
+  {
+    "Ward_Name": "SABOLI",
+    "Ward_No": "263",
+    "Constituency": "Gokalpur (SC)"
+  },
+  {
+    "Ward_Name": "HARSH VIHAR",
+    "Ward_No": "264",
+    "Constituency": "Gokalpur (SC)"
+  },
+  {
+    "Ward_Name": "SHIV VIHAR",
+    "Ward_No": "265",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "KARAWAL NAGAR EAST",
+    "Ward_No": "266",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "MUSTAFABAD",
+    "Ward_No": "268",
+    "Constituency": "Mustafabad"
+  },
+  {
+    "Ward_Name": "KHAJOORI KHAS",
+    "Ward_No": "269",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "KARAWAL NAGAR WEST",
+    "Ward_No": "271",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "SONIA VIHAR",
+    "Ward_No": "272",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "NIZAMUDDIN",
+    "Ward_No": "154",
+    "Constituency": "Jangpura"
+  },
+  {
+    "Ward_Name": "BHOGAL",
+    "Ward_No": "156",
+    "Constituency": "Jangpura"
+  },
+  {
+    "Ward_Name": "KASTURBA NAGAR",
+    "Ward_No": "157",
+    "Constituency": "Kasturba Nagar"
+  },
+  {
+    "Ward_Name": "AMAR COLONY",
+    "Ward_No": "160",
+    "Constituency": "Kasturba Nagar"
+  },
+  {
+    "Ward_Name": "MALVIYA NAGAR",
+    "Ward_No": "161",
+    "Constituency": "Malviya Nagar"
+  },
+  {
+    "Ward_Name": "HAUZ RANI",
+    "Ward_No": "162",
+    "Constituency": "Malviya Nagar"
+  },
+  {
+    "Ward_Name": "ANDREWSGANJ",
+    "Ward_No": "159",
+    "Constituency": "Kasturba Nagar"
+  },
+  {
+    "Ward_Name": "VASANT VIHAR",
+    "Ward_No": "165",
+    "Constituency": "R.K. Puram"
+  },
+  {
+    "Ward_Name": "MUNIRKA",
+    "Ward_No": "166",
+    "Constituency": "R.K. Puram"
+  },
+  {
+    "Ward_Name": "NANAK PURA",
+    "Ward_No": "168",
+    "Constituency": "R.K. Puram"
+  },
+  {
+    "Ward_Name": "VASANTKUNJ",
+    "Ward_No": "171",
+    "Constituency": "Mehrauli"
+  },
+  {
+    "Ward_Name": "DAKSHINPURI EXT.",
+    "Ward_No": "180",
+    "Constituency": "Greater Kailash"
+  },
+  {
+    "Ward_Name": "KHANPUR",
+    "Ward_No": "181",
+    "Constituency": "Ambedkar Nagar(SC)"
+  },
+  {
+    "Ward_Name": "AMBEDKAR NAGAR",
+    "Ward_No": "182",
+    "Constituency": "Deoli (SC)"
+  },
+  {
+    "Ward_Name": "MADANGIR",
+    "Ward_No": "183",
+    "Constituency": "Deoli (SC)"
+  },
+  {
+    "Ward_Name": "PUSHP VIHAR",
+    "Ward_No": "184",
+    "Constituency": "Ambedkar Nagar(SC)"
+  },
+  {
+    "Ward_Name": "TUGHLAKABAD EXTN",
+    "Ward_No": "185",
+    "Constituency": "Sangam Vihar"
+  },
+  {
+    "Ward_Name": "SANGAM VIHAR CENTRAL",
+    "Ward_No": "187",
+    "Constituency": "Sangam Vihar"
+  },
+  {
+    "Ward_Name": "SANGAM VIHAR EAST",
+    "Ward_No": "188",
+    "Constituency": "Sangam Vihar"
+  },
+  {
+    "Ward_Name": "CHIRAG DELHI",
+    "Ward_No": "189",
+    "Constituency": "Greater Kailash"
+  },
+  {
+    "Ward_Name": "CHITRANJAN PARK",
+    "Ward_No": "190",
+    "Constituency": "Greater Kailash"
+  },
+  {
+    "Ward_Name": "SHAPUR JAT",
+    "Ward_No": "191",
+    "Constituency": "Greater Kailash"
+  },
+  {
+    "Ward_Name": "GREATER KAILASH-I",
+    "Ward_No": "192",
+    "Constituency": "Greater Kailash"
+  },
+  {
+    "Ward_Name": "SRI NIWASPURI",
+    "Ward_No": "193",
+    "Constituency": "Kalkaji"
+  },
+  {
+    "Ward_Name": "EAST OF KAILASH",
+    "Ward_No": "194",
+    "Constituency": "Kalkaji"
+  },
+  {
+    "Ward_Name": "GOVIND PURI",
+    "Ward_No": "195",
+    "Constituency": "Kalkaji"
+  },
+  {
+    "Ward_Name": "KALKAJI",
+    "Ward_No": "196",
+    "Constituency": "Kalkaji"
+  },
+  {
+    "Ward_Name": "TUGHLAKABAD",
+    "Ward_No": "197",
+    "Constituency": "Tughlakabad"
+  },
+  {
+    "Ward_Name": "PUL PEHLAD",
+    "Ward_No": "198",
+    "Constituency": "Tughlakabad"
+  },
+  {
+    "Ward_Name": "TEKHAND",
+    "Ward_No": "199",
+    "Constituency": "Badarpur"
+  },
+  {
+    "Ward_Name": "HARKESH NAGAR",
+    "Ward_No": "200",
+    "Constituency": "Tughlakabad"
+  },
+  {
+    "Ward_Name": "JAITPUR",
+    "Ward_No": "201",
+    "Constituency": "Badarpur"
+  },
+  {
+    "Ward_Name": "MEETHEYPUR",
+    "Ward_No": "202",
+    "Constituency": "Badarpur"
+  },
+  {
+    "Ward_Name": "BADAR PUR",
+    "Ward_No": "203",
+    "Constituency": "Badarpur"
+  },
+  {
+    "Ward_Name": "MOLARBAND",
+    "Ward_No": "204",
+    "Constituency": "Badarpur"
+  },
+  {
+    "Ward_Name": "OKHLA",
+    "Ward_No": "206",
+    "Constituency": "Okhla"
+  },
+  {
+    "Ward_Name": "TURKMAN GATE",
+    "Ward_No": "84",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "BALLIMARAN",
+    "Ward_No": "86",
+    "Constituency": "Ballimaran"
+  },
+  {
+    "Ward_Name": "RAM NAGAR",
+    "Ward_No": "87",
+    "Constituency": "Ballimaran"
+  },
+  {
+    "Ward_Name": "QASABPURA",
+    "Ward_No": "88",
+    "Constituency": "Ballimaran"
+  },
+  {
+    "Ward_Name": "PAHAR GANJ",
+    "Ward_No": "89",
+    "Constituency": "Karol Bagh (SC)"
+  },
+  {
+    "Ward_Name": "SADH NAGAR",
+    "Ward_No": "146",
+    "Constituency": "Dwarka"
+  },
+  {
+    "Ward_Name": "PUSA",
+    "Ward_No": "150",
+    "Constituency": "Rajinder Nagar"
+  },
+  {
+    "Ward_Name": "INDER PURI",
+    "Ward_No": "151",
+    "Constituency": "Rajinder Nagar"
+  },
+  {
+    "Ward_Name": "NARAINA",
+    "Ward_No": "152",
+    "Constituency": "Rajinder Nagar"
+  },
+  {
+    "Ward_Name": "DEOLI",
+    "Ward_No": "173",
+    "Constituency": "Chhatarpur"
+  },
+  {
+    "Ward_Name": "CHHATARPUR",
+    "Ward_No": "174",
+    "Constituency": "Chhatarpur"
+  },
+  {
+    "Ward_Name": "AYA NAGAR",
+    "Ward_No": "175",
+    "Constituency": "Chhatarpur"
+  },
+  {
+    "Ward_Name": "BHATI",
+    "Ward_No": "176",
+    "Constituency": "Chhatarpur"
+  },
+  {
+    "Ward_Name": "MADANPUR KHADAR",
+    "Ward_No": "207",
+    "Constituency": "Okhla"
+  },
+  {
+    "Ward_Name": "SARITA VIHAR",
+    "Ward_No": "208",
+    "Constituency": "Okhla"
+  },
+  {
+    "Ward_Name": "GHONDLI",
+    "Ward_No": "231",
+    "Constituency": "Krishna Nagar"
+  },
+  {
+    "Ward_Name": "ANARKALI",
+    "Ward_No": "232",
+    "Constituency": "Krishna Nagar"
+  },
+  {
+    "Ward_Name": "GANDHI NAGAR",
+    "Ward_No": "234",
+    "Constituency": "Gandhi Nagar"
+  },
+  {
+    "Ward_Name": "AZAD NAGAR",
+    "Ward_No": "235",
+    "Constituency": "Gandhi Nagar"
+  },
+  {
+    "Ward_Name": "RAGHUBAR PURA",
+    "Ward_No": "236",
+    "Constituency": "Seelam Pur"
+  },
+  {
+    "Ward_Name": "SHAHDARA",
+    "Ward_No": "237",
+    "Constituency": "Rohtas Nagar"
+  },
+  {
+    "Ward_Name": "JHILMIL",
+    "Ward_No": "238",
+    "Constituency": "Shahdara"
+  },
+  {
+    "Ward_Name": "VIVEK VIHAR",
+    "Ward_No": "239",
+    "Constituency": "Shahdara"
+  },
+  {
+    "Ward_Name": "DILSHAD COLONY",
+    "Ward_No": "240",
+    "Constituency": "Shahdara"
+  },
+  {
+    "Ward_Name": "PUNJABI BAGH",
+    "Ward_No": "103",
+    "Constituency": "Madipur (SC)"
+  },
+  {
+    "Ward_Name": "NEW RANJIT NAGAR",
+    "Ward_No": "96",
+    "Constituency": "Patel Nagar (SC)"
+  },
+  {
+    "Ward_Name": "KIRTI NAGAR",
+    "Ward_No": "97",
+    "Constituency": "Moti Nagar"
+  },
+  {
+    "Ward_Name": "MANSAROWER GARDEN",
+    "Ward_No": "98",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "HASTSAL",
+    "Ward_No": "122",
+    "Constituency": "Vikaspuri"
+  },
+  {
+    "Ward_Name": "SANGAM PARK",
+    "Ward_No": "71",
+    "Constituency": "Model Town"
+  },
+  {
+    "Ward_Name": "MODEL TOWN",
+    "Ward_No": "72",
+    "Constituency": "Model Town"
+  },
+  {
+    "Ward_Name": "KAMLA NAGAR",
+    "Ward_No": "69",
+    "Constituency": "Model Town"
+  },
+  {
+    "Ward_Name": "INDER LOK COLONY",
+    "Ward_No": "74",
+    "Constituency": "Sadar Bazar"
+  },
+  {
+    "Ward_Name": "KISHAN GANJ",
+    "Ward_No": "75",
+    "Constituency": "Sadar Bazar"
+  },
+  {
+    "Ward_Name": "DEPUTY GANJ",
+    "Ward_No": "76",
+    "Constituency": "Sadar Bazar"
+  },
+  {
+    "Ward_Name": "KASHMERE GATE",
+    "Ward_No": "77",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "MAJNU KA TILA",
+    "Ward_No": "78",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "JAMA MASJID",
+    "Ward_No": "79",
+    "Constituency": "Chandni Chowk"
+  },
+  {
+    "Ward_Name": "TILAK NAGAR",
+    "Ward_No": "114",
+    "Constituency": "Tilak Nagar"
+  },
+  {
+    "Ward_Name": "MAJOR BHUPINDAR SINGH NAGAR",
+    "Ward_No": "115",
+    "Constituency": "Tilak Nagar"
+  },
+  {
+    "Ward_Name": "VIKASPURI EAST",
+    "Ward_No": "116",
+    "Constituency": "Tilak Nagar"
+  },
+  {
+    "Ward_Name": "MOHAN GARDEN",
+    "Ward_No": "125",
+    "Constituency": "Vikaspuri"
+  },
+  {
+    "Ward_Name": "NAWADA",
+    "Ward_No": "126",
+    "Constituency": "Uttam Nagar"
+  },
+  {
+    "Ward_Name": "UTTAM NAGAR",
+    "Ward_No": "127",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "BINDAPUR",
+    "Ward_No": "128",
+    "Constituency": "Uttam Nagar"
+  },
+  {
+    "Ward_Name": "DABRI",
+    "Ward_No": "129",
+    "Constituency": "Dwarka"
+  },
+  {
+    "Ward_Name": "MATIALA",
+    "Ward_No": "136",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "ROSHANPURA",
+    "Ward_No": "137",
+    "Constituency": "Najafgarh"
+  },
+  {
+    "Ward_Name": "MAYUR VIHAR PHASE-I",
+    "Ward_No": "209",
+    "Constituency": "Trilokpuri (SC)"
+  },
+  {
+    "Ward_Name": "ROHINI",
+    "Ward_No": "21",
+    "Constituency": "Rithala"
+  },
+  {
+    "Ward_Name": "DALLOPURA",
+    "Ward_No": "210",
+    "Constituency": "Trilokpuri (SC)"
+  },
+  {
+    "Ward_Name": "TRILOK PURI",
+    "Ward_No": "211",
+    "Constituency": "Trilokpuri (SC)"
+  },
+  {
+    "Ward_Name": "NEW ASHOK NAGAR",
+    "Ward_No": "212",
+    "Constituency": "Trilokpuri (SC)"
+  },
+  {
+    "Ward_Name": "KALYAN PURI",
+    "Ward_No": "213",
+    "Constituency": "Patparganj"
+  },
+  {
+    "Ward_Name": "KHICHRIPUR",
+    "Ward_No": "214",
+    "Constituency": "Kondli (SC)"
+  },
+  {
+    "Ward_Name": "KONDLI",
+    "Ward_No": "215",
+    "Constituency": "Kondli (SC)"
+  },
+  {
+    "Ward_Name": "GHAROLI",
+    "Ward_No": "216",
+    "Constituency": "Kondli (SC)"
+  },
+  {
+    "Ward_Name": "VINOD NAGAR",
+    "Ward_No": "217",
+    "Constituency": "Patparganj"
+  },
+  {
+    "Ward_Name": "ASHOK VIHAR",
+    "Ward_No": "68",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "WAJIRPUR",
+    "Ward_No": "67",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "SAWAN PARK",
+    "Ward_No": "66",
+    "Constituency": "Model Town"
+  },
+  {
+    "Ward_Name": "NIMRI COLONY",
+    "Ward_No": "65",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "SHAKUR PUR",
+    "Ward_No": "64",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "KOHAT ENCLAVE",
+    "Ward_No": "63",
+    "Constituency": "Tri Nagar"
+  },
+  {
+    "Ward_Name": "RAMPURA",
+    "Ward_No": "62",
+    "Constituency": "Tri Nagar"
+  },
+  {
+    "Ward_Name": "TRI NAGAR",
+    "Ward_No": "61",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "SARASWATI VIHAR",
+    "Ward_No": "60",
+    "Constituency": "Shakur Basti"
+  },
+  {
+    "Ward_Name": "RANI BAGH",
+    "Ward_No": "59",
+    "Constituency": "Tri Nagar"
+  },
+  {
+    "Ward_Name": "PASCHIM VIHAR NORTH",
+    "Ward_No": "58",
+    "Constituency": "Shakur Basti"
+  },
+  {
+    "Ward_Name": "PASCHIM VIHAR SOUTH",
+    "Ward_No": "57",
+    "Constituency": "Shakur Basti"
+  },
+  {
+    "Ward_Name": "SHALIMAR BAGH SOUTH",
+    "Ward_No": "56",
+    "Constituency": "Wazirpur"
+  },
+  {
+    "Ward_Name": "SHALIMAR BAGH NORTH",
+    "Ward_No": "55",
+    "Constituency": "Shalimar Bagh"
+  },
+  {
+    "Ward_Name": "PITAMPUR NORTH",
+    "Ward_No": "54",
+    "Constituency": "Shalimar Bagh"
+  },
+  {
+    "Ward_Name": "PITAMPURA SOUTH",
+    "Ward_No": "53",
+    "Constituency": "Shalimar Bagh"
+  },
+  {
+    "Ward_Name": "NAHARPUR",
+    "Ward_No": "52",
+    "Constituency": "Rohini"
+  },
+  {
+    "Ward_Name": "ROHINI EAST",
+    "Ward_No": "51",
+    "Constituency": "Shalimar Bagh"
+  },
+  {
+    "Ward_Name": "ROHINI CENTRAL",
+    "Ward_No": "50",
+    "Constituency": "Rohini"
+  },
+  {
+    "Ward_Name": "MANGOLPURI  WEST",
+    "Ward_No": "48",
+    "Constituency": "Mangol Puri (SC)"
+  },
+  {
+    "Ward_Name": "MANGOLPURI  EAST",
+    "Ward_No": "46",
+    "Constituency": "Mangol Puri (SC)"
+  },
+  {
+    "Ward_Name": "ROHINI SOUTH",
+    "Ward_No": "45",
+    "Constituency": "Shakur Basti"
+  },
+  {
+    "Ward_Name": "QUAMMRUDDIN NAGAR",
+    "Ward_No": "44",
+    "Constituency": "Mundka"
+  },
+  {
+    "Ward_Name": "NANGLOI EAST",
+    "Ward_No": "43",
+    "Constituency": "Nangloi Jat"
+  },
+  {
+    "Ward_Name": "PERAGHARHI",
+    "Ward_No": "42",
+    "Constituency": "Nangloi Jat"
+  },
+  {
+    "Ward_Name": "GURU HARKISHAN NAGAR",
+    "Ward_No": "41",
+    "Constituency": "Nangloi Jat"
+  },
+  {
+    "Ward_Name": "SULTANPURI  SOUTH",
+    "Ward_No": "40",
+    "Constituency": "Sultan Pur Majra(SC)"
+  },
+  {
+    "Ward_Name": "SULTANPURI  EAST",
+    "Ward_No": "37",
+    "Constituency": "Sultan Pur Majra(SC)"
+  },
+  {
+    "Ward_Name": "KIRARI SULEMAN NAGAR",
+    "Ward_No": "35",
+    "Constituency": "Kirari"
+  },
+  {
+    "Ward_Name": "KARALA",
+    "Ward_No": "29",
+    "Constituency": "Mundka"
+  },
+  {
+    "Ward_Name": "BEGUMPUR",
+    "Ward_No": "27",
+    "Constituency": "Bawana (SC)"
+  },
+  {
+    "Ward_Name": "POOTH KALAN",
+    "Ward_No": "25",
+    "Constituency": "Bawana (SC)"
+  },
+  {
+    "Ward_Name": "VIJAY VIHAR",
+    "Ward_No": "24",
+    "Constituency": "Rithala"
+  },
+  {
+    "Ward_Name": "GEETA COLONY",
+    "Ward_No": "230",
+    "Constituency": "Krishna Nagar"
+  },
+  {
+    "Ward_Name": "KRISHNA  NAGAR",
+    "Ward_No": "229",
+    "Constituency": "Gandhi Nagar"
+  },
+  {
+    "Ward_Name": "PREET VIHAR",
+    "Ward_No": "228",
+    "Constituency": "Vishwas Nagar"
+  },
+  {
+    "Ward_Name": "I.P EXTENTION",
+    "Ward_No": "227",
+    "Constituency": "Vishwas Nagar"
+  },
+  {
+    "Ward_Name": "ANAND VIHAR",
+    "Ward_No": "225",
+    "Constituency": "Vishwas Nagar"
+  },
+  {
+    "Ward_Name": null,
+    "Ward_No": null,
+    "Constituency": "Trilokpuri (SC)"
+  },
+  {
+    "Ward_Name": "SHAKARPUR",
+    "Ward_No": "223",
+    "Constituency": "Laxmi Nagar"
+  },
+  {
+    "Ward_Name": "LAXMI NAGAR",
+    "Ward_No": "222",
+    "Constituency": "Laxmi Nagar"
+  },
+  {
+    "Ward_Name": "RITHALA",
+    "Ward_No": "22",
+    "Constituency": "Rohini"
+  },
+  {
+    "Ward_Name": "MAYUR VIHAR PHASE II",
+    "Ward_No": "219",
+    "Constituency": "Patparganj"
+  },
+  {
+    "Ward_Name": "MANDAWALI",
+    "Ward_No": "218",
+    "Constituency": "Vishwas Nagar"
+  },
+  {
+    "Ward_Name": "KARAM PURA",
+    "Ward_No": "100",
+    "Constituency": "Moti Nagar"
+  },
+  {
+    "Ward_Name": "MAHAVIR ENCLAVE",
+    "Ward_No": "147",
+    "Constituency": "Palam"
+  },
+  {
+    "Ward_Name": "SAGARPUR",
+    "Ward_No": "131",
+    "Constituency": "Dwarka"
+  },
+  {
+    "Ward_Name": "SAGARPUR WEST",
+    "Ward_No": "132",
+    "Constituency": "Dwarka"
+  },
+  {
+    "Ward_Name": "MUNDAKA",
+    "Ward_No": "30",
+    "Constituency": "Mundka"
+  },
+  {
+    "Ward_Name": "EAST PATEL NAGAR",
+    "Ward_No": "95",
+    "Constituency": "Patel Nagar (SC)"
+  },
+  {
+    "Ward_Name": "WEST PATEL NAGAR",
+    "Ward_No": "94",
+    "Constituency": "Moti Nagar"
+  },
+  {
+    "Ward_Name": "DEV NAGAR",
+    "Ward_No": "92",
+    "Constituency": "Karol Bagh (SC)"
+  },
+  {
+    "Ward_Name": "KAROL BAGH",
+    "Ward_No": "91",
+    "Constituency": "Karol Bagh (SC)"
+  },
+  {
+    "Ward_Name": "MODEL BASTI",
+    "Ward_No": "90",
+    "Constituency": "Karol Bagh (SC)"
+  },
+  {
+    "Ward_Name": "RANA PRATAP BAGH",
+    "Ward_No": "70",
+    "Constituency": "Model Town"
+  },
+  {
+    "Ward_Name": "BAKHTAWAR PUR",
+    "Ward_No": "4",
+    "Constituency": "Nerela"
+  },
+  {
+    "Ward_Name": "ALIPUR",
+    "Ward_No": "3",
+    "Constituency": "Nerela"
+  },
+  {
+    "Ward_Name": "SAHIBABAD DAULAT PUR",
+    "Ward_No": "26",
+    "Constituency": "Bawana (SC)"
+  },
+  {
+    "Ward_Name": "BANKNER",
+    "Ward_No": "2",
+    "Constituency": "Nerela"
+  },
+  {
+    "Ward_Name": "MALKAGANJ",
+    "Ward_No": "9",
+    "Constituency": "Timarpur"
+  },
+  {
+    "Ward_Name": "JHARODA",
+    "Ward_No": "8",
+    "Constituency": "Burari"
+  },
+  {
+    "Ward_Name": "MUKUND PUR",
+    "Ward_No": "6",
+    "Constituency": "Burari"
+  },
+  {
+    "Ward_Name": "BAWANA",
+    "Ward_No": "28",
+    "Constituency": "Bawana (SC)"
+  },
+  {
+    "Ward_Name": "BHALSWA",
+    "Ward_No": "19",
+    "Constituency": "Badli"
+  },
+  {
+    "Ward_Name": "SAMAYPUR BADLI",
+    "Ward_No": "17",
+    "Constituency": "Badli"
+  },
+  {
+    "Ward_Name": "JAHANGIRPURI-I",
+    "Ward_No": "16",
+    "Constituency": "Adarsh Nagar"
+  },
+  {
+    "Ward_Name": "SARAI PIPAL THALA",
+    "Ward_No": "15",
+    "Constituency": "Adarsh Nagar"
+  },
+  {
+    "Ward_Name": "MAHIPALPUR",
+    "Ward_No": "144",
+    "Constituency": "Mehrauli"
+  },
+  {
+    "Ward_Name": "KAPASHERA",
+    "Ward_No": "143",
+    "Constituency": "Bijwasan"
+  },
+  {
+    "Ward_Name": "BIJWASAN",
+    "Ward_No": "141",
+    "Constituency": "Bijwasan"
+  },
+  {
+    "Ward_Name": "ADARASH  NAGAR",
+    "Ward_No": "14",
+    "Constituency": "Adarsh Nagar"
+  },
+  {
+    "Ward_Name": "DHIR PUR",
+    "Ward_No": "13",
+    "Constituency": "Adarsh Nagar"
+  },
+  {
+    "Ward_Name": "G.T.B. NAGAR",
+    "Ward_No": "12",
+    "Constituency": "Timarpur"
+  },
+  {
+    "Ward_Name": "TIMAR PUR",
+    "Ward_No": "10",
+    "Constituency": "Timarpur"
+  },
+  {
+    "Ward_Name": "RAJA GARDEN",
+    "Ward_No": "101",
+    "Constituency": "Madipur (SC)"
+  },
+  {
+    "Ward_Name": "RAGHUBIR NAGAR",
+    "Ward_No": "102",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "RAJOURI GARDEN",
+    "Ward_No": "105",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "NANGAL RAYA",
+    "Ward_No": "110",
+    "Constituency": "Hari Nagar"
+  },
+  {
+    "Ward_Name": "HARI NAGAR",
+    "Ward_No": "111",
+    "Constituency": "Hari Nagar"
+  },
+  {
+    "Ward_Name": "SUBHASH NAGAR",
+    "Ward_No": "112",
+    "Constituency": "Hari Nagar"
+  },
+  {
+    "Ward_Name": "MADHU VIHAR",
+    "Ward_No": "148",
+    "Constituency": "Matiala"
+  },
+  {
+    "Ward_Name": "BUDH VIHAR",
+    "Ward_No": "23",
+    "Constituency": "Rithala"
+  },
+  {
+    "Ward_Name": "NANGLOI JAT WEST",
+    "Ward_No": "31",
+    "Constituency": "Mundka"
+  },
+  {
+    "Ward_Name": "NITHARI",
+    "Ward_No": "34",
+    "Constituency": "Kirari"
+  },
+  {
+    "Ward_Name": "SULTANPUR MAJRA",
+    "Ward_No": "39",
+    "Constituency": "Sultan Pur Majra(SC)"
+  },
+  {
+    "Ward_Name": "ROHINI NORTH",
+    "Ward_No": "49",
+    "Constituency": "Badli"
+  },
+  {
+    "Ward_Name": "LIBAS PUR",
+    "Ward_No": "18",
+    "Constituency": "Badli"
+  },
+  {
+    "Ward_Name": "BRAHAM PURI",
+    "Ward_No": "254",
+    "Constituency": "Ghonda"
+  },
+  {
+    "Ward_Name": "DICHAON KALAN",
+    "Ward_No": "139",
+    "Constituency": "Najafgarh"
+  },
+  {
+    "Ward_Name": "MOTI NAGAR",
+    "Ward_No": "99",
+    "Constituency": "Moti Nagar"
+  },
+  {
+    "Ward_Name": "MANGOLPURI",
+    "Ward_No": "47",
+    "Constituency": "Mangol Puri (SC)"
+  },
+  {
+    "Ward_Name": "LAJPAT NAGAR",
+    "Ward_No": "155",
+    "Constituency": "Jangpura"
+  },
+  {
+    "Ward_Name": "PALAM",
+    "Ward_No": "145",
+    "Constituency": "Palam"
+  },
+  {
+    "Ward_Name": "KISHANGARH",
+    "Ward_No": "172",
+    "Constituency": "Mehrauli"
+  },
+  {
+    "Ward_Name": "VISHWASH NAGAR",
+    "Ward_No": "226",
+    "Constituency": "Vishwas Nagar"
+  },
+  {
+    "Ward_Name": "MADIPUR",
+    "Ward_No": "104",
+    "Constituency": "Shakur Basti"
+  },
+  {
+    "Ward_Name": "RAJENDER NAGAR",
+    "Ward_No": "149",
+    "Constituency": "Rajinder Nagar"
+  },
+  {
+    "Ward_Name": "R. K. PURAM",
+    "Ward_No": "167",
+    "Constituency": "R.K. Puram"
+  },
+  {
+    "Ward_Name": "SAFDARJANG ENCLAVE",
+    "Ward_No": "163",
+    "Constituency": "Malviya Nagar"
+  },
+  {
+    "Ward_Name": "HAUZ KHAS",
+    "Ward_No": "164",
+    "Constituency": "Malviya Nagar"
+  },
+  {
+    "Ward_Name": "KOTLA MUBARAKPUR",
+    "Ward_No": "158",
+    "Constituency": "Kasturba Nagar"
+  },
+  {
+    "Ward_Name": "MANGLAPURI",
+    "Ward_No": "130",
+    "Constituency": "Dwarka"
+  },
+  {
+    "Ward_Name": "MANGOL PURI  NORTH",
+    "Ward_No": "38",
+    "Constituency": "Mangol Puri (SC)"
+  },
+  {
+    "Ward_Name": "TAGORE GARDEN",
+    "Ward_No": "106",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "LADOSARAI",
+    "Ward_No": "169",
+    "Constituency": "Mehrauli"
+  },
+  {
+    "Ward_Name": "NARELA",
+    "Ward_No": "1",
+    "Constituency": "Nerela"
+  },
+  {
+    "Ward_Name": "BHALASWA JAHAGIR PUR",
+    "Ward_No": "5",
+    "Constituency": "Burari"
+  },
+  {
+    "Ward_Name": "BURARI",
+    "Ward_No": "7",
+    "Constituency": "Burari"
+  },
+  {
+    "Ward_Name": "PATPARGANJ",
+    "Ward_No": "220",
+    "Constituency": "Patparganj"
+  },
+  {
+    "Ward_Name": "PANDAV NAGAR",
+    "Ward_No": "224",
+    "Constituency": "Laxmi Nagar"
+  },
+  {
+    "Ward_Name": "KISHAN KUNJ",
+    "Ward_No": "221",
+    "Constituency": "Laxmi Nagar"
+  },
+  {
+    "Ward_Name": "DHARAMPURA",
+    "Ward_No": "233",
+    "Constituency": "Seelam Pur"
+  },
+  {
+    "Ward_Name": "NEW USMANPUR",
+    "Ward_No": "251",
+    "Constituency": "Seelam Pur"
+  },
+  {
+    "Ward_Name": "BHAJANPURA",
+    "Ward_No": "253",
+    "Constituency": "Ghonda"
+  },
+  {
+    "Ward_Name": "NEHRU VIHAR",
+    "Ward_No": "267",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "SAID UL AJAIB",
+    "Ward_No": "177",
+    "Constituency": "Deoli (SC)"
+  },
+  {
+    "Ward_Name": "SANGAM VIHAR",
+    "Ward_No": "178",
+    "Constituency": "Deoli (SC)"
+  },
+  {
+    "Ward_Name": "MEHRAULI",
+    "Ward_No": "170",
+    "Constituency": "Mehrauli"
+  },
+  {
+    "Ward_Name": "SANGAM VIHAR WEST",
+    "Ward_No": "186",
+    "Constituency": "Sangam Vihar"
+  },
+  {
+    "Ward_Name": "TIGRI",
+    "Ward_No": "179",
+    "Constituency": "Deoli (SC)"
+  },
+  {
+    "Ward_Name": "ZAKIR NAGAR",
+    "Ward_No": "205",
+    "Constituency": "Okhla"
+  },
+  {
+    "Ward_Name": "NAJAFGARH",
+    "Ward_No": "138",
+    "Constituency": "Najafgarh"
+  },
+  {
+    "Ward_Name": "JAHANGIR PURI -II",
+    "Ward_No": "20",
+    "Constituency": "Burari"
+  },
+  {
+    "Ward_Name": "KUNWAR SINGH NAGAR",
+    "Ward_No": "121",
+    "Constituency": "Vikaspuri"
+  },
+  {
+    "Ward_Name": "VIKAS NAGAR",
+    "Ward_No": "124",
+    "Constituency": "Vikaspuri"
+  },
+  {
+    "Ward_Name": "VIKAS PURI",
+    "Ward_No": "123",
+    "Constituency": "Vikaspuri"
+  },
+  {
+    "Ward_Name": "MAHAVIR NAGAR",
+    "Ward_No": "113",
+    "Constituency": "Tilak Nagar"
+  },
+  {
+    "Ward_Name": "DARYAGANJ",
+    "Ward_No": "153",
+    "Constituency": "Jangpura"
+  },
+  {
+    "Ward_Name": "BALJIT NAGAR",
+    "Ward_No": "93",
+    "Constituency": "Patel Nagar (SC)"
+  },
+  {
+    "Ward_Name": "NILOTHI",
+    "Ward_No": "32",
+    "Constituency": "Mundka"
+  },
+  {
+    "Ward_Name": "PRATAP VIHAR",
+    "Ward_No": "36",
+    "Constituency": "Kirari"
+  },
+  {
+    "Ward_Name": "PREM NAGAR",
+    "Ward_No": "33",
+    "Constituency": "Kirari"
+  },
+  {
+    "Ward_Name": "SHASTRI NAGAR",
+    "Ward_No": "73",
+    "Constituency": "Sadar Bazar"
+  },
+  {
+    "Ward_Name": "VISHNU GARDEN",
+    "Ward_No": "107",
+    "Constituency": "Rajouri Garden"
+  },
+  {
+    "Ward_Name": "TUKHMIR PUR",
+    "Ward_No": "270",
+    "Constituency": "Karawal Nagar"
+  },
+  {
+    "Ward_Name": "RAJ NAGAR",
+    "Ward_No": "142",
+    "Constituency": "Bijwasan"
+  }
+]

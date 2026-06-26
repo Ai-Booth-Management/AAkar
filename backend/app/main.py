@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, Depends
 from app.core.security import get_current_user
@@ -12,107 +13,88 @@ from app.api.v1.endpoints.ask import router as ask_router
 from app.api.v1.endpoints.complaints import router as complaints_router
 from app.api.v1.endpoints.drives import router as drives_router
 from app.api.v1.endpoints.auth import router as auth_router
+from app.api.v1.endpoints.drishti import router as drishti_router
+from app.api.v1.endpoints.heatmap import router as heatmap_router
+from app.api.v1.endpoints.tasks import router as tasks_router
+from app.api.v1.endpoints.files import router as files_router
+from app.api.v1.endpoints.audit import router as audit_router
+from app.api.v1.endpoints.action_tracker import router as action_tracker_router
+from app.api.v1.endpoints.summary import router as summary_router
+from app.api.v1.endpoints.campaign import router as campaign_router
 from app.api.v1.endpoints.ask_election import router as ask_election_router
-from app.domain.whatsapp_service import router as whatsapp_router
+
+from app.infrastructure.messaging.whatsapp_service import router as whatsapp_router
 from app.api.v1.endpoints.volunteers import router as volunteers_router
 from app.api.v1.endpoints.broadcasts import router as broadcasts_router
 from app.api.v1.endpoints.dashboard import router as dashboard_router
 from app.api.v1.endpoints.voter_ingestion import router as voter_ingestion_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
-from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
+from app.domain.models.project import Project, ProjectJustification  # noqa: F401 – ensure table is registered
+from app.domain.models.district_metric import DistrictMetric  # noqa: F401 - ensure table is registered
+from app.domain.models.task import Task  # noqa: F401 - ensure table is registered
+from app.domain.models.file_tracker import FileTracker, FileTimelineEntry  # noqa: F401 - ensure tables are registered
+from app.domain.models.system_config import SystemConfig  # noqa: F401 - ensure table is registered
+from app.domain.models.audit_log import AuditLog  # noqa: F401 - ensure table is registered
+from app.domain.models.cm_instruction import CmInstruction  # noqa: F401 - ensure table is registered
+from app.domain.models.ai_summary import AiSummary  # noqa: F401 - ensure table is registered
+from app.domain.models.campaign import CampaignVolunteer, ConstituencyCoverage  # noqa: F401 - ensure tables are registered
+from app.domain.models.volunteer import Volunteer, VolunteerTask, ConversationState  # noqa: F401 – ensure tables are registered
 from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
 from app.domain.models.auth import RevokedToken  # noqa: F401 - ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
-
-
-async def auto_update_csv():
-    voters_file = Path("data/uploads/voters.csv")
-    complaints_file = Path("data/uploads/complaints.csv")
-    last_voter_mtime = 0
-    last_complaint_mtime = 0
-    voters_existed = False
-    complaints_existed = False
-    
-    if voters_file.exists():
-        last_voter_mtime = os.stat(voters_file).st_mtime
-        voters_existed = True
-    if complaints_file.exists():
-        last_complaint_mtime = os.stat(complaints_file).st_mtime
-        complaints_existed = True
-
-    while True:
-        await asyncio.sleep(2)
-        
-        # Watch voters.csv
-        current_voters_exists = voters_file.exists()
-        if current_voters_exists:
-            v_mtime = os.stat(voters_file).st_mtime
-            if v_mtime > last_voter_mtime:
-                print("💥 Detected change in voters.csv! Auto-updating Neo4j database...")
-                last_voter_mtime = v_mtime
-                voters_existed = True
-                from app.api.v1.endpoints import upload
-                if not upload.API_UPLOAD_IN_PROGRESS:
-                    try:
-                        seed()
-                        print("✅ Voters auto-update complete!")
-                    except Exception as e:
-                        print(f"❌ Voters auto-update failed: {e}")
-                else:
-                    print("⏭️ Skipping voters auto-update; API upload in progress.")
-        else:
-            if voters_existed:
-                print("💥 Detected deletion of voters.csv! Clearing corresponding Neo4j data...")
-                voters_existed = False
-                last_voter_mtime = 0
-                from app.api.v1.endpoints import upload
-                if not upload.API_UPLOAD_IN_PROGRESS:
-                    try:
-                        seed()
-                        print("✅ Voters deletion sync complete!")
-                    except Exception as e:
-                        print(f"❌ Voters deletion sync failed: {e}")
-
-        # Watch complaints.csv
-        current_complaints_exists = complaints_file.exists()
-        if current_complaints_exists:
-            c_mtime = os.stat(complaints_file).st_mtime
-            if c_mtime > last_complaint_mtime:
-                print("💥 Detected change in complaints.csv! Auto-syncing to Knowledge Graph...")
-                last_complaint_mtime = c_mtime
-                complaints_existed = True
-                from app.api.v1.endpoints import upload
-                if not upload.API_UPLOAD_IN_PROGRESS:
-                    try:
-                        import pandas as pd
-                        from app.domain.services.graph_builder import process_complaints
-                        df = pd.read_csv(complaints_file)
-                        process_complaints(df)
-                        print("✅ Complaints auto-sync complete!")
-                    except Exception as e:
-                        print(f"❌ Complaints auto-sync failed: {e}")
-                else:
-                    print("⏭️ Skipping complaints auto-sync; API upload in progress.")
-        else:
-            if complaints_existed:
-                print("💥 Detected deletion of complaints.csv! Clearing corresponding Neo4j data...")
-                complaints_existed = False
-                last_complaint_mtime = 0
-                from app.api.v1.endpoints import upload
-                if not upload.API_UPLOAD_IN_PROGRESS:
-                    try:
-                        seed()
-                        print("✅ Complaints deletion sync complete!")
-                    except Exception as e:
-                        print(f"❌ Complaints deletion sync failed: {e}")
+from app.core.watchers import auto_update_csv
+from app.seeds import (
+    seed_projects,
+    seed_district_metrics,
+    seed_tasks,
+    seed_files,
+    seed_instructions,
+    seed_campaign_volunteers,
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize SQLite tables
     init_db()
+    # Seed new instructions table if empty
+    seed_instructions()
+    # Seed campaign volunteers if empty
+    seed_campaign_volunteers()
+
+    # Check if database is already seeded via persistent SystemConfig table
+    from sqlmodel import Session, select
+    from app.infrastructure.db.sqlite_client import engine
+    from app.domain.models.system_config import SystemConfig
+
+    is_seeded = False
+    with Session(engine) as session:
+        statement = select(SystemConfig).where(SystemConfig.key == "seeded")
+        config = session.exec(statement).first()
+        if config and config.value == "true":
+            is_seeded = True
+
+    if not is_seeded:
+        print("Seeding database for the first time...")
+        # Seed projects
+        seed_projects()
+        # Seed district metrics
+        seed_district_metrics()
+        # Seed tasks
+        seed_tasks()
+        # Seed files
+        seed_files()
+        
+        # Mark as seeded persistently in SQLite
+        with Session(engine) as session:
+            session.add(SystemConfig(key="seeded", value="true"))
+            session.commit()
+        print("Seeding complete!")
+    else:
+        print("Database already seeded. Skipping setup.")
+
     # Ensure Neo4j indexes exist
     neo4j_client.ensure_indexes()
     # Seed initially if needed, and start watcher
@@ -133,10 +115,18 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(upload_router, prefix="/api/v1/upload", tags=["Upload"], dependencies=[Depends(get_current_user)])
 app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"], dependencies=[Depends(get_current_user)])
+app.include_router(summary_router, prefix="/api/v1/admin", tags=["Admin"], dependencies=[Depends(get_current_user)])
 app.include_router(ask_router, prefix="/api/v1", tags=["Ask"], dependencies=[Depends(get_current_user)])
 app.include_router(ask_election_router, prefix="/api/v1", tags=["Ask Election"], dependencies=[Depends(get_current_user)])
 app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Complaints"], dependencies=[Depends(get_current_user)])
 app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"], dependencies=[Depends(get_current_user)])
+app.include_router(drishti_router, prefix="/api/v1/drishti", tags=["Project Drishti"], dependencies=[Depends(get_current_user)])
+app.include_router(heatmap_router, prefix="/api/v1/heatmap", tags=["Heatmap"], dependencies=[Depends(get_current_user)])
+app.include_router(tasks_router, prefix="/api/v1/tasks", tags=["Tasks"], dependencies=[Depends(get_current_user)])
+app.include_router(files_router, prefix="/api/v1/files", tags=["Files"], dependencies=[Depends(get_current_user)])
+app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit Logs"], dependencies=[Depends(get_current_user)])
+app.include_router(action_tracker_router, prefix="/api/v1/actions", tags=["Action Tracker"], dependencies=[Depends(get_current_user)])
+app.include_router(campaign_router, prefix="/api/v1", tags=["Campaign"], dependencies=[Depends(get_current_user)])
 app.include_router(whatsapp_router, prefix="/api/v1/whatsapp", tags=["WhatsApp"])
 app.include_router(volunteers_router, prefix="/api/v1", tags=["Volunteers"], dependencies=[Depends(get_current_user)])
 app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"], dependencies=[Depends(get_current_user)])

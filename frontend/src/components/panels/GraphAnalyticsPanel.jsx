@@ -90,6 +90,9 @@ const GraphAnalyticsPanel = () => {
           arrows: { to: { enabled: true, scaleFactor: 0.5 } },
           smooth: { type: 'continuous' }
         },
+        layout: {
+          improvedLayout: false
+        },
         interaction: {
           hover: true,
           tooltipDelay: 200

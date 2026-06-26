@@ -1,0 +1,16 @@
+# pyrefly.toml — Pyrefly type checker configuration for AAkar backend
+# Tells Pyrefly to use the project's own venv instead of the global uv Python.
+
+# Interpreter to use for type checking
+python_interpreter = ".venv/Scripts/python.exe"
+
+# Source root — backend/app is the package root
+search_path = ["."]
+
+# Exclude generated / cache directories
+exclude = [
+  "__pycache__",
+  ".venv",
+  "data",
+  "scratch",
+]

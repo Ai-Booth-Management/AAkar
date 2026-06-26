@@ -6,6 +6,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const API_BASE = '/api/v1/auth';
 const AuthContext = createContext();
 
+const mapRole = (role) => {
+  const r = (role || '').toUpperCase();
+  if (r === 'DM') return 'DISTRICT_ADMIN';
+  if (r === 'CM') return 'CONSTITUENCY_MGR';
+  return r;
+};
+
 export function useAuth() {
   return useContext(AuthContext);
 }
@@ -84,8 +91,9 @@ export function AuthProvider({ children }) {
 
   // ── Session validation on mount ─────────────────────────────────────
   useEffect(() => {
-    const session = localStorage.getItem('aakar_session') || localStorage.getItem('praja_session');
-    if (!session) {
+    const session = localStorage.getItem('aakar_session');
+    const token = localStorage.getItem('token');
+    if (!session || !token) {
       setLoading(false);
       return;
     }
@@ -93,11 +101,16 @@ export function AuthProvider({ children }) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    fetch(`${API_BASE}/me`, { signal: controller.signal })
+    fetch(`${API_BASE}/me`, {
+      signal: controller.signal,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then((res) => {
         if (!res.ok) {
           localStorage.removeItem('aakar_session');
-          localStorage.removeItem('praja_session');
+          localStorage.removeItem('token');
           throw new Error('Token expired');
         }
         return res.json();
@@ -107,7 +120,7 @@ export function AuthProvider({ children }) {
           id: user.id,
           email: user.email,
           displayName: user.display_name || user.role,
-          role: (user.role || '').toUpperCase(),
+          role: mapRole(user.role),
           state_id: user.state_id,
           district_id: user.district_id,
           constituency_id: user.constituency_id,
@@ -117,7 +130,7 @@ export function AuthProvider({ children }) {
       })
       .catch(() => {
         localStorage.removeItem('aakar_session');
-        localStorage.removeItem('praja_session');
+        localStorage.removeItem('token');
         setCurrentUser(null);
       })
       .finally(() => {
@@ -160,7 +173,7 @@ export function AuthProvider({ children }) {
       id: data.user.id,
       email: data.user.email,
       displayName: data.user.display_name || data.user.displayName || data.user.role,
-      role: (data.user.role || '').toUpperCase(),
+      role: mapRole(data.user.role),
       state_id: data.user.state_id,
       district_id: data.user.district_id,
       constituency_id: data.user.constituency_id,
@@ -195,7 +208,7 @@ export function AuthProvider({ children }) {
       id: data.user.id,
       email: data.user.email,
       displayName: data.user.display_name || data.user.displayName || data.user.role,
-      role: (data.user.role || '').toUpperCase(),
+      role: mapRole(data.user.role),
       state_id: data.user.state_id,
       district_id: data.user.district_id,
       constituency_id: data.user.constituency_id,

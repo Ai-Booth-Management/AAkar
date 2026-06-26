@@ -74,7 +74,7 @@ const OverviewPanel = () => {
     return <span className={`badge ${cls}`}>{level}</span>;
   };
 
-  const isDM = currentUser?.role === 'dm';
+  const isDM = currentUser?.role?.toUpperCase() === 'DM';
   const dmDistrict = currentUser?.displayName || '';
 
   const displayBooths = isDM 

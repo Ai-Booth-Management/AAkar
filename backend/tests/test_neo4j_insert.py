@@ -11,7 +11,7 @@ def test_process_voters_returns_count(mock_client, sample_voters_df):
 
     result = process_voters(sample_voters_df)
     assert result == {"voters_processed": 2}
-    assert mock_client.run_query.call_count == 2  # one per row
+    assert mock_client.run_query.call_count == 1  # one batch call
 
 
 @patch("app.domain.services.graph_builder.neo4j_client")
@@ -25,11 +25,13 @@ def test_process_voters_query_params(mock_client, sample_voters_df):
     # Check first call's parameters
     _, kwargs = mock_client.run_query.call_args_list[0]
     params = kwargs.get("parameters") or mock_client.run_query.call_args_list[0][0][1]
-    assert params["epic"] == "ABC1234567"
-    assert params["name"] == "Test User One"
-    assert params["age"] == 30
-    assert params["gender"] == "Male"
-    assert params["booth_id"] == "MH_123_001"
+    batch = params["batch"]
+    assert len(batch) == 2
+    assert batch[0]["epic"] == "ABC1234567"
+    assert batch[0]["name"] == "Test User One"
+    assert batch[0]["age"] == 30
+    assert batch[0]["gender"] == "Male"
+    assert batch[0]["booth_id"] == "MH_123_001"
 
 
 @patch("app.domain.services.graph_enrichment.neo4j_client")

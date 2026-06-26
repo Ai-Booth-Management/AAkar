@@ -1,9 +1,27 @@
 "use client";
 import React, { useState } from 'react';
-import HeatmapAnalysis from './HeatmapAnalysis';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
+import dynamic from 'next/dynamic';
+
+const CampaignPanel = dynamic(() => import('../CampaignPanel'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <div style={{ width: '24px', height: '24px', border: '3px solid #e2e8f0', borderTopColor: '#0f172a', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Loading Campaign Engine...</span>
+      </div>
+    </div>
+  )
+});
+
+const BOSIDashboard = dynamic(() => import('./BOSIDashboard'), { ssr: false });
+const ReadinessDashboard = dynamic(() => import('./ReadinessDashboard'), { ssr: false });
+const TurnoutDashboard = dynamic(() => import('./TurnoutDashboard'), { ssr: false });
+const WhatsAppOS = dynamic(() => import('./WhatsAppOS'), { ssr: false });
+const RelocatedCampaignTracker = dynamic(() => import('./CampaignTracker'), { ssr: false });
 import AICopilot from '../shared/AICopilot';
 
 export default function ConstituencyDashboard({ tab, hierarchy }) {
@@ -18,8 +36,15 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
     switch (activeTab) {
       case 'overview':         return <ConstituencyOverview lc={lc} hierarchy={hierarchy} />;
       case 'booths':           return <BoothStatusDirectory lc={lc} hierarchy={hierarchy} />;
-      case 'heatmap':          return <HeatmapAnalysis level="CONSTITUENCY" hierarchy={hierarchy} />;
+      case 'health':           return <BoothHealth />;
+      case 'bosi':             return <BOSIDashboard hierarchy={hierarchy} />;
+      case 'readiness':        return <ReadinessDashboard hierarchy={hierarchy} />;
+      case 'turnout':          return <TurnoutDashboard hierarchy={hierarchy} />;
+      case 'campaigns':
+      case 'campaign':         return <CampaignPanel />;
+      case 'campaign_tracker': return <RelocatedCampaignTracker hierarchy={hierarchy} />;
       case 'hub':              return <Hub hierarchy={hierarchy} userRole="CONSTITUENCY_MGR" />;
+      case 'whatsapp_os':      return <WhatsAppOS hierarchy={hierarchy} />;
       case 'broadcast':        return <BroadcastPanel hierarchy={hierarchy} />;
       case 'manage-users':     return <ManageUsers role="CONSTITUENCY_MGR" hierarchy={hierarchy} />;
       case 'ai-suggestions':   return <AICopilot hierarchy={hierarchy} />;
@@ -123,6 +148,17 @@ function ConstituencyOverview({ lc, hierarchy }) {
             </table>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function BoothHealth() {
+  return (
+    <div className="fade-in">
+      <div className="dash-page-header"><div className="dash-page-title">Booth Health Scores</div></div>
+      <div className="dash-grid-3">
+        <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600, gridColumn: '1 / -1' }}>No health score data available</div>
       </div>
     </div>
   );
