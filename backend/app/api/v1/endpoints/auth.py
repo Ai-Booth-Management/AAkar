@@ -10,10 +10,15 @@ import re
 
 from app.core.security import (
     create_access_token,
+    create_refresh_token,
     get_current_user,
     hash_password,
     verify_password,
+    oauth2_scheme,
 )
+from app.core.config import settings
+from jose import jwt, JWTError
+from app.domain.models.auth import RevokedToken
 from app.domain.models.user import User
 from app.infrastructure.db.sqlite_client import get_session
 
@@ -41,8 +46,12 @@ class LoginRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user: dict
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class UserResponse(BaseModel):
@@ -108,9 +117,11 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
     # Normalize role for client compatibility
     user_role = user.role.lower() if user.role and user.role.lower() in ["official", "cm", "dm"] else (user.role.upper() if user.role else "")
 
-    token = create_access_token({"sub": user.email})
+    access_token = create_access_token({"sub": user.email})
+    refresh_token = create_refresh_token({"sub": user.email})
     return TokenResponse(
-        access_token=token,
+        access_token=access_token,
+        refresh_token=refresh_token,
         user={
             "id": user.id,
             "email": user.email,
@@ -138,9 +149,11 @@ def login(body: LoginRequest, session: Session = Depends(get_session)):
     # Normalize role for client compatibility
     user_role = user.role.lower() if user.role and user.role.lower() in ["official", "cm", "dm"] else (user.role.upper() if user.role else "")
 
-    token = create_access_token({"sub": user.email})
+    access_token = create_access_token({"sub": user.email})
+    refresh_token = create_refresh_token({"sub": user.email})
     return TokenResponse(
-        access_token=token,
+        access_token=access_token,
+        refresh_token=refresh_token,
         user={
             "id": user.id,
             "email": user.email,
@@ -171,7 +184,46 @@ def me(current_user: User = Depends(get_current_user)):
     )
 
 
+@router.post("/refresh")
+def refresh_token(body: RefreshRequest, session: Session = Depends(get_session)):
+    """Generate a new access token from a valid refresh token."""
+    try:
+        payload = jwt.decode(body.refresh_token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        email = payload.get("sub")
+        token_type = payload.get("type")
+        jti = payload.get("jti")
+        if email is None or token_type != "refresh" or jti is None:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            
+        is_revoked = session.exec(select(RevokedToken).where(RevokedToken.jti == jti)).first()
+        if is_revoked:
+            raise HTTPException(status_code=401, detail="Refresh token revoked")
+            
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        
+    user = session.exec(select(User).where(User.email == email)).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    access_token = create_access_token({"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
 @router.post("/logout")
-def logout():
-    """Stateless logout handler."""
+def logout(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    """Revoke the current access token."""
+    if not token:
+        return {"status": "success", "message": "Logged out successfully (no token)"}
+        
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        jti = payload.get("jti")
+        if jti:
+            revoked = RevokedToken(jti=jti)
+            session.add(revoked)
+            session.commit()
+    except JWTError:
+        pass # If token is invalid, we don't care during logout
+        
     return {"status": "success", "message": "Logged out successfully"}

@@ -11,9 +11,12 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "qwen2.5:7b"
 
     # JWT / Auth
-    JWT_SECRET_KEY: str = "change-me-to-a-real-secret-key-32chars!"
+    JWT_SECRET_KEY: str  # No default — must be set in .env
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # 15 min access token
+
+    # CORS
+    ALLOWED_ORIGINS: str = "http://localhost:3000"  # comma-separated origins
 
     # WhatsApp
     WHATSAPP_TOKEN: str = "dummy_token"
