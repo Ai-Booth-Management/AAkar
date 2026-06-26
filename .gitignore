@@ -29,6 +29,7 @@ dist/
 # FastAPI / Uvicorn
 # =========================
 *.sqlite3
+!backend/data/app.db
 
 # =========================
 # Node / Frontend
@@ -84,4 +85,4 @@ backend/data/uploads/*.csv
 # Frontend Next.js / Dev Bypass
 # =========================
 frontend/.next/
-frontend/public/dev-login.json
+!frontend/public/dev-login.json

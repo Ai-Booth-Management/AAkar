@@ -92,7 +92,8 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
                     detail="Invalid Booth ID: Not found in voters registry."
                 )
 
-    existing = session.exec(select(User).where(User.email == body.email)).first()
+    db_email = body.email.lower()
+    existing = session.exec(select(User).where(User.email == db_email)).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -100,7 +101,7 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
         )
 
     user = User(
-        email=body.email,
+        email=db_email,
         hashed_password=hash_password(body.password),
         role=body.role.upper(),
         display_name=body.display_name,
@@ -136,7 +137,8 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)):
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, session: Session = Depends(get_session)):
     """Authenticate and return a JWT."""
-    user = session.exec(select(User).where(User.email == body.email)).first()
+    db_email = body.email.lower()
+    user = session.exec(select(User).where(User.email == db_email)).first()
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

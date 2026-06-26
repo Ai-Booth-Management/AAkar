@@ -71,14 +71,18 @@ async def ingest_voters(
         voter.age = v.Age,
         voter.gender = v.Gender,
         voter.house_no = v.clean_house_no,
-        voter.booth_id = $booth_id,
         voter.parent_relation = v.`Guardian Relation`,
-        voter.parent_name = v.`Father/Husband Name`
+        voter.parent_name = v.`Father/Husband Name`,
+        voter.booth_id = $booth_id
+    
+    // Create or Link Booth
+    MERGE (b:Booth {booth_id: $booth_id})
     
     // Create or Link Household
     MERGE (h:Household {address_id: $booth_id + "_" + v.clean_house_no})
     SET h.house_no = v.clean_house_no, h.booth_id = $booth_id, h.covered = coalesce(h.covered, false)
     MERGE (voter)-[:MEMBER_OF]->(h)
+    MERGE (h)-[:PART_OF]->(b)
     """
     
     try:
@@ -86,6 +90,16 @@ async def ingest_voters(
             "batch": voters,
             "booth_id": target_booth
         })
+        
+        # 4. Trigger Post-Ingestion Enrichment
+        from app.domain.services.graph_enrichment import update_booth_metrics
+        from app.domain.services.voter_segmentation import categorize_voters
+        from app.domain.services.risk_engine import update_risk_scores
+        
+        update_booth_metrics()
+        categorize_voters()
+        update_risk_scores()
+        
     except Exception as neo_err:
         print(f"Neo4j Error: {neo_err}")
         raise HTTPException(status_code=500, detail=f"Database synchronization failed: {str(neo_err)}")

@@ -3,8 +3,11 @@ from app.infrastructure.db.neo4j_client import neo4j_client
 from app.domain.services.graph_enrichment import update_booth_metrics
 
 
-def clear_database():
-    """Wipe the entire Neo4j database before a clean re-seed."""
+def clear_database(force=False):
+    """Wipe the Neo4j database. Requires force=True to prevent accidental data loss."""
+    if not force:
+        print("⚠️ Skipping database clear. Use force=True for a full wipe.")
+        return
     query = "MATCH (n) DETACH DELETE n"
     return neo4j_client.run_query(query)
     

@@ -20,6 +20,8 @@ export default function BoothDashboard({ tab, hierarchy }) {
 
 function BoothProfile({ booth }) {
   const [stats, setStats] = useState(null);
+  const [resetting, setResetting] = useState(false);
+
   React.useEffect(() => {
     if (!booth) return;
     fetch(`/api/v1/dashboard/stats?level=booth&code=${booth}`, {
@@ -29,6 +31,21 @@ function BoothProfile({ booth }) {
       return r.json();
     }).then(setStats).catch(() => {});
   }, [booth]);
+
+  const handleReloadData = async () => {
+    if (!window.confirm('This will clear ALL ingested voter data for this booth and log you out. Continue?')) return;
+    setResetting(true);
+    try {
+      await fetch(`/api/v1/dashboard/booth/reset?booth_code=${booth}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+    } catch (e) { /* ignore, proceed to logout */ }
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('aakar_session');
+    window.location.href = '/login';
+  };
 
   const d = stats || { voters: 0, volunteers: 0, demographics: { male: 0, female: 0, youth: 0, seniors: 0, households: 0 } };
   const demo = d.demographics || { male: 0, female: 0, youth: 0, seniors: 0, households: 0 };
@@ -43,7 +60,9 @@ function BoothProfile({ booth }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-primary" onClick={() => window.location.reload()}>RELOAD DATA</button>
+          <button className="btn btn-secondary" onClick={handleReloadData} disabled={resetting}>
+            {resetting ? 'CLEARING...' : 'RELOAD DATA'}
+          </button>
         </div>
       </div>
 

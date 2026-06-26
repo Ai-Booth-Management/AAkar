@@ -252,6 +252,17 @@ def get_constituency_booths_directory(
     return BOSIEngine.get_constituency_booth_directory(constituency_code, session)
 
 
+@router.get("/dashboard/booths")
+def get_mandal_booth_analytics(
+    mandal_code: str,
+    session: Session = Depends(get_session),
+    _user: User = Depends(_require_auth),
+):
+    """Returns analytics for all booths in a mandal."""
+    from app.domain.services.bosi_service import BOSIEngine
+    return BOSIEngine.get_mandal_booth_scores(mandal_code, session)
+
+
 @router.get("/dashboard/complaints/analytics")
 def get_mandal_complaints_analytics(
     mandal_code: str,
@@ -432,6 +443,35 @@ def reset_mandal_data(
     try:
         neo4j_client.run_query(delete_query, {"booth_ids": list(booth_codes)})
         return {"status": "success", "message": f"Data erased for mandal {mandal_code} and its {len(booth_codes)} booths"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/dashboard/booth/reset")
+def reset_booth_data(
+    booth_code: str,
+    session: Session = Depends(get_session),
+    _user: User = Depends(_require_auth),
+):
+    """Erases all ingested voter and household data for a specific booth."""
+    booth = session.exec(select(HierarchyNode).where(HierarchyNode.code == booth_code, HierarchyNode.level == "booth")).first()
+    if not booth:
+        raise HTTPException(status_code=404, detail="Booth not found")
+
+    # 1. Reset SQLite voter count
+    booth.total_voters = 0
+    session.add(booth)
+    session.commit()
+
+    # 2. Delete all Voters, Households, and Booth node from Neo4j for this booth
+    delete_query = """
+    MATCH (n)
+    WHERE (n:Voter OR n:Household OR n:Booth OR n:Area) AND n.booth_id = $booth_id
+    DETACH DELETE n
+    """
+    try:
+        neo4j_client.run_query(delete_query, {"booth_id": booth_code})
+        return {"status": "success", "message": f"All ingested data cleared for booth {booth_code}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

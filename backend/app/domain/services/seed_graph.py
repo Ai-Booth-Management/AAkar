@@ -13,9 +13,12 @@ from app.domain.services.graph_builder import process_voters, process_complaints
 UPLOADS_DIR = backend_root / "data" / "uploads"
 
 
-def seed():
-    print("🧹 Clearing existing data...")
-    clear_database()
+def seed(erase=False):
+    if erase:
+        print("🧹 Clearing existing data...")
+        clear_database(force=True)
+    else:
+        print("🔄 Performing incremental seed (MERGE)...")
     
     voters_csv = UPLOADS_DIR / "voters.csv"
     complaints_csv = UPLOADS_DIR / "complaints.csv"

@@ -106,37 +106,27 @@ export default function LoginPage() {
         if (e && e.preventDefault) e.preventDefault();
         setLoading(true);
         setError('');
-        const demoPassword = "password123";
-        let demoEmail = `demo_${userType.toLowerCase()}@innovateindia.gov`;
+        
+        const roleToEmail = {
+            'ELECTION_ADMIN': 'serveradmin@aakar.gov.in',
+            'STATE_ADMIN': 'statedelhi@aakar.gov.in',
+            'DISTRICT_ADMIN': 'nd-admin@aakar.gov.in',
+            'CONSTITUENCY_MGR': 'nd01-mgr@aakar.gov.in',
+            'MANDAL_MGR': 'ndcn-mgr@aakar.gov.in',
+            'BOOTH_PRESIDENT': 'booth.ndcn-b1@aakar.gov.in',
+            'cm': 'cm-delhi@aakar.gov.in',
+            'dm': 'dm-newdelhi@aakar.gov.in',
+            'booth': 'booth.ndcn-b1@aakar.gov.in'
+        };
+
+        const demoPassword = "123456";
+        const demoEmail = roleToEmail[userType] || `demo_${userType.toLowerCase()}@aakar.gov.in`;
         
         try {
             await login(demoEmail, demoPassword);
             router.push('/');
         } catch (err) {
-            try {
-                if (portalMode === 'election') {
-                    await signup(demoEmail, demoPassword, userType, { name: 'Demo ' + userType }, {
-                        state: 'DL', district: 'Central', constituency: 'ND-01', mandal: 'Demo Mandal', booth: '123'
-                    });
-                } else {
-                    await signup(demoEmail, demoPassword, userType.toUpperCase(), { name: 'Demo ' + userType });
-                }
-                router.push('/');
-            } catch (signupErr) {
-                try {
-                    demoEmail = `demo_${userType.toLowerCase()}_${Math.floor(Math.random() * 10000)}@innovateindia.gov`;
-                    if (portalMode === 'election') {
-                        await signup(demoEmail, demoPassword, userType, { name: 'Demo ' + userType }, {
-                            state: 'DL', district: 'Central', constituency: 'ND-01', mandal: 'Demo Mandal', booth: '123'
-                        });
-                    } else {
-                        await signup(demoEmail, demoPassword, userType.toUpperCase(), { name: 'Demo ' + userType });
-                    }
-                    router.push('/');
-                } catch (fallbackErr) {
-                    setError('Demo login failed: ' + fallbackErr.message);
-                }
-            }
+            setError('Demo Session Initiation Failed: ' + err.message);
         }
         setLoading(false);
     };
