@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import HeatmapAnalysis from './HeatmapAnalysis';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -23,7 +22,6 @@ export default function DistrictDashboard({ tab, hierarchy }) {
   switch (tab) {
     case 'overview':       return <DistrictOverview district={district} />;
     case 'constituencies': return <ConstituencyStats district={district} />;
-    case 'heatmap':       return <HeatmapAnalysis level="DISTRICT" hierarchy={hierarchy} />;
     case 'campaign':      return <CampaignPanel />;
     case 'issues':        return <LocalIssues />;
     case 'ai-suggestions': return null;

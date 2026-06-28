@@ -27,8 +27,17 @@ else:
 
 
 def init_db():
-    """Create all SQLModel tables (idempotent)."""
+    """Create all SQLModel tables (idempotent) and add missing columns."""
     SQLModel.metadata.create_all(engine)
+    # Add latitude/longitude columns if missing (for existing databases)
+    try:
+        engine.execute("ALTER TABLE hierarchy_node ADD COLUMN latitude FLOAT")
+    except Exception:
+        pass
+    try:
+        engine.execute("ALTER TABLE hierarchy_node ADD COLUMN longitude FLOAT")
+    except Exception:
+        pass
 
 
 def get_session():

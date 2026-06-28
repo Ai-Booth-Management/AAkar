@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from 'react';
-import HeatmapAnalysis from './HeatmapAnalysis';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -32,7 +31,6 @@ export default function ConstituencyDashboard({ tab, hierarchy }) {
     switch (activeTab) {
       case 'overview':         return <ConstituencyOverview lc={lc} hierarchy={hierarchy} />;
       case 'booths':           return <BoothStatusDirectory lc={lc} hierarchy={hierarchy} />;
-      case 'heatmap':          return <HeatmapAnalysis level="CONSTITUENCY" hierarchy={hierarchy} />;
       case 'campaign':         return <CampaignPanel />;
       case 'hub':              return <Hub hierarchy={hierarchy} userRole="CONSTITUENCY_MGR" />;
       case 'video-call':       return <VideoCallPanel hierarchy={hierarchy} userRole="CONSTITUENCY_MGR" />;

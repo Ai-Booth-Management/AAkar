@@ -54,6 +54,7 @@ export const ROLE_NAV = {
   ],
   BOOTH_PRESIDENT: [
     { id: 'profile', label: 'Booth Profile', icon: <Shield size={20} /> },
+    { id: 'heatmap', label: 'Geographic View', icon: <Map size={20} /> },
     { id: 'hub', label: 'Hub', icon: <MessageSquare size={20} /> },
     { id: 'households', label: 'Households', icon: <Globe size={20} /> },
     { id: 'volunteers', label: 'Field Staff', icon: <Users size={20} /> },
