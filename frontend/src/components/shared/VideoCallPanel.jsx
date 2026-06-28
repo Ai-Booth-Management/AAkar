@@ -194,7 +194,7 @@ export default function VideoCallPanel({ hierarchy, userRole }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, height: '100%', overflowY: 'auto' }}>
           
           {/* Active Calls to Join */}
-        {activeCalls.length > 0 && (
+        {activeCalls.filter(call => call.room_name !== currentRoomName).length > 0 && (
           <div className="dash-section" style={{ border: '1px solid var(--amber-500)', background: '#fffbeb', margin: 0 }}>
             <div className="dash-section-head" style={{ padding: '12px 16px', background: 'transparent', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
               <h3 style={{ color: 'var(--amber-700)', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
@@ -203,7 +203,7 @@ export default function VideoCallPanel({ hierarchy, userRole }) {
               </h3>
             </div>
             <div className="dash-section-body" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {activeCalls.map(call => (
+              {activeCalls.filter(call => call.room_name !== currentRoomName).map(call => (
                 <div key={call.room_name} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: 'white', borderRadius: 6, border: '1px solid #fde68a' }}>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 13, color: 'var(--navy-900)' }}>{call.initiator_name}</div>
@@ -436,6 +436,25 @@ export default function VideoCallPanel({ hierarchy, userRole }) {
                         </>
                       )}
                     </div>
+                    
+                    {/* Participants */}
+                    {call.participant_names && (
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--gray-200)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ fontSize: 10, color: 'var(--gray-400)', fontWeight: 600 }}>WITH</div>
+                        <div style={{ display: 'flex', gap: -6 }}>
+                          {call.participant_names.split(',').slice(0, 4).map((name, i) => (
+                            <div key={i} title={name.trim()} style={{ width: 20, height: 20, borderRadius: '50%', background: getAvatarColor(i + 3), display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 8, fontWeight: 700, border: '2px solid white', marginLeft: i > 0 ? -6 : 0, position: 'relative', zIndex: 4 - i, cursor: 'help' }}>
+                              {getInitials(name.trim())}
+                            </div>
+                          ))}
+                          {call.participant_names.split(',').length > 4 && (
+                            <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--gray-300)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 8, fontWeight: 700, border: '2px solid white', marginLeft: -6, zIndex: 0 }}>
+                              +{call.participant_names.split(',').length - 4}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
