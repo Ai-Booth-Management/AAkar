@@ -2,7 +2,7 @@ from collections import Counter
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import pandas as pd
 from sqlmodel import Session, select
@@ -684,7 +684,7 @@ def create_official_drive(drive: DriveCreate):
             "description": drive.description,
             "type": drive.type,
             "date": drive.date,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         }
         result = neo4j_client.run_query(query, params)
         if not result:

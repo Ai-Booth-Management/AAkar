@@ -102,40 +102,6 @@ export default function LoginPage() {
         setLoading(false);
     };
 
-    const handleDemoLogin = async (e) => {
-        if (e && e.preventDefault) e.preventDefault();
-        setLoading(true);
-        setError('');
-        const roleToEmail = {
-            'ELECTION_ADMIN': 'serveradmin@aakar.gov.in',
-            'STATE_ADMIN': 'statedelhi@aakar.gov.in',
-            'DISTRICT_ADMIN': 'nd-admin@aakar.gov.in',
-            'CONSTITUENCY_MGR': 'nd01-mgr@aakar.gov.in',
-            'MANDAL_MGR': 'ndcn-mgr@aakar.gov.in',
-            'BOOTH_PRESIDENT': 'booth.ndcn-b1@aakar.gov.in',
-            'cm': 'cm-delhi@aakar.gov.in',
-            'dm': 'dm-newdelhi@aakar.gov.in',
-            'booth': 'official-nd@aakar.gov.in'
-        };
-
-        const demoPassword = "123456";
-        const demoEmail = roleToEmail[userType];
-        
-        if (!demoEmail) {
-            setError('No demo account configured for this role.');
-            setLoading(false);
-            return;
-        }
-
-        try {
-            await login(demoEmail, demoPassword);
-            router.push('/');
-        } catch (err) {
-            setError('Demo login failed. Make sure the database is seeded: ' + err.message);
-        }
-        setLoading(false);
-    };
-
     return (
         <div style={{ display: 'flex', height: '100vh', width: '100%', backgroundColor: white, fontFamily: 'Public Sans, sans-serif', overflow: 'hidden' }}>
             <div style={{
@@ -267,7 +233,7 @@ export default function LoginPage() {
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <label style={{ fontSize: '9px', fontWeight: 900, color: slate400, textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: '4px' }}>System Role</label>
-                                                <button type="button" onClick={handleDemoLogin} style={{ background: 'none', border: 'none', color: gold, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer' }}>Bypass for Demo →</button>
+                                                
                                             </div>
                                             <select 
                                                 value={userType} 

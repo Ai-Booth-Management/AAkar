@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.core.security import get_current_user
 from app.domain.models.user import User
@@ -221,7 +221,7 @@ def create_broadcast(
                     detail=f"User {r.email} is not a {target_role}",
                 )
 
-        now = datetime.now().isoformat()
+        now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         created = []
         for r in recipients:
             query = """
@@ -281,7 +281,7 @@ def create_report(
             raise HTTPException(status_code=403, detail="No superior found for your role")
 
         user_role = current_user.role.upper()
-        now = datetime.now().isoformat()
+        now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         query = """
         CREATE (b:Broadcast {
             message: $message,

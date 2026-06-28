@@ -1,5 +1,5 @@
 from app.infrastructure.db.neo4j_client import neo4j_client
-from datetime import datetime
+from datetime import datetime, timezone
 
 def seed_broadcasts():
     broadcasts = [
@@ -8,21 +8,21 @@ def seed_broadcasts():
             "target_type": "GLOBAL",
             "target_id": "ALL",
             "sender_role": "STATE_ADMIN",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         },
         {
             "message": "Strategy Node UP: Focusing on urban youth turnout this weekend.",
             "target_type": "STATE",
             "target_id": "UP",
             "sender_role": "STATE_ADMIN",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         },
         {
             "message": "Field Alert: Rain expected in Lucknow East. Safeguard booth material.",
             "target_type": "DISTRICT",
             "target_id": "LUCKNOW",
             "sender_role": "DISTRICT_ADMIN",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         }
     ]
 

@@ -8,7 +8,7 @@ Neo4j is the primary store; CSV serves as a best-effort backup.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from app.infrastructure.communications.sms_service import send_sms, notify_by_doc_id
 from app.infrastructure.db.neo4j_client import neo4j_client
@@ -226,7 +226,7 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
             )
 
         next_id = _next_complaint_id()
-        timestamp = datetime.now().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         booth_id = (
             request.booth_id
             if request.booth_id
@@ -296,7 +296,7 @@ async def lodge_volunteer_complaint_internal(
     booth_id: str = ""
 ):
     next_id = _next_complaint_id()
-    timestamp = datetime.now().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     
     query = """
     CREATE (c:Complaint {
@@ -373,7 +373,7 @@ async def lodge_complaint_legacy(request: LegacyComplaintRequest):
             )
 
         next_id = _next_complaint_id()
-        timestamp = datetime.now().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         booth_id = (
             request.booth_id
             if request.booth_id
@@ -431,7 +431,7 @@ async def resolve_complaint(doc_id: int):
     CSV update is performed as a best-effort backup.
     """
     try:
-        timestamp = datetime.now().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         # ── Update Neo4j (primary) ──
         cypher = """
