@@ -1,7 +1,7 @@
 """Video calling endpoints — LiveKit-backed group video conferencing.
 
 Leaders can create rooms and invite their direct subordinates.
-All calls are logged to Neo4j for audit / history.
+All calls are logged to SQLite for audit / history.
 """
 
 from datetime import datetime, timezone
@@ -9,12 +9,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_, func
 
 from app.core.config import settings
 from app.core.security import get_current_user
 from app.domain.models.user import User
-from app.infrastructure.db.neo4j_client import neo4j_client
+from app.domain.models.call_log import CallLog
 from app.infrastructure.db.sqlite_client import get_session
 
 router = APIRouter()
@@ -83,20 +83,33 @@ def _get_subordinates(current_user: User, session: Session) -> list[User]:
     return list(session.exec(query.order_by(User.display_name, User.email)).all())
 
 
-# ── Neo4j query helpers ─────────────────────────────────────────────────
-_CALL_LOG_PROPS = """
-    elementId(c) AS id,
-    c.room_name AS room_name,
-    c.initiator_id AS initiator_id,
-    c.initiator_role AS initiator_role,
-    c.initiator_name AS initiator_name,
-    c.participant_ids AS participant_ids,
-    c.participant_names AS participant_names,
-    c.started_at AS started_at,
-    c.ended_at AS ended_at,
-    c.duration_seconds AS duration_seconds,
-    c.status AS status
-"""
+def _is_participant(participant_ids_str: str, user_id: int) -> bool:
+    return str(user_id) in participant_ids_str.split(",")
+
+
+def _ensure_utc(dt: datetime) -> datetime:
+    """Ensure a datetime has UTC tzinfo (SQLite strips it)."""
+    if dt and dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
+def _call_log_to_dict(c: CallLog) -> dict:
+    started = _ensure_utc(c.started_at)
+    ended = _ensure_utc(c.ended_at) if c.ended_at else None
+    return {
+        "id": c.id,
+        "room_name": c.room_name,
+        "initiator_id": c.initiator_id,
+        "initiator_role": c.initiator_role,
+        "initiator_name": c.initiator_name,
+        "participant_ids": c.participant_ids,
+        "participant_names": c.participant_names,
+        "started_at": started.isoformat(),
+        "ended_at": ended.isoformat() if ended else None,
+        "duration_seconds": c.duration_seconds,
+        "status": c.status,
+    }
 
 
 # ── Endpoints ────────────────────────────────────────────────────────────
@@ -165,37 +178,24 @@ def create_room(
         name=initiator_name,
     )
 
-    # Log call to Neo4j
+    # Log call to SQLite
     participant_ids_str = ",".join(str(p.id) for p in participants)
     participant_names_str = ",".join(
         (p.display_name or p.email) for p in participants
     )
 
-    neo4j_client.run_query(
-        """
-        CREATE (c:CallLog {
-            room_name: $room_name,
-            initiator_id: $initiator_id,
-            initiator_role: $initiator_role,
-            initiator_name: $initiator_name,
-            participant_ids: $participant_ids,
-            participant_names: $participant_names,
-            started_at: $started_at,
-            ended_at: '',
-            duration_seconds: 0,
-            status: 'active'
-        })
-        """,
-        {
-            "room_name": room_name,
-            "initiator_id": current_user.id,
-            "initiator_role": user_role,
-            "initiator_name": initiator_name,
-            "participant_ids": participant_ids_str,
-            "participant_names": participant_names_str,
-            "started_at": now.isoformat(),
-        },
+    call_log = CallLog(
+        room_name=room_name,
+        initiator_id=current_user.id,
+        initiator_role=user_role,
+        initiator_name=initiator_name,
+        participant_ids=participant_ids_str,
+        participant_names=participant_names_str,
+        started_at=now,
+        status="active",
     )
+    session.add(call_log)
+    session.commit()
 
     return {
         "room_name": room_name,
@@ -232,19 +232,21 @@ def get_join_token(
 
 
 @router.get("/active")
-def get_active_calls(current_user: User = Depends(get_current_user)):
+def get_active_calls(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Return active calls this user is invited to or initiated."""
     try:
-        result = neo4j_client.run_query(
-            f"""
-            MATCH (c:CallLog)
-            WHERE c.status = 'active'
-              AND $user_id_str IN split(c.participant_ids, ',')
-            RETURN {_CALL_LOG_PROPS}
-            ORDER BY c.started_at DESC
-            """,
-            {"user_id": current_user.id, "user_id_str": str(current_user.id)},
-        )
+        calls = session.exec(
+            select(CallLog)
+            .where(CallLog.status == "active")
+            .order_by(CallLog.started_at.desc())
+        ).all()
+        result = [
+            _call_log_to_dict(c) for c in calls
+            if _is_participant(c.participant_ids, current_user.id) or c.initiator_id == current_user.id
+        ]
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -254,27 +256,32 @@ def get_active_calls(current_user: User = Depends(get_current_user)):
 def end_call(
     req: EndCallRequest,
     current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ):
     """End an active call and update duration."""
     try:
-        now = datetime.now(timezone.utc)
-        result = neo4j_client.run_query(
-            """
-            MATCH (c:CallLog {room_name: $room_name, status: 'active'})
-            WHERE c.initiator_id = $user_id
-            SET c.status = 'ended',
-                c.ended_at = $ended_at,
-                c.duration_seconds = duration.between(datetime(c.started_at), datetime($ended_at)).seconds
-            RETURN elementId(c) AS id
-            """,
-            {
-                "room_name": req.room_name,
-                "user_id": current_user.id,
-                "ended_at": now.isoformat(),
-            },
-        )
-        if not result:
+        call_log = session.exec(
+            select(CallLog).where(
+                CallLog.room_name == req.room_name,
+                CallLog.initiator_id == current_user.id,
+                CallLog.status == "active",
+            )
+        ).first()
+        if not call_log:
             raise HTTPException(status_code=404, detail="Call not found or already ended")
+
+        now = datetime.now(timezone.utc)
+        
+        started_at = call_log.started_at
+        if started_at.tzinfo is None:
+            started_at = started_at.replace(tzinfo=timezone.utc)
+            
+        duration = int((now - started_at).total_seconds())
+        call_log.status = "ended"
+        call_log.ended_at = now
+        call_log.duration_seconds = duration
+        session.add(call_log)
+        session.commit()
         return {"status": "ended", "room_name": req.room_name}
     except HTTPException:
         raise
@@ -287,47 +294,30 @@ def get_call_history(
     page: int = 1,
     page_size: int = 10,
     current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
 ):
     """Return past calls for the current user (as initiator or participant), paginated."""
     try:
-        # Total count
-        count_result = neo4j_client.run_query(
-            """
-            MATCH (c:CallLog)
-            WHERE c.initiator_id = $user_id
-               OR $user_id_str IN split(c.participant_ids, ',')
-            RETURN count(c) AS total
-            """,
-            {
-                "user_id": current_user.id,
-                "user_id_str": str(current_user.id),
-            },
-        )
-        total = count_result[0]["total"] if count_result else 0
+        # Get all calls for this user (filter in Python for participant check)
+        all_calls = session.exec(
+            select(CallLog)
+            .order_by(CallLog.started_at.desc())
+        ).all()
+
+        user_calls = [
+            c for c in all_calls
+            if c.initiator_id == current_user.id
+            or _is_participant(c.participant_ids, current_user.id)
+        ]
+
+        total = len(user_calls)
         pages = max(1, (total + page_size - 1) // page_size)
         page = max(1, min(page, pages))
         skip = (page - 1) * page_size
+        page_items = user_calls[skip:skip + page_size]
 
-        # Paginated results
-        result = neo4j_client.run_query(
-            f"""
-            MATCH (c:CallLog)
-            WHERE c.initiator_id = $user_id
-               OR $user_id_str IN split(c.participant_ids, ',')
-            RETURN {_CALL_LOG_PROPS}
-            ORDER BY c.started_at DESC
-            SKIP $skip
-            LIMIT $page_size
-            """,
-            {
-                "user_id": current_user.id,
-                "user_id_str": str(current_user.id),
-                "skip": skip,
-                "page_size": page_size,
-            },
-        )
         return {
-            "items": result,
+            "items": [_call_log_to_dict(c) for c in page_items],
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -338,21 +328,26 @@ def get_call_history(
 
 
 @router.delete("/history")
-def delete_call_history(current_user: User = Depends(get_current_user)):
+def delete_call_history(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """Delete all call history for the current user."""
     try:
-        neo4j_client.run_query(
-            """
-            MATCH (c:CallLog)
-            WHERE c.initiator_id = $user_id
-               OR $user_id_str IN split(c.participant_ids, ',')
-            DELETE c
-            """,
-            {
-                "user_id": current_user.id,
-                "user_id_str": str(current_user.id),
-            },
-        )
+        all_calls = session.exec(
+            select(CallLog)
+            .order_by(CallLog.started_at.desc())
+        ).all()
+
+        to_delete = [
+            c for c in all_calls
+            if c.initiator_id == current_user.id
+            or _is_participant(c.participant_ids, current_user.id)
+        ]
+
+        for c in to_delete:
+            session.delete(c)
+        session.commit()
         return {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
