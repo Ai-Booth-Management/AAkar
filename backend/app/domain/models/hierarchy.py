@@ -11,6 +11,8 @@ class HierarchyNode(SQLModel, table=True):
     level: str
     parent_id: Optional[int] = Field(default=None, foreign_key="hierarchy_node.id")
     total_voters: Optional[int] = Field(default=0)
+    latitude: Optional[float] = Field(default=None)
+    longitude: Optional[float] = Field(default=None)
 
     children: list["HierarchyNode"] = Relationship(
         back_populates="parent",

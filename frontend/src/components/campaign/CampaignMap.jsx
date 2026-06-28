@@ -35,6 +35,9 @@ const CampaignMap = ({
   newVolPin,
   setNewVolPin,
   handleCreateVolunteer,
+  campaignMode,
+  onCampaignPinDrop,
+  activeCampaigns,
   mapRef,
 }) => {
   const mapContainerRef  = useRef(null);
@@ -126,6 +129,18 @@ const CampaignMap = ({
 
     if (mapRef.current) {
       mapRef.current.setView([lat, lng], 14, { animate: true });
+    }
+    if (campaignMode && onCampaignPinDrop) {
+      onCampaignPinDrop({
+        lat,
+        lng,
+        address: res.display_name,
+        ...info
+      });
+      setSearchResults([]);
+      setSearchQuery('');
+      setPinModeActive(false);
+      return;
     }
     setNewVolPin({
       lat,
@@ -234,15 +249,20 @@ const CampaignMap = ({
         lyr.on({
           click: (e) => {
             L.DomEvent.stopPropagation(e);
-            if (pinModeActiveRef.current) {
-              const { lat, lng } = e.latlng;
-              const info = findBoundariesForCoords(lat, lng);
-              setNewVolPin({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
-              setPinModeActive(false);
-              return;
-            }
-            if (lockDistrict && lockDistrict !== dt) return;
-            setSelectedDistrict(dt);
+              if (pinModeActiveRef.current) {
+                const { lat, lng } = e.latlng;
+                const info = findBoundariesForCoords(lat, lng);
+                if (campaignMode && onCampaignPinDrop) {
+                  onCampaignPinDrop({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
+                  setPinModeActive(false);
+                  return;
+                }
+                setNewVolPin({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
+                setPinModeActive(false);
+                return;
+              }
+              if (lockDistrict && lockDistrict !== dt) return;
+              setSelectedDistrict(dt);
             setSelectedConstit('');
             setSelectedWard('');
           },
@@ -323,6 +343,11 @@ const CampaignMap = ({
               if (pinModeActiveRef.current) {
                 const { lat, lng } = e.latlng;
                 const info = findBoundariesForCoords(lat, lng);
+                if (campaignMode && onCampaignPinDrop) {
+                  onCampaignPinDrop({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
+                  setPinModeActive(false);
+                  return;
+                }
                 setNewVolPin({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
                 setPinModeActive(false);
                 return;
@@ -406,6 +431,11 @@ const CampaignMap = ({
               if (pinModeActiveRef.current) {
                 const { lat, lng } = e.latlng;
                 const info = findBoundariesForCoords(lat, lng);
+                if (campaignMode && onCampaignPinDrop) {
+                  onCampaignPinDrop({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
+                  setPinModeActive(false);
+                  return;
+                }
                 setNewVolPin({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
                 setPinModeActive(false);
                 return;
@@ -499,6 +529,11 @@ const CampaignMap = ({
           alert(`Cannot place pin outside your ward (Ward ${lockWard})!`);
           return;
         }
+        if (campaignMode && onCampaignPinDrop) {
+          onCampaignPinDrop({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
+          setPinModeActive(false);
+          return;
+        }
         setNewVolPin({ lat, lng, address: `Location at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, ...info });
         setPinModeActive(false);
         return;
@@ -517,7 +552,7 @@ const CampaignMap = ({
         }
       }
     });
-  }, [geojsonData, constitsData, wardsData, wardToConstit, volunteers, selectedDistrict, selectedConstit, selectedWard, coverageMap, lockDistrict, lockConstituency, lockWard, mode, findBoundariesForCoords, mapRef]);
+  }, [geojsonData, constitsData, wardsData, wardToConstit, volunteers, selectedDistrict, selectedConstit, selectedWard, coverageMap, lockDistrict, lockConstituency, lockWard, mode, campaignMode, onCampaignPinDrop, findBoundariesForCoords, mapRef]);
 
   // Temp pin markerpopup
   const tempMarkerRef = useRef(null);
@@ -701,6 +736,47 @@ const CampaignMap = ({
     });
   }, [volunteers, mode, lockDistrict, lockConstituency, lockWard, selectedDistrict, selectedConstit, selectedWard, wardsData, setSelectedVol, mapRef]);
 
+  // Campaign markers
+  const campaignLayerRef = useRef(null);
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const L = require('leaflet');
+    const map = mapRef.current;
+
+    if (campaignLayerRef.current) {
+      map.removeLayer(campaignLayerRef.current);
+      campaignLayerRef.current = null;
+    }
+
+    if (activeCampaigns && activeCampaigns.length > 0) {
+      const markers = activeCampaigns.map(c => {
+        if (!c.lat || !c.lng) return null;
+        const icon = L.divIcon({
+          className: 'camp-campaign-icon',
+          html: `<div style="width:32px;height:32px;border-radius:50%;background:#D4A843;border:3px solid #04122e;box-shadow:0 3px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;animation:camp-pulse 2s infinite">🎯</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
+        const marker = L.marker([c.lat, c.lng], { icon });
+        marker.bindPopup(`
+          <div style="min-width:180px;font-family:sans-serif;font-size:12px;line-height:1.5">
+            <b style="font-size:13px;color:#04122e">${c.title}</b><br/>
+            <span style="color:#6b7280">${c.description || ''}</span><br/>
+            <span style="color:#D4A843;font-weight:700">● Active Campaign</span><br/>
+            <span style="color:#9ca3af;font-size:10px">By ${c.created_by_name || 'Unknown'} · ${new Date(c.created_at).toLocaleDateString()}</span>
+          </div>
+        `);
+        return marker;
+      }).filter(Boolean);
+
+      if (markers.length > 0) {
+        const layer = L.layerGroup(markers);
+        layer.addTo(map);
+        campaignLayerRef.current = layer;
+      }
+    }
+  }, [activeCampaigns, campaignMode, mapRef]);
+
   // Heatmap for Blended Mode
   useEffect(() => {
     if (!mapRef.current) return;
@@ -819,7 +895,11 @@ const CampaignMap = ({
               transition: 'all 0.15s ease'
             }}
           >
-            {pinModeActive ? '🔴 Cancel Placement (Click Map)' : '📍 Drop Pin on Map to Deploy'}
+            {pinModeActive
+              ? '🔴 Cancel Placement (Click Map)'
+              : campaignMode
+                ? '📍 Drop Pin to Start Campaign'
+                : '📍 Drop Pin on Map to Deploy'}
           </button>
         </div>
 

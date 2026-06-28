@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Globe, Radio, FileText, Zap, Map, TrendingUp } from 'lucide-react';
-import HeatmapAnalysis from './HeatmapAnalysis';
+import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp } from 'lucide-react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -24,7 +23,6 @@ export default function StateDashboard({ tab, hierarchy }) {
   switch (tab) {
     case 'overview':     return <StateOverview state={stateName} />;
     case 'analytics':    return <DistrictAnalytics state={stateName} />;
-    case 'heatmap':      return <HeatmapAnalysis level="STATE" hierarchy={hierarchy} />;
     case 'campaign':     return <CampaignPanel />;
     case 'ai-suggestions': return null;
     case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;

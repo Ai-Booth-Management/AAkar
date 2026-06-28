@@ -2,11 +2,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Shield } from 'lucide-react';
 import Hub from '../shared/Hub';
+import HeatmapAnalysis from './HeatmapAnalysis';
 
 export default function BoothDashboard({ tab, hierarchy }) {
   const booth = hierarchy.booth || '';
   switch (tab) {
     case 'profile':     return <BoothProfile booth={booth} />;
+    case 'heatmap':     return <HeatmapAnalysis level="BOOTH" hierarchy={hierarchy} />;
     case 'hub':         return <Hub hierarchy={hierarchy} userRole="BOOTH_PRESIDENT" />;
     case 'households':  return <HouseholdCoverage boothId={booth} />;
     case 'volunteers':  return <FieldStaff boothId={booth} />;

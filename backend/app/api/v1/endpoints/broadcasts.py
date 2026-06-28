@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+import uuid
+from pathlib import Path
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -38,14 +41,20 @@ SUPERIOR_ROLE = {
     "VOLUNTEER": "BOOTH_PRESIDENT",
 }
 
+BROADCAST_MEDIA_DIR = Path("data/uploads/broadcast_media")
+
 
 class BroadcastCreate(BaseModel):
     message: str
     recipient_ids: list[int]
+    subject: str = ""
+    media_urls: list[str] = []
 
 
 class ReportCreate(BaseModel):
     message: str
+    subject: str = ""
+    media_urls: list[str] = []
 
 
 @router.get("/superior")
@@ -60,7 +69,6 @@ def get_superior(
 
     query = select(User).where(User.role == superior_role)
 
-    # Scope the superior lookup by the superior's own hierarchy level, not the current user's.
     if superior_role == "STATE_ADMIN":
         query = query.where(User.state_id == current_user.state_id)
     elif superior_role == "DISTRICT_ADMIN":
@@ -138,6 +146,50 @@ def get_subordinates(
     ]
 
 
+@router.post("/upload-media")
+async def upload_broadcast_media(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        BROADCAST_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+        ext = Path(file.filename).suffix if file.filename else ""
+        filename = f"{uuid.uuid4().hex}{ext}"
+        filepath = BROADCAST_MEDIA_DIR / filename
+
+        contents = await file.read()
+        filepath.write_bytes(contents)
+
+        media_url = f"/api/v1/broadcasts/media/{filename}"
+        return {"status": "success", "media_url": media_url, "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/{broadcast_id}/read")
+def mark_broadcast_read(
+    broadcast_id: str,
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        query = """
+        MATCH (b:Broadcast)
+        WHERE elementId(b) = $id AND b.recipient_id = $user_id
+        SET b.is_read = true
+        RETURN elementId(b) AS id
+        """
+        params = {"id": broadcast_id, "user_id": current_user.id}
+        result = neo4j_client.run_query(query, params)
+        if not result:
+            raise HTTPException(status_code=404, detail="Broadcast not found or not yours to mark")
+        return {"status": "success", "id": result[0]["id"]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("")
 def create_broadcast(
     req: BroadcastCreate,
@@ -175,6 +227,8 @@ def create_broadcast(
             query = """
             CREATE (b:Broadcast {
                 message: $message,
+                subject: $subject,
+                media_urls: $media_urls,
                 type: $type,
                 sender_id: $sender_id,
                 sender_role: $sender_role,
@@ -182,12 +236,15 @@ def create_broadcast(
                 recipient_id: $recipient_id,
                 recipient_role: $recipient_role,
                 recipient_name: $recipient_name,
-                created_at: $created_at
+                created_at: $created_at,
+                is_read: false
             })
             RETURN elementId(b) AS id
             """
             params = {
                 "message": req.message.strip(),
+                "subject": req.subject.strip() if req.subject else "",
+                "media_urls": req.media_urls,
                 "type": "broadcast",
                 "sender_id": current_user.id,
                 "sender_role": user_role,
@@ -228,6 +285,8 @@ def create_report(
         query = """
         CREATE (b:Broadcast {
             message: $message,
+            subject: $subject,
+            media_urls: $media_urls,
             type: $type,
             sender_id: $sender_id,
             sender_role: $sender_role,
@@ -235,12 +294,15 @@ def create_report(
             recipient_id: $recipient_id,
             recipient_role: $recipient_role,
             recipient_name: $recipient_name,
-            created_at: $created_at
+            created_at: $created_at,
+            is_read: false
         })
         RETURN elementId(b) AS id
         """
         params = {
             "message": req.message.strip(),
+            "subject": req.subject.strip() if req.subject else "",
+            "media_urls": req.media_urls,
             "type": "report",
             "sender_id": current_user.id,
             "sender_role": user_role,
@@ -259,12 +321,14 @@ def create_report(
 
 
 _NODE_PROPS = """
-elementId(b) AS id, b.message AS message, b.type AS type,
+elementId(b) AS id, b.message AS message, b.subject AS subject,
+b.media_urls AS media_urls, b.type AS type,
 b.sender_id AS sender_id, b.sender_role AS sender_role,
 b.sender_name AS sender_name,
 b.recipient_id AS recipient_id, b.recipient_role AS recipient_role,
 b.recipient_name AS recipient_name,
-b.created_at AS created_at
+b.created_at AS created_at,
+coalesce(b.is_read, true) AS is_read
 """
 
 
@@ -309,6 +373,7 @@ def get_hub_messages(current_user: User = Depends(get_current_user)):
         MATCH (b:Broadcast)
         WHERE (b.recipient_id = $user_id)
            OR (b.sender_id = $user_id AND b.type = 'report')
+           OR (b.sender_id = $user_id AND b.type = 'broadcast')
         RETURN {_NODE_PROPS}
         ORDER BY b.created_at DESC
         LIMIT 50
@@ -326,6 +391,8 @@ def get_hub_messages(current_user: User = Depends(get_current_user)):
                 r["direction"] = "from_below"
             elif r["type"] == "report" and r["sender_id"] == uid:
                 r["direction"] = "my_report"
+            elif r["type"] == "broadcast" and r["sender_id"] == uid:
+                r["direction"] = "my_broadcast"
             else:
                 r["direction"] = "other"
             result.append(r)

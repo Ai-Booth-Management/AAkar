@@ -25,9 +25,11 @@ from app.domain.models.user import User  # noqa: F401 – ensure table is regist
 from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
 from app.domain.models.hierarchy import HierarchyNode  # noqa: F401
 from app.domain.models.auth import RevokedToken  # noqa: F401 - ensure table is registered
+from app.domain.models.campaign import Campaign, CampaignVolunteer, ConstituencyCoverage  # noqa: F401 - ensure table is registered
 from app.domain.models.call_log import CallLog  # noqa: F401 - ensure table is registered
 from app.infrastructure.db.sqlite_client import init_db
 from app.infrastructure.db.neo4j_client import neo4j_client
+from fastapi.staticfiles import StaticFiles
 
 
 async def auto_update_csv():
@@ -142,6 +144,9 @@ app.include_router(complaints_router, prefix="/api/v1/complaints", tags=["Compla
 app.include_router(drives_router, prefix="/api/v1/drives", tags=["Drives"], dependencies=[Depends(get_current_user)])
 app.include_router(whatsapp_router, prefix="/api/v1/whatsapp", tags=["WhatsApp"])
 app.include_router(volunteers_router, prefix="/api/v1", tags=["Volunteers"], dependencies=[Depends(get_current_user)])
+BROADCAST_MEDIA_DIR = Path("data/uploads/broadcast_media")
+BROADCAST_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/api/v1/broadcasts/media", StaticFiles(directory=str(BROADCAST_MEDIA_DIR)), name="broadcast_media")
 app.include_router(broadcasts_router, prefix="/api/v1/broadcasts", tags=["Broadcasts"], dependencies=[Depends(get_current_user)])
 app.include_router(dashboard_router, prefix="/api/v1", tags=["Dashboard"], dependencies=[Depends(get_current_user)])
 app.include_router(voter_ingestion_router, prefix="/api/v1", tags=["Ingestion"], dependencies=[Depends(get_current_user)])

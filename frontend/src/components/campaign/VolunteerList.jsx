@@ -13,27 +13,10 @@ const VolunteerList = ({
   handleSaveTask,
   loading,
   filteredVolunteersList,
-  newVolPin,
-  setNewVolPin,
   handleMarkCovered,
-  mapRef,
 }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {newVolPin && (
-        <div style={{ border: `1.5px dashed ${saffron}`, padding: '12px 16px', borderRadius: 6, background: '#fffbeb', marginBottom: 12, textAlign: 'center' }}>
-          <div style={{ fontSize: 13, fontWeight: '700', color: navy, marginBottom: 4 }}>📍 Pin Dropped on Map</div>
-          <div style={{ fontSize: 11, color: '#475569', lineHeight: '1.4' }}>
-            Fill in name, phone, and task details directly in the map popup to register the volunteer.
-          </div>
-          <button 
-            onClick={() => setNewVolPin(null)} 
-            style={{ marginTop: 8, padding: '4px 10px', fontSize: 10, fontWeight: '800', background: '#ef4444', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-          >
-            Cancel Pin
-          </button>
-        </div>
-      )}
 
       {selectedVol && (
         <div style={{ border: '1px solid #cbd5e1', padding: 12, borderRadius: 4, background: '#f8fafc', marginBottom: 6 }}>
@@ -114,7 +97,7 @@ const VolunteerList = ({
                         : taskStatus === 'assigned' ? '#0f172a'
                         : '#64748b';
             return (
-              <div key={v.id} onClick={() => { setSelectedVol(v); if (v.lat && v.lng && mapRef.current) mapRef.current.setView([v.lat, v.lng], 14, { animate: true }); }}
+              <div key={v.id} onClick={() => { setSelectedVol(v); }}
                 style={{
                   padding: '10px 12px', borderRadius: 4, cursor: 'pointer',
                   border: `1px solid ${selectedVol?.id === v.id ? saffron : '#e2e8f0'}`,

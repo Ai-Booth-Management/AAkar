@@ -295,6 +295,40 @@ def get_hierarchy(
     return _build_tree(nodes)
 
 
+@router.get("/hierarchy/location")
+def get_hierarchy_location(
+    level: str,
+    code: str,
+    session: Session = Depends(get_session),
+    _current_user: User = Depends(get_current_user),
+):
+    node = session.exec(
+        select(HierarchyNode).where(
+            HierarchyNode.level == level,
+            HierarchyNode.code == code,
+        )
+    ).first()
+    if not node:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
+
+    lat, lng = node.latitude, node.longitude
+    # Inherit coordinates from parent if this node has none (e.g. booth nodes)
+    if not lat or not lng:
+        parent = session.get(HierarchyNode, node.parent_id) if node.parent_id else None
+        while parent and (not parent.latitude or not parent.longitude):
+            parent = session.get(HierarchyNode, parent.parent_id) if parent.parent_id else None
+        if parent:
+            lat, lng = parent.latitude, parent.longitude
+
+    return {
+        "code": node.code,
+        "name": node.name,
+        "level": node.level,
+        "latitude": lat,
+        "longitude": lng,
+    }
+
+
 @router.get("/hierarchy/flat")
 def get_hierarchy_flat(
     level: str | None = None,

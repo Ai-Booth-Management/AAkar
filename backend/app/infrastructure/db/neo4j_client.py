@@ -1,4 +1,4 @@
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, NotificationMinimumSeverity
 from neo4j.graph import Node, Relationship, Path
 from app.core.config import settings
 
@@ -19,7 +19,7 @@ class Neo4jClient:
 
     def run_query(self, query: str, parameters: dict = None):
         """Run a Cypher query and return results as list of dicts."""
-        with self.driver.session() as session:
+        with self.driver.session(notifications_min_severity=NotificationMinimumSeverity.OFF) as session:
             result = session.run(query, parameters)
             return [record.data() for record in result]
 

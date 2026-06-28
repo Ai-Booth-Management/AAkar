@@ -44,6 +44,8 @@ export default function ElectionPage() {
         return <MandalDashboard hierarchy={hierarchy} tab={activeTab} />;
       case 'BOOTH_PRESIDENT':
         return <BoothDashboard hierarchy={hierarchy} tab={activeTab} />;
+      case 'VOLUNTEER':
+        return <BoothDashboard hierarchy={hierarchy} tab={activeTab} />;
       default:
         return <div>Unauthorized Role Access</div>;
     }
