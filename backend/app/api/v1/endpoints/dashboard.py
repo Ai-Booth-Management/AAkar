@@ -17,17 +17,16 @@ def _require_auth(current_user: User = Depends(get_current_user)):
 
 def _count_volunteers(session: Session, level: str, code: str) -> int:
     """Count volunteers in the Volunteer table scoped to a hierarchy node.
-
-    Uses booth_id prefix matching since codes encode hierarchy
-    (e.g. booth 'CD-BLM-M1-B1' belongs to district 'CD', constituency 'CD-BLM', etc.).
+    Unassigned volunteers (booth_id IS NULL) are included in every scope.
     """
+    from sqlmodel import or_
     from app.domain.models.volunteer import Volunteer
     if level == "state":
-        q = select(func.count(Volunteer.id)).where(Volunteer.booth_id != None, Volunteer.booth_id != "")
+        q = select(func.count(Volunteer.id))
     elif level == "booth":
-        q = select(func.count(Volunteer.id)).where(Volunteer.booth_id == code)
+        q = select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id == code, Volunteer.booth_id == None))
     else:
-        q = select(func.count(Volunteer.id)).where(Volunteer.booth_id.like(f"{code}%"))
+        q = select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id.like(f"{code}%"), Volunteer.booth_id == None))
     return session.exec(q).one() or 0
 
 
@@ -392,8 +391,11 @@ def get_mandal_volunteer_analytics(
     booth_codes = session.exec(select(HierarchyNode.code).where(HierarchyNode.parent_id == mandal.id, HierarchyNode.level == "booth")).all()
     if not booth_codes: return {"active": 0, "pending_tasks": 0, "completed_tasks": 0}
 
+    from sqlmodel import or_
     from app.domain.models.volunteer import Volunteer, Task
-    active_count = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id.in_(list(booth_codes)), Volunteer.status == "active")).one()
+    assigned_active = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id.in_(list(booth_codes)), Volunteer.status == "active")).one()
+    unassigned_active = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id == None, Volunteer.status == "active")).one()
+    active_count = (assigned_active or 0) + (unassigned_active or 0)
     pending_tasks = session.exec(select(func.count(Task.id)).where(Task.booth_id.in_(list(booth_codes)), Task.status == "assigned")).one()
     completed_tasks = session.exec(select(func.count(Task.id)).where(Task.booth_id.in_(list(booth_codes)), Task.status == "completed")).one()
     
@@ -416,10 +418,11 @@ def get_mandal_volunteer_directory(
     
     booths = session.exec(select(HierarchyNode).where(HierarchyNode.parent_id == mandal.id, HierarchyNode.level == "booth")).all()
     
+    from sqlmodel import or_
     from app.domain.models.volunteer import Volunteer
     results = []
     for b in booths:
-        volunteers = session.exec(select(Volunteer).where(Volunteer.booth_id == b.code)).all()
+        volunteers = session.exec(select(Volunteer).where(or_(Volunteer.booth_id == b.code, Volunteer.booth_id == None))).all()
         results.append({
             "booth_code": b.code,
             "booth_name": b.name,

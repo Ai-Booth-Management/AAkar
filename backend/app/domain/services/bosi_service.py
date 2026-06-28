@@ -34,7 +34,8 @@ class BOSIEngine:
         
         # S: Staffing (Volunteers per 1000 voters - ideal is 1:200, so 5 per 1000 = 100%)
         voters_count = session.exec(select(HierarchyNode.total_voters).where(HierarchyNode.code == booth_code)).first() or 0
-        vol_count = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id == booth_code)).one() or 0
+        from sqlmodel import or_
+        vol_count = session.exec(select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id == booth_code, Volunteer.booth_id == None))).one() or 0
         
         staffing_score = 0
         if voters_count > 0:
@@ -206,6 +207,7 @@ class BOSIEngine:
         results = []
         for b in booth_nodes:
             metrics = BOSIEngine.calculate_booth_score(b.code, session)
+            from sqlmodel import or_
             results.append({
                 "code": b.code,
                 "name": b.name,
@@ -213,7 +215,7 @@ class BOSIEngine:
                 "coverage_pct": metrics["coverage_pct"],
                 "voters": metrics["voters"],
                 "households": metrics["households"],
-                "volunteers": session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id == b.code)).one() or 0
+                "volunteers": session.exec(select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id == b.code, Volunteer.booth_id == None))).one() or 0
             })
         return results
 
@@ -250,7 +252,8 @@ class BOSIEngine:
                     coverage_pct = round((hq_res[0]['covered'] / hq_res[0]['total']) * 100, 1)
             
             # Count volunteers for the mandal
-            vol_count = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id.in_(booth_codes))).one() if booth_codes else 0
+            from sqlmodel import or_
+            vol_count = session.exec(select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id.in_(booth_codes), Volunteer.booth_id == None))).one() if booth_codes else 0
             
             # Find Mandal Incharge
             incharge = session.exec(select(User.display_name).where(User.mandal_id == m.code, User.role == "MANDAL_MGR")).first() or "Not Assigned"
@@ -285,7 +288,8 @@ class BOSIEngine:
                 v_stats = _booth_voter_stats(b.code)
                 # Volunteer count
                 from app.domain.models.volunteer import Volunteer
-                vol_count = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id == b.code)).one() or 0
+                from sqlmodel import or_
+                vol_count = session.exec(select(func.count(Volunteer.id)).where(or_(Volunteer.booth_id == b.code, Volunteer.booth_id == None))).one() or 0
                 
                 mandal_booths.append({
                     "code": b.code,
