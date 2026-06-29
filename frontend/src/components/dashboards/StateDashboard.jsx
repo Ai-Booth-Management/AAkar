@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp } from 'lucide-react';
+import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp, Download, FileSpreadsheet, Users, AlertCircle } from 'lucide-react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
@@ -436,10 +436,96 @@ function AIAlerts() {
 
 
 function ReportsPanel() {
+  const [downloading, setDownloading] = useState(null);
+
+  const handleDownload = async (type, filename) => {
+    try {
+      setDownloading(type);
+      const res = await fetch(`/api/v1/export/${type}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!res.ok) throw new Error("Failed to export");
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert(`Error exporting ${type}`);
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const reports = [
+    { id: 'complaints', title: 'Complaint Resolution Log', icon: AlertCircle, filename: 'complaints_export.csv', desc: 'Raw dump of all filed issues, resolutions, and status.' },
+    { id: 'volunteers', title: 'Volunteer Roster & Metrics', icon: Users, filename: 'volunteers_export.csv', desc: 'Performance scores, assignments, and contact details.' },
+    { id: 'coverage', title: 'Campaign Coverage Report', icon: FileSpreadsheet, filename: 'coverage_export.csv', desc: 'Constituency level statistics and targets.' },
+  ];
+
   return (
     <div className="fade-in">
-      <div className="dash-page-header"><div className="dash-page-title">Final Reports & Export</div></div>
-      <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>No reports available</div>
+      <div className="dash-page-header">
+        <div className="dash-page-title">Final Reports & Export</div>
+      </div>
+      
+      <div style={{ padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+        {reports.map(r => (
+          <div key={r.id} style={{
+            background: 'var(--navy-900)',
+            border: '1px solid var(--gray-700)',
+            borderRadius: '16px',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--blue-400)' }}>
+                <r.icon size={20} />
+              </div>
+              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#fff', margin: 0 }}>{r.title}</h3>
+            </div>
+            
+            <p style={{ fontSize: '13px', color: 'var(--gray-400)', margin: 0, lineHeight: 1.5, flex: 1 }}>
+              {r.desc}
+            </p>
+
+            <button
+              className="btn btn-primary"
+              disabled={downloading === r.id}
+              onClick={() => handleDownload(r.id, r.filename)}
+              style={{
+                background: 'var(--blue-600)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 16px',
+                fontSize: '13px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: downloading === r.id ? 'not-allowed' : 'pointer',
+                opacity: downloading === r.id ? 0.7 : 1,
+                transition: 'all 0.2s'
+              }}
+            >
+              <Download size={16} />
+              {downloading === r.id ? 'Generating...' : 'Download CSV'}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
