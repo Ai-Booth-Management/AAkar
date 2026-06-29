@@ -80,7 +80,7 @@ async def simulate_whatsapp(body: dict, _user=Depends(get_current_user)):
     for image uploads. Processes through the same webhook logic and returns the bot's replies.
     """
     ws_service._simulated_replies = []
-    ws_service.ws_service._sim_media_bytes = None
+    ws_service._sim_media_bytes = None
 
     phone = body.get("phone", "917696138229")
 
