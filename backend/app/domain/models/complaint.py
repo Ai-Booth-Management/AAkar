@@ -6,6 +6,7 @@ class Complaint(SQLModel, table=True):
     complaint_id: Optional[int] = Field(default=None, index=True)
     timestamp: str = Field(default="")
     booth_id: str = Field(default="")
+    constituency: str = Field(default="")
     phone: str = Field(default="")
     type: str = Field(default="")
     status: str = Field(default="")

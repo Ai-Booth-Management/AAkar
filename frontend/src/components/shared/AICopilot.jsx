@@ -54,28 +54,24 @@ export default function AICopilot({ hierarchy }) {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isThinking]);
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
-
-        const userText = input;
+    const sendMessage = async (text) => {
         const now = getTimeStr();
-        setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userText, time: now }]);
-        setInput('');
+        setMessages(prev => [...prev, { id: Date.now(), role: 'user', text, time: now }]);
         setIsThinking(true);
 
         try {
-            const API_URL = process.env.NODE_ENV === 'development' 
-                ? 'http://localhost:8000/api/v1/ask-election' 
+            const API_URL = process.env.NODE_ENV === 'development'
+                ? 'http://localhost:8000/api/v1/ask-election'
                 : '/api/v1/ask-election';
-                
+
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
                 body: JSON.stringify({
-                    question: userText,
+                    question: text,
                     shortcut: null
                 }),
             });
@@ -86,24 +82,35 @@ export default function AICopilot({ hierarchy }) {
 
             const data = await res.json();
             const aiResponse = data.answer || "I've analyzed the data for you.";
-            
+
             setIsThinking(false);
-            setMessages(prev => [...prev, { 
-                id: Date.now() + 1, 
-                role: 'ai', 
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                role: 'ai',
                 text: aiResponse,
                 time: getTimeStr()
             }]);
         } catch (error) {
             console.error("AI Copilot Error:", error);
             setIsThinking(false);
-            setMessages(prev => [...prev, { 
-                id: Date.now() + 1, 
-                role: 'ai', 
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                role: 'ai',
                 text: "I'm having trouble connecting to the intelligence node. Please verify the backend service is running.",
                 time: getTimeStr()
             }]);
         }
+    };
+
+    const handleSend = () => {
+        if (!input.trim()) return;
+        sendMessage(input);
+        setInput('');
+    };
+
+    const handleQuickSend = (text) => {
+        if (isThinking) return;
+        sendMessage(text);
     };
 
     return (
@@ -297,16 +304,39 @@ export default function AICopilot({ hierarchy }) {
                     </button>
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginTop: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                        <TrendingUp size={14} /> Predictive Analytics
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                        <AlertTriangle size={14} /> Risk Assessment
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                        <Users size={14} /> Sentiment Tracking
-                    </div>
+                {/* Quick Suggestion Chips */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                    {[
+                        { label: 'Total Volunteers', icon: '👥' },
+                        { label: 'Total Complaints', icon: '📋' },
+                        { label: 'Open Complaints', icon: '⚠️' },
+                        { label: 'Election Focus', icon: '🎯' },
+                        { label: 'Complaints by Type', icon: '📊' },
+                        { label: 'Active Volunteers', icon: '✅' },
+                    ].map(({ label }) => (
+                        <button
+                            key={label}
+                            onClick={() => handleQuickSend(label)}
+                            disabled={isThinking}
+                            style={{
+                                padding: '6px 14px',
+                                background: isThinking ? '#f8fafc' : '#f1f5f9',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '20px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                color: '#475569',
+                                cursor: isThinking ? 'not-allowed' : 'pointer',
+                                opacity: isThinking ? 0.5 : 1,
+                                transition: 'all 0.15s',
+                                outline: 'none',
+                            }}
+                            onMouseEnter={e => { if (!isThinking) e.currentTarget.style.background = '#e2e8f0'; }}
+                            onMouseLeave={e => { if (!isThinking) e.currentTarget.style.background = '#f1f5f9'; }}
+                        >
+                            {label}
+                        </button>
+                    ))}
                 </div>
             </div>
 

@@ -83,8 +83,110 @@ def get_sqlite_schema(volunteer=None) -> str:
     - name: {getattr(volunteer, 'name', 'Unknown') or 'Unknown'}
     - booth_id: {getattr(volunteer, 'booth_id', 'Unknown') or 'Unknown'}
     """
-
     return schema
+
+
+def _make_response(answer: str):
+    return {
+        "cypher": "",
+        "data": [],
+        "graph": {"nodes": [], "edges": []},
+        "answer": answer,
+    }
+
+
+def _quick_answer(question: str):
+    """Intercept common questions and return pre-canned answers (skips LLM)."""
+    if not question:
+        return None
+    q = question.lower().strip()
+
+    try:
+        with Session(engine) as session:
+            # Total volunteers
+            if any(p in q for p in ["total volunteers", "number of volunteers", "volunteers count", "how many volunteers"]):
+                count = session.exec(text("SELECT COUNT(*) FROM volunteer")).one()[0]
+                return _make_response(f"**Total Volunteers:** {count}")
+
+            # Active volunteers
+            if any(p in q for p in ["active volunteers", "active volunteer count"]):
+                count = session.exec(text("SELECT COUNT(*) FROM volunteer WHERE status = 'active'")).one()[0]
+                return _make_response(f"**Active Volunteers:** {count}")
+
+            # Total complaints
+            if any(p in q for p in ["total complaints", "number of complaints", "complaints count", "how many complaints"]):
+                count = session.exec(text("SELECT COUNT(*) FROM complaint")).one()[0]
+                return _make_response(f"**Total Complaints:** {count}")
+
+            # Open complaints
+            if any(p in q for p in ["open complaints", "pending complaints", "unresolved complaints", "open complaint"]):
+                count = session.exec(text("SELECT COUNT(*) FROM complaint WHERE status = 'Open'")).one()[0]
+                return _make_response(f"**Open Complaints:** {count}")
+
+            # Resolved complaints
+            if any(p in q for p in ["resolved complaints", "closed complaints", "resolved complaint"]):
+                count = session.exec(text("SELECT COUNT(*) FROM complaint WHERE status = 'Resolved'")).one()[0]
+                return _make_response(f"**Resolved Complaints:** {count}")
+
+            # Complaints by type
+            if any(p in q for p in ["complaints by type", "complaint categories", "complaint types", "types of complaints", "complaint distribution"]):
+                rows = session.exec(text("SELECT type, COUNT(*) as cnt FROM complaint GROUP BY type ORDER BY cnt DESC")).all()
+                if rows:
+                    lines = ["**Complaints by Type:**"]
+                    for row in rows:
+                        lines.append(f"  • **{row[0]}**: {row[1]}")
+                    return _make_response("\n".join(lines))
+
+            # Total tasks
+            if any(p in q for p in ["total tasks", "number of tasks", "how many tasks", "assigned tasks", "task count"]):
+                count = session.exec(text("SELECT COUNT(*) FROM task")).one()[0]
+                return _make_response(f"**Total Tasks:** {count}")
+
+            # Completed tasks
+            if any(p in q for p in ["completed tasks", "tasks completed", "finished tasks"]):
+                count = session.exec(text("SELECT COUNT(*) FROM task WHERE status = 'completed'")).one()[0]
+                return _make_response(f"**Completed Tasks:** {count}")
+
+            # Total campaigns
+            if any(p in q for p in ["total campaigns", "number of campaigns", "how many campaigns", "campaign count"]):
+                try:
+                    count = session.exec(text("SELECT COUNT(*) FROM campaign")).one()[0]
+                    return _make_response(f"**Total Campaigns:** {count}")
+                except Exception:
+                    pass
+
+            # Total users
+            if any(p in q for p in ["total users", "number of users", "how many users", "user count"]):
+                count = session.exec(text("SELECT COUNT(*) FROM user")).one()[0]
+                return _make_response(f"**Total Users:** {count}")
+
+            # What to focus on / election priority
+            if any(p in q for p in ["focus on", "election focus", "priority", "what should we focus", "key areas", "important issues", "what to focus"]):
+                complaints = session.exec(text("SELECT type, COUNT(*) as cnt FROM complaint GROUP BY type ORDER BY cnt DESC LIMIT 5")).all()
+                total_vol = session.exec(text("SELECT COUNT(*) FROM volunteer WHERE status = 'active'")).one()[0]
+                open_c = session.exec(text("SELECT COUNT(*) FROM complaint WHERE status = 'Open'")).one()[0]
+                resolved_c = session.exec(text("SELECT COUNT(*) FROM complaint WHERE status = 'Resolved'")).one()[0]
+
+                lines = ["**Key Focus Areas for the Coming Election:**\n"]
+                if complaints:
+                    lines.append("**Top Issues (by complaint volume):**")
+                    for row in complaints:
+                        lines.append(f"  • **{row[0]}**: {row[1]} complaints")
+                lines.append("")
+                lines.append(f"**Volunteer Strength:** {total_vol} active volunteers")
+                total_c = open_c + resolved_c
+                if total_c > 0:
+                    lines.append(f"**Pending Complaints:** {open_c} still open ({resolved_c * 100 // total_c}% resolved rate)")
+                lines.append("")
+                lines.append("**Recommendation:** Prioritize the top complaint categories above — addressing these will directly impact voter satisfaction.")
+                return _make_response("\n".join(lines))
+
+    except Exception as e:
+        print(f"Quick answer error: {e}")
+        return None
+
+    return None
+
 
 def ask_election_question(question=None, shortcut=None, volunteer=None):
     # 1. Handle conversational greetings
@@ -104,6 +206,12 @@ def ask_election_question(question=None, shortcut=None, volunteer=None):
                 "graph": {"nodes": [], "edges": []},
                 "answer": f"I encountered an issue connecting to the AI node: {str(e)}"
             }
+
+    # 1b. Check for quick answers (pre-canned SQL, no LLM needed)
+    if question and not shortcut:
+        quick = _quick_answer(question)
+        if quick:
+            return quick
 
     # 2. Generate SQL
     schema = get_sqlite_schema(volunteer)

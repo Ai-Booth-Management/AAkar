@@ -284,26 +284,15 @@ def get_mandal_complaints_analytics(
     session: Session = Depends(get_session),
     _user: User = Depends(_require_auth),
 ):
-    """Aggregates complaint stats for a mandal."""
-    mandal = session.exec(select(HierarchyNode).where(HierarchyNode.code == mandal_code, HierarchyNode.level == "mandal")).first()
-    if not mandal: raise HTTPException(status_code=404, detail="Mandal not found")
+    """Aggregates complaint stats for a mandal (via constituency, from SQLite)."""
+    from app.domain.models.complaint import Complaint
+    parts = mandal_code.split('-')
+    constituency_code = '-'.join(parts[:2])
     
-    booth_codes = session.exec(select(HierarchyNode.code).where(HierarchyNode.parent_id == mandal.id, HierarchyNode.level == "booth")).all()
-    if not booth_codes: return {"total": 0, "resolved": 0}
-
-    # Query Neo4j
-    query = """
-    MATCH (c:Complaint)
-    WHERE c.booth_id IN $booth_ids
-    RETURN 
-        count(c) as total,
-        sum(CASE WHEN c.status = 'Resolved' THEN 1 ELSE 0 END) as resolved
-    """
-    result = neo4j_client.run_query(query, {"booth_ids": list(booth_codes)})
-    if result:
-        r = result[0]
-        return {"total": r["total"], "resolved": r["resolved"]}
-    return {"total": 0, "resolved": 0}
+    total = session.exec(select(func.count(Complaint.id)).where(Complaint.constituency == constituency_code)).one() or 0
+    resolved = session.exec(select(func.count(Complaint.id)).where(Complaint.constituency == constituency_code, Complaint.status == "Resolved")).one() or 0
+    
+    return {"total": total, "resolved": resolved}
 
 
 @router.get("/dashboard/district/complaints/analytics")
@@ -312,36 +301,19 @@ def get_district_complaints_analytics(
     session: Session = Depends(get_session),
     _user: User = Depends(_require_auth),
 ):
-    """Aggregates complaint stats for a district."""
-    district = session.exec(select(HierarchyNode).where(HierarchyNode.code == district_code, HierarchyNode.level == "district")).first()
-    if not district: raise HTTPException(status_code=404, detail="District not found")
-    
-    # Get all booth codes under this district (District -> Constituency -> Mandal -> Booth)
-    booth_codes = session.exec(
-        select(HierarchyNode.code).where(HierarchyNode.level == "booth", HierarchyNode.parent_id.in_(
-            select(HierarchyNode.id).where(HierarchyNode.parent_id.in_(
-                select(HierarchyNode.id).where(HierarchyNode.parent_id.in_(
-                    select(HierarchyNode.id).where(HierarchyNode.parent_id == district.id)
-                ))
-            ))
-        ))
+    """Aggregates complaint stats for a district (from SQLite by constituency prefix)."""
+    from app.domain.models.complaint import Complaint
+    constit_codes = session.exec(
+        select(HierarchyNode.code).where(HierarchyNode.level == "constituency", HierarchyNode.code.like(f"{district_code}-%"))
     ).all()
     
-    if not booth_codes: return {"total": 0, "resolved": 0}
-
-    # Query Neo4j
-    query = """
-    MATCH (c:Complaint)
-    WHERE c.booth_id IN $booth_ids
-    RETURN 
-        count(c) as total,
-        sum(CASE WHEN c.status = 'Resolved' THEN 1 ELSE 0 END) as resolved
-    """
-    result = neo4j_client.run_query(query, {"booth_ids": list(booth_codes)})
-    if result:
-        r = result[0]
-        return {"total": r["total"], "resolved": r["resolved"]}
-    return {"total": 0, "resolved": 0}
+    if not constit_codes:
+        return {"total": 0, "resolved": 0}
+    
+    total = session.exec(select(func.count(Complaint.id)).where(Complaint.constituency.in_(list(constit_codes)))).one() or 0
+    resolved = session.exec(select(func.count(Complaint.id)).where(Complaint.constituency.in_(list(constit_codes)), Complaint.status == "Resolved")).one() or 0
+    
+    return {"total": total, "resolved": resolved}
 
 
 @router.get("/dashboard/complaints/directory")
@@ -350,30 +322,22 @@ def get_mandal_complaints_directory(
     session: Session = Depends(get_session),
     _user: User = Depends(_require_auth),
 ):
-    """Returns complaints grouped by booth."""
-    mandal = session.exec(select(HierarchyNode).where(HierarchyNode.code == mandal_code, HierarchyNode.level == "mandal")).first()
-    if not mandal: return []
+    """Returns complaints grouped by booth (from SQLite by constituency)."""
+    from app.domain.models.complaint import Complaint
+    parts = mandal_code.split('-')
+    constituency_code = '-'.join(parts[:2])
     
-    booths = session.exec(select(HierarchyNode).where(HierarchyNode.parent_id == mandal.id, HierarchyNode.level == "booth")).all()
+    booths = session.exec(select(HierarchyNode).where(HierarchyNode.parent_id == (select(HierarchyNode.id).where(HierarchyNode.code == mandal_code, HierarchyNode.level == "mandal")).scalar_subquery(), HierarchyNode.level == "booth")).all()
+    
+    all_complaints = session.exec(select(Complaint).where(Complaint.constituency == constituency_code).order_by(Complaint.timestamp.desc())).all()
     
     results = []
     for b in booths:
-        query = """
-        MATCH (c:Complaint)
-        WHERE c.booth_id = $booth_id
-        RETURN 
-            c.complaint_id as id,
-            c.type as type,
-            c.status as status,
-            c.description as description,
-            c.timestamp as timestamp
-        ORDER BY c.timestamp DESC
-        """
-        complaints = neo4j_client.run_query(query, {"booth_id": b.code})
+        booth_complaints = [c for c in all_complaints if c.booth_id == b.code]
         results.append({
             "booth_code": b.code,
             "booth_name": b.name,
-            "complaints": complaints
+            "complaints": [{"id": c.complaint_id, "type": c.type, "status": c.status, "description": c.description, "timestamp": c.timestamp} for c in booth_complaints]
         })
     return results
 
@@ -501,24 +465,13 @@ def get_state_complaints_analytics(
     session: Session = Depends(get_session),
     _user: User = Depends(_require_auth),
 ):
-    """Aggregates complaints across all districts in a state."""
-    from app.domain.services.bosi_service import BOSIEngine
-    booth_codes = BOSIEngine._get_booth_codes_for_node(state_code, "state", session)
-    if not booth_codes:
-        return {"total": 0, "resolved": 0, "pending": 0, "critical": 0}
-
-    q = """
-    MATCH (c:Complaint)
-    WHERE c.booth_id IN $booth_ids
-    RETURN count(c) as total,
-           sum(CASE WHEN c.status = 'resolved' THEN 1 ELSE 0 END) as resolved,
-           sum(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END) as pending,
-           sum(CASE WHEN c.severity = 'critical' AND c.status <> 'resolved' THEN 1 ELSE 0 END) as critical
-    """
-    res = neo4j_client.run_query(q, {"booth_ids": booth_codes})
-    if res:
-        return res[0]
-    return {"total": 0, "resolved": 0, "pending": 0, "critical": 0}
+    """Aggregates complaints across all districts (from SQLite)."""
+    from app.domain.models.complaint import Complaint
+    total = session.exec(select(func.count(Complaint.id))).one() or 0
+    resolved = session.exec(select(func.count(Complaint.id)).where(Complaint.status == "Resolved")).one() or 0
+    pending = session.exec(select(func.count(Complaint.id)).where(Complaint.status == "Open")).one() or 0
+    
+    return {"total": total, "resolved": resolved, "pending": pending, "critical": 0}
 
 
 @router.get("/dashboard/stats")

@@ -12,6 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from app.infrastructure.communications.sms_service import send_sms, notify_by_doc_id
 from app.infrastructure.db.neo4j_client import neo4j_client
+from sqlmodel import Session, select
+from app.infrastructure.db.sqlite_client import engine
+from app.domain.models.complaint import Complaint
+from app.domain.models.hierarchy import HierarchyNode
 
 router = APIRouter()
 
@@ -210,6 +214,44 @@ async def list_complaints(skip: int = 0, limit: int = 100):
 # ─────────────────────────────────────────────────────────────────────────────
 #  POST  /lodge-complaint
 # ─────────────────────────────────────────────────────────────────────────────
+
+def _resolve_constituency(booth_id: str) -> str:
+    """Resolve the constituency code from a booth code by walking the hierarchy."""
+    if not booth_id:
+        return ""
+    try:
+        with Session(engine) as s:
+            node = s.exec(select(HierarchyNode).where(HierarchyNode.code == booth_id)).first()
+            while node:
+                if node.level == "constituency":
+                    return node.code
+                node = s.get(HierarchyNode, node.parent_id) if node.parent_id else None
+    except Exception:
+        pass
+    return ""
+
+
+def _save_complaint_sqlite(complaint_id: int, timestamp: str, booth_id: str, phone: str, type_: str, status: str, description: str):
+    """Save a complaint to SQLite for election mgmt dashboards."""
+    try:
+        constituency = _resolve_constituency(booth_id)
+        with Session(engine) as s:
+            c = Complaint(
+                complaint_id=complaint_id,
+                timestamp=timestamp,
+                booth_id=booth_id,
+                constituency=constituency,
+                phone=phone,
+                type=type_,
+                status=status,
+                description=description,
+            )
+            s.add(c)
+            s.commit()
+    except Exception as e:
+        print(f"SQLite complaint backup failed: {e}")
+
+
 @router.post("/lodge-complaint")
 async def lodge_complaint_sms(request: LodgeComplaintRequest):
     """
@@ -264,6 +306,9 @@ async def lodge_complaint_sms(request: LodgeComplaintRequest):
         }
         _write_csv_backup(backup_row)
         _write_json_backup(backup_row)
+
+        # ── SQLite backup (for election mgmt dashboards) ──
+        _save_complaint_sqlite(next_id, timestamp, booth_id, request.phone, request.type, "Open", request.description)
 
         # ── SMS notification ──
         sms_message = (
@@ -350,6 +395,9 @@ async def lodge_volunteer_complaint_internal(
     }
     _write_csv_backup(backup_row)
     _write_json_backup(backup_row)
+
+    # ── SQLite backup (for election mgmt dashboards) ──
+    _save_complaint_sqlite(next_id, timestamp, booth_id, phone, issue_type, "Open", description)
 
     sms_message = (
         f"AAkar: Your complaint (Ref: {next_id}) regarding "
@@ -472,6 +520,17 @@ async def resolve_complaint(doc_id: int):
                         df.to_csv(COMPLAINTS_CSV, index=False)
             except Exception as csv_exc:
                 print(f"CSV backup update failed (non-fatal): {csv_exc}")
+
+        # ── SQLite status sync (for election mgmt dashboards) ──
+        try:
+            with Session(engine) as s:
+                c = s.exec(select(Complaint).where(Complaint.complaint_id == doc_id)).first()
+                if c:
+                    c.status = "Resolved"
+                    s.add(c)
+                    s.commit()
+        except Exception as sqlite_exc:
+            print(f"SQLite status sync failed (non-fatal): {sqlite_exc}")
 
         # ── Re-run booth metrics & risk scores ──
         try:

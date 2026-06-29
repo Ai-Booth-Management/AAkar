@@ -66,6 +66,13 @@ def init_db():
         except Exception:
             pass
 
+    # Ensure constituency column exists on complaint table
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE complaint ADD COLUMN constituency VARCHAR NOT NULL DEFAULT ''"))
+    except Exception:
+        pass
+
 
 def get_session():
     """FastAPI dependency that yields a SQLModel Session."""
