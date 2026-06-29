@@ -1,23 +1,65 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Sparkles, AlertTriangle, TrendingUp, Users } from 'lucide-react';
+
+function renderMarkdown(text) {
+    if (!text) return text;
+    // Split into lines and process
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+        // Bold: **text**
+        let parts = [];
+        let remaining = line;
+        let key = 0;
+        while (remaining.includes('**')) {
+            const start = remaining.indexOf('**');
+            if (start > 0) parts.push(<span key={key++}>{remaining.slice(0, start)}</span>);
+            const afterStart = remaining.slice(start + 2);
+            const end = afterStart.indexOf('**');
+            if (end === -1) { parts.push(<span key={key++}>{remaining.slice(start)}</span>); remaining = ''; break; }
+            parts.push(<strong key={key++}>{afterStart.slice(0, end)}</strong>);
+            remaining = afterStart.slice(end + 2);
+        }
+        if (remaining) parts.push(<span key={key++}>{remaining}</span>);
+
+        const isNumbered = /^\d+\.\s/.test(line.trim());
+        const isBullet = line.trim().startsWith('•') || line.trim().startsWith('- ');
+
+        if (isNumbered || isBullet) {
+            return <div key={i} style={{ paddingLeft: isBullet ? 16 : 8, marginBottom: 4 }}>{parts}</div>;
+        }
+        if (line.trim() === '') return <div key={i} style={{ height: 8 }} />;
+        return <div key={i} style={{ marginBottom: 4 }}>{parts}</div>;
+    });
+}
+
+function getTimeStr() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
 
 export default function AICopilot({ hierarchy }) {
     const [messages, setMessages] = useState([
         {
             id: 1,
             role: 'ai',
-            text: 'How can I assist with your election strategy today?'
+            text: 'Hello there! How can I help you today?',
+            time: getTimeStr()
         }
     ]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
+    const chatEndRef = useRef(null);
+
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, isThinking]);
 
     const handleSend = async () => {
         if (!input.trim()) return;
 
         const userText = input;
-        setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userText }]);
+        const now = getTimeStr();
+        setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userText, time: now }]);
         setInput('');
         setIsThinking(true);
 
@@ -25,10 +67,13 @@ export default function AICopilot({ hierarchy }) {
             const API_URL = process.env.NODE_ENV === 'development' 
                 ? 'http://localhost:8000/api/v1/ask-election' 
                 : '/api/v1/ask-election';
-            
+                
             const res = await fetch(API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
                 body: JSON.stringify({
                     question: userText,
                     shortcut: null
@@ -40,15 +85,14 @@ export default function AICopilot({ hierarchy }) {
             }
 
             const data = await res.json();
-            
-            // Extract the answer or fallback to a default message
-            const aiResponse = data.answer || "I've analyzed the graph data for you.";
+            const aiResponse = data.answer || "I've analyzed the data for you.";
             
             setIsThinking(false);
             setMessages(prev => [...prev, { 
                 id: Date.now() + 1, 
                 role: 'ai', 
-                text: aiResponse 
+                text: aiResponse,
+                time: getTimeStr()
             }]);
         } catch (error) {
             console.error("AI Copilot Error:", error);
@@ -56,7 +100,8 @@ export default function AICopilot({ hierarchy }) {
             setMessages(prev => [...prev, { 
                 id: Date.now() + 1, 
                 role: 'ai', 
-                text: "I'm having trouble connecting to the intelligence node. Please verify the backend service is running." 
+                text: "I'm having trouble connecting to the intelligence node. Please verify the backend service is running.",
+                time: getTimeStr()
             }]);
         }
     };
@@ -144,6 +189,13 @@ export default function AICopilot({ hierarchy }) {
             }}>
                 {messages.map(msg => (
                     <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                        {/* Role label + timestamp */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', paddingLeft: msg.role === 'ai' ? '44px' : 0, paddingRight: msg.role === 'user' ? '44px' : 0 }}>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: msg.role === 'ai' ? '#0f172a' : '#475569' }}>
+                                {msg.role === 'ai' ? 'AI Strategy Assistant' : 'You'}
+                            </span>
+                            {msg.time && <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>{msg.time}</span>}
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', maxWidth: '85%' }}>
                             {msg.role === 'ai' && (
                                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--navy-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: '4px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
@@ -154,17 +206,17 @@ export default function AICopilot({ hierarchy }) {
                             <div style={{ 
                                 padding: '16px 20px', 
                                 borderRadius: '16px',
-                                backgroundColor: msg.role === 'user' ? 'var(--blue-600)' : '#ffffff',
+                                backgroundColor: msg.role === 'user' ? 'var(--navy-900)' : '#ffffff',
                                 color: msg.role === 'user' ? '#ffffff' : '#1e293b',
-                                boxShadow: msg.role === 'user' ? '0 8px 16px -4px rgba(37, 99, 235, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.06)',
+                                boxShadow: msg.role === 'user' ? '0 8px 16px -4px rgba(15, 23, 42, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.06)',
                                 border: msg.role === 'user' ? 'none' : '1px solid #e2e8f0',
                                 borderBottomRightRadius: msg.role === 'user' ? 4 : '16px',
                                 borderBottomLeftRadius: msg.role === 'ai' ? 4 : '16px',
-                                fontSize: '15px',
-                                lineHeight: 1.6,
+                                fontSize: '14px',
+                                lineHeight: 1.7,
                                 fontWeight: 500
                             }}>
-                                {msg.text}
+                                {msg.role === 'ai' ? renderMarkdown(msg.text) : msg.text}
                             </div>
                             
                             {msg.role === 'user' && (
@@ -176,20 +228,27 @@ export default function AICopilot({ hierarchy }) {
                     </div>
                 ))}
                 {isThinking && (
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--navy-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: '4px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
-                            <Bot size={18} color="#fbbf24" />
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', paddingLeft: '44px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>AI Strategy Assistant</span>
+                            <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>{getTimeStr()}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#ffffff', padding: '14px 20px', borderRadius: '16px', borderBottomLeftRadius: 4, border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)' }}>
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                                <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0s' }} />
-                                <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0.2s' }} />
-                                <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0.4s' }} />
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--navy-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: '4px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                                <Bot size={18} color="#fbbf24" />
                             </div>
-                            <span style={{ fontSize: '14px', color: '#475569', fontWeight: 600 }}>Synthesizing strategy...</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#ffffff', padding: '14px 20px', borderRadius: '16px', borderBottomLeftRadius: 4, border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)' }}>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                    <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0s' }} />
+                                    <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0.2s' }} />
+                                    <div className="bounce" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--blue-500)', animationDelay: '0.4s' }} />
+                                </div>
+                                <span style={{ fontSize: '14px', color: '#475569', fontWeight: 600 }}>Sure, fetching the data...</span>
+                            </div>
                         </div>
                     </div>
                 )}
+                <div ref={chatEndRef} />
             </div>
 
             {/* Input Area */}
