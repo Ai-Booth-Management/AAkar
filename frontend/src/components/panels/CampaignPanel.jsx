@@ -47,10 +47,6 @@ const CampaignPanel = () => {
     ? getDisplayConstituency(lockDistrict, currentUser.constituency_id)
     : null;
 
-  const lockWard = userRole === 'MANDAL_MGR' && currentUser?.mandal_id
-    ? currentUser.mandal_id.replace(/^w-/i, '')
-    : null;
-
   const [mode,               setMode]               = useState('abs'); // 'abs' only
   const [geojsonData,        setGeojsonData]        = useState(null);
   const [constitsData,       setConstitsData]       = useState(null);
@@ -60,6 +56,23 @@ const CampaignPanel = () => {
   const [selectedDistrict,   setSelectedDistrict]   = useState(null);
   const [selectedConstit,    setSelectedConstit]    = useState('');
   const [selectedWard,       setSelectedWard]       = useState('');
+
+  const lockWard = (() => {
+    if (userRole !== 'MANDAL_MGR' || !currentUser?.mandal_id || !lockConstituency || !wardToConstit.length) {
+      return null;
+    }
+    const constituencyWards = wardToConstit
+      .filter(w => normConstit(w.Constituency) === normConstit(lockConstituency))
+      .sort((a, b) => a.Ward_No.localeCompare(b.Ward_No));
+    
+    if (constituencyWards.length === 0) return null;
+    
+    const match = currentUser.mandal_id.match(/-M(\d+)$/i);
+    const mandalIdx = match ? parseInt(match[1], 10) : 1;
+    
+    const targetWard = constituencyWards[(mandalIdx - 1) % constituencyWards.length];
+    return targetWard ? targetWard.Ward_No : null;
+  })();
 
   const initializedRef = useRef(false);
   useEffect(() => {
@@ -82,9 +95,6 @@ const CampaignPanel = () => {
       if ((uRole === 'CONSTITUENCY_MGR' || uRole === 'MANDAL_MGR') && currentUser.constituency_id && defaultDist) {
         defaultConst = getDisplayConstituency(defaultDist, currentUser.constituency_id);
       }
-      if (uRole === 'MANDAL_MGR' && currentUser.mandal_id) {
-        defaultWard = currentUser.mandal_id.replace(/^w-/i, '');
-      }
     }
 
     if (defaultDist) setSelectedDistrict(defaultDist);
@@ -93,6 +103,12 @@ const CampaignPanel = () => {
 
     initializedRef.current = true;
   }, [currentUser]);
+
+  useEffect(() => {
+    if (lockWard) {
+      setSelectedWard(lockWard);
+    }
+  }, [lockWard]);
 
   const [volunteers,         setVolunteers]         = useState([]);
   const [selectedVol,        setSelectedVol]        = useState(null);
