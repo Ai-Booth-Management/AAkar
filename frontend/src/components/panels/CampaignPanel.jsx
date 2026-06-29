@@ -1,8 +1,9 @@
 'use client';
- 
+/* eslint-disable @typescript-eslint/no-require-imports */
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';
+
 import {
   DELHI_DISTRICTS,
   CONSTITUENCIES_NEW,
@@ -26,8 +27,8 @@ import ConstituencyFilter from '../campaign/ConstituencyFilter';
 import WardSelector from '../campaign/WardSelector';
 import VolunteerList from '../campaign/VolunteerList';
 import CoverageTable from '../campaign/CoverageTable';
-import CampaignCreator from '../campaign/CampaignCreator';
 import CampaignMap from '../campaign/CampaignMap';
+import CampaignCreator from '../campaign/CampaignCreator';
 
 const API = '/api/v1';
 
@@ -35,6 +36,7 @@ const CampaignPanel = () => {
   const navy = '#04122e';
   const saffron = '#D4A843';
   const { currentUser } = useAuth();
+  const mapRef = useRef(null);
 
   const userRole = (currentUser?.role || '').toUpperCase();
   const lockDistrict = (userRole === 'DISTRICT_ADMIN' || userRole === 'CONSTITUENCY_MGR' || userRole === 'MANDAL_MGR' || userRole === 'DM') && currentUser?.district_id
@@ -47,20 +49,6 @@ const CampaignPanel = () => {
 
   const lockWard = userRole === 'MANDAL_MGR' && currentUser?.mandal_id
     ? currentUser.mandal_id.replace(/^w-/i, '')
-    : null;
-
-  const hierarchy = {
-    state: currentUser?.state_id,
-    district: currentUser?.district_id,
-    constituency: currentUser?.constituency_id,
-    mandal: currentUser?.mandal_id,
-    booth: currentUser?.booth_id,
-  };
-
-  const geoLevel = userRole === 'MANDAL_MGR' ? 'MANDAL'
-    : userRole === 'CONSTITUENCY_MGR' ? 'CONSTITUENCY'
-    : userRole === 'DISTRICT_ADMIN' ? 'DISTRICT'
-    : userRole === 'STATE_ADMIN' ? 'STATE'
     : null;
 
   const [mode,               setMode]               = useState('abs'); // 'abs' only
@@ -115,42 +103,45 @@ const CampaignPanel = () => {
   const [activeTab,          setActiveTab]          = useState('volunteers'); // 'volunteers' | 'coverage' | 'analytics'
   const [newTaskText,        setNewTaskText]        = useState('');
   const [newTaskStatus,      setNewTaskStatus]      = useState('unassigned');
+
+  const [pinModeActive,      setPinModeActive]      = useState(false);
+  const [newVolPin,          setNewVolPin]          = useState(null);
   const [campaignMode,       setCampaignMode]       = useState(false);
   const [campaignPin,        setCampaignPin]        = useState(null);
   const [showCampaignCreator, setShowCampaignCreator] = useState(false);
   const [activeCampaigns,    setActiveCampaigns]    = useState([]);
   const [campaignsLoaded,    setCampaignsLoaded]    = useState(false);
-  const [pinModeActive,      setPinModeActive]      = useState(false);
-  const [newVolPin,          setNewVolPin]          = useState(null);
-  const mapRef = useRef(null);
-  const campaignMapWrapperRef = useRef(null);
 
   const CONSTITUENCIES = mode === 'new' || mode === 'blended' || mode === 'abs' ? CONSTITUENCIES_NEW : CONSTITUENCIES_OLD;
 
   // Load GeoJSON
   useEffect(() => {
-    fetch('/delhi_districts.geojson')
-      .then(r => (r.ok ? r.json() : null))
+    const geojsonMode = mode === 'blended' ? 'new' : mode;
+    fetch(`/delhi_districts_${geojsonMode}.geojson`)
+      .then(r => r.json())
       .then(setGeojsonData)
-      .catch(() => {});
+      .catch(console.error);
 
-    fetch('/delhi_constituencies.geojson')
-      .then(r => (r.ok ? r.json() : null))
+    fetch(`/delhi_constituencies_${geojsonMode}.geojson`)
+      .then(r => r.json())
       .then(setConstitsData)
-      .catch(() => {});
+      .catch(console.error);
 
-    fetch('/delhi_mandals.geojson')
-      .then(r => (r.ok ? r.json() : null))
+    fetch('/delhi_boundary.geojson')
+      .then(r => r.json())
       .then(setBoundaryData)
-      .catch(() => {});
+      .catch(console.error);
 
-    /* delhi_wards.geojson not available */
+    fetch('/delhi_wards.geojson')
+      .then(r => r.json())
+      .then(setWardsData)
+      .catch(console.error);
 
     fetch('/ward_to_constituency.json')
-      .then(r => (r.ok ? r.json() : null))
+      .then(r => r.json())
       .then(setWardToConstit)
-      .catch(() => {});
-  }, []);
+      .catch(console.error);
+  }, [mode]);
 
   // URL Sync
   useEffect(() => {
@@ -284,6 +275,42 @@ const CampaignPanel = () => {
     }
   }, [volunteers, mode]);
 
+  const handleMarkAllCovered = useCallback(async () => {
+    if (selectedDistrict) {
+      await apiMarkAllCovered(selectedDistrict, currentUser?.name, mode);
+      setVolunteers(prev => prev.map(v => ({ ...v, coverage_status: 'covered' })));
+      const newDC = {};
+      (CONSTITUENCIES[selectedDistrict] || []).forEach(c => { newDC[c] = true; });
+      setCoverageMap(prev => ({ ...prev, [selectedDistrict]: newDC }));
+      loadCoverage();
+    }
+  }, [selectedDistrict, currentUser, loadCoverage, mode, CONSTITUENCIES]);
+
+  const handleDistrictClick = (d) => {
+    setSelectedDistrict(d);
+    setSelectedConstit('');
+    setSelectedWard('');
+  };
+
+  const handleCreateVolunteer = async (body) => {
+    try {
+      const r = await fetch(`${API}/campaign/volunteers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (r.ok) {
+        const saved = await r.json();
+        setVolunteers(prev => [saved, ...prev]);
+        setNewVolPin(null);
+      } else {
+        alert("Failed to save volunteer. Please check inputs.");
+      }
+    } catch (err) {
+      console.error("Failed to save volunteer:", err);
+    }
+  };
+
   // Load active campaigns (scoped to user's area)
   const loadActiveCampaigns = useCallback(async () => {
     try {
@@ -306,49 +333,14 @@ const CampaignPanel = () => {
     setShowCampaignCreator(true);
   }, []);
 
-  const handleCreateVolunteer = useCallback(async (data) => {
-    try {
-      const r = await fetch(`${API}/campaign/volunteers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (r.ok) {
-        const newVol = await r.json();
-        setVolunteers(prev => [...prev, newVol]);
-        return newVol;
-      }
-    } catch (err) {
-      console.error('Failed to create volunteer:', err);
-    }
-  }, []);
-
   const handleCampaignCreated = useCallback((campaign) => {
     setActiveCampaigns(prev => [campaign, ...prev]);
     setCampaignMode(false);
     setPinModeActive(false);
     setNewVolPin(null);
     setCampaignPin(null);
-    // Refresh campaigns from server so subordinates also see it
     setCampaignsLoaded(false);
   }, []);
-
-  const handleMarkAllCovered = useCallback(async () => {
-    if (selectedDistrict) {
-      await apiMarkAllCovered(selectedDistrict, currentUser?.name, mode);
-      setVolunteers(prev => prev.map(v => ({ ...v, coverage_status: 'covered' })));
-      const newDC = {};
-      (CONSTITUENCIES[selectedDistrict] || []).forEach(c => { newDC[c] = true; });
-      setCoverageMap(prev => ({ ...prev, [selectedDistrict]: newDC }));
-      loadCoverage();
-    }
-  }, [selectedDistrict, currentUser, loadCoverage, mode, CONSTITUENCIES]);
-
-  const handleDistrictClick = (d) => {
-    setSelectedDistrict(d);
-    setSelectedConstit('');
-    setSelectedWard('');
-  };
 
   // Stats derivations
   const activeVols   = volunteers.filter(v => v.status === 'active').length;
@@ -446,7 +438,6 @@ const CampaignPanel = () => {
               setCampaignMode(p => !p);
               if (!campaignMode) {
                 setPinModeActive(true);
-                setTimeout(() => campaignMapWrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
               } else {
                 setPinModeActive(false);
                 setNewVolPin(null);
@@ -466,7 +457,6 @@ const CampaignPanel = () => {
         </div>
       </div>
 
-
       {/* Top Stats */}
       <CampaignStats
         selectedDistrict={selectedDistrict}
@@ -480,41 +470,9 @@ const CampaignPanel = () => {
         DELHI_DISTRICTS={DELHI_DISTRICTS}
       />
 
-      {/* Selector Filters Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-        <DistrictSelector
-          selectedDistrict={selectedDistrict}
-          handleDistrictClick={handleDistrictClick}
-          lockDistrict={lockDistrict}
-          coverageMap={coverageMap}
-          DELHI_DISTRICTS={DELHI_DISTRICTS}
-          CONSTITUENCIES={CONSTITUENCIES}
-          constitCovered={constitCovered}
-          constitNames={constitNames}
-        />
-        <ConstituencyFilter
-          selectedDistrict={selectedDistrict}
-          selectedConstit={selectedConstit}
-          setSelectedConstit={setSelectedConstit}
-          setSelectedWard={setSelectedWard}
-          lockConstituency={lockConstituency}
-          constitNames={constitNames}
-          distCov={distCov}
-        />
-        <WardSelector
-          selectedDistrict={selectedDistrict}
-          selectedConstit={selectedConstit}
-          selectedWard={selectedWard}
-          setSelectedWard={setSelectedWard}
-          lockWard={lockWard}
-          wardToConstit={wardToConstit}
-          volunteers={volunteers}
-          wardsData={wardsData}
-        />
-      </div>
-
-      {/* Campaign Map */}
-      <div ref={campaignMapWrapperRef} style={{ height: 500, position: 'relative' }}>
+      {/* Workspace columns */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 24, minHeight: 480 }}>
+        {/* Map Column */}
         <CampaignMap
           mode={mode}
           geojsonData={geojsonData}
@@ -544,6 +502,188 @@ const CampaignPanel = () => {
           activeCampaigns={activeCampaigns}
           mapRef={mapRef}
         />
+
+        {/* Sidebar Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Selectors */}
+          <DistrictSelector
+            selectedDistrict={selectedDistrict}
+            handleDistrictClick={handleDistrictClick}
+            lockDistrict={lockDistrict}
+            coverageMap={coverageMap}
+            DELHI_DISTRICTS={DELHI_DISTRICTS}
+            CONSTITUENCIES={CONSTITUENCIES}
+            constitCovered={constitCovered}
+            constitNames={constitNames}
+          />
+
+          <ConstituencyFilter
+            selectedDistrict={selectedDistrict}
+            selectedConstit={selectedConstit}
+            setSelectedConstit={setSelectedConstit}
+            setSelectedWard={setSelectedWard}
+            lockConstituency={lockConstituency}
+            constitNames={constitNames}
+            distCov={distCov}
+          />
+
+          <WardSelector
+            selectedDistrict={selectedDistrict}
+            selectedConstit={selectedConstit}
+            selectedWard={selectedWard}
+            setSelectedWard={setSelectedWard}
+            lockWard={lockWard}
+            wardToConstit={wardToConstit}
+            volunteers={volunteers}
+            wardsData={wardsData}
+          />
+
+          {/* List and Tables Tabs */}
+          <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+              {['volunteers', 'coverage', 'analytics'].map(t => (
+                <button key={t} onClick={() => setActiveTab(t)} style={{
+                  flex: 1, padding: '12px 0', fontSize: 11, fontWeight: 800, border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '.06em',
+                  background: 'transparent', color: activeTab === t ? navy : '#94a3b8',
+                  borderBottom: activeTab === t ? `2px solid ${saffron}` : '2px solid transparent',
+                  transition: 'all 0.15s ease'
+                }}>{t}</button>
+              ))}
+            </div>
+
+            <div style={{ maxHeight: 380, overflowY: 'auto', padding: 16 }}>
+              {activeTab === 'volunteers' && (
+                <VolunteerList
+                  selectedVol={selectedVol}
+                  setSelectedVol={setSelectedVol}
+                  newTaskText={newTaskText}
+                  setNewTaskText={setNewTaskText}
+                  newTaskStatus={newTaskStatus}
+                  setNewTaskStatus={setNewTaskStatus}
+                  handleSaveTask={handleSaveTask}
+                  loading={loading}
+                  filteredVolunteersList={filteredVolunteersList}
+                  newVolPin={newVolPin}
+                  setNewVolPin={setNewVolPin}
+                  handleMarkCovered={handleMarkCovered}
+                  mapRef={mapRef}
+                />
+              )}
+
+              {activeTab === 'coverage' && (
+                <CoverageTable
+                  selectedDistrict={selectedDistrict}
+                  handleDistrictClick={handleDistrictClick}
+                  handleMarkAllCovered={handleMarkAllCovered}
+                  constitNames={constitNames}
+                  distCov={distCov}
+                  coverageMap={coverageMap}
+                  DELHI_DISTRICTS={DELHI_DISTRICTS}
+                  CONSTITUENCIES={CONSTITUENCIES}
+                />
+              )}
+
+              {activeTab === 'analytics' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
+                    Campaign Density Analytics
+                  </div>
+                  
+                  <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 6 }}>District Distribution</div>
+                    {(() => {
+                      const distCounts = {};
+                      DELHI_DISTRICTS.forEach(d => { distCounts[d] = 0; });
+                      volunteers.forEach(v => {
+                        if (v.district) distCounts[v.district] = (distCounts[v.district] || 0) + 1;
+                      });
+                      const entries = Object.entries(distCounts).sort((a, b) => b[1] - a[1]);
+                      const highest = entries[0];
+                      const lowest = entries[entries.length - 1];
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+                          <div><strong>Highest Density:</strong> {highest ? `${highest[0]} (${highest[1]} Vols)` : '—'}</div>
+                          <div><strong>Lowest Density:</strong> {lowest ? `${lowest[0]} (${lowest[1]} Vols)` : '—'}</div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 6 }}>Top Constituencies</div>
+                    {(() => {
+                      const constCounts = {};
+                      volunteers.forEach(v => {
+                        if (v.constituency) {
+                          constCounts[v.constituency] = (constCounts[v.constituency] || 0) + 1;
+                        }
+                      });
+                      const sorted = Object.entries(constCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
+                          {sorted.length === 0 ? <div>No volunteer data available.</div> : sorted.map(([name, count], idx) => (
+                            <div key={name} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span>{idx + 1}. {name}</span>
+                              <span style={{ fontWeight: 800 }}>{count} Vols</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 8 }}>Task Status breakdown</div>
+                    {(() => {
+                      const unassigned = volunteers.filter(v => (v.task_status || 'unassigned') === 'unassigned').length;
+                      const assigned = volunteers.filter(v => v.task_status === 'assigned').length;
+                      const accepted = volunteers.filter(v => v.task_status === 'accepted').length;
+                      const completed = volunteers.filter(v => v.task_status === 'completed').length;
+                      const total = volunteers.length || 1;
+
+                      const pct = (val) => Math.round((val / total) * 100);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
+                          {[
+                            { label: 'Unassigned', val: unassigned, color: '#9ca3af' },
+                            { label: 'Assigned', val: assigned, color: '#4b5563' },
+                            { label: 'Accepted', val: accepted, color: '#3b82f6' },
+                            { label: 'Completed', val: completed, color: '#22c55e' }
+                          ].map(s => (
+                            <div key={s.label}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 2 }}>
+                                <span>{s.label} ({s.val})</span>
+                                <span style={{ fontWeight: 800 }}>{pct(s.val)}%</span>
+                              </div>
+                              <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
+                                <div style={{ height: '100%', background: s.color, borderRadius: 2, width: `${pct(s.val)}%` }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase' }}>Active Ratio</div>
+                      <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Sending real-time location logs</div>
+                    </div>
+                    {(() => {
+                      const active = volunteers.filter(v => v.status === 'active').length;
+                      const total = volunteers.length || 1;
+                      const ratio = Math.round((active / total) * 100);
+                      return (
+                        <div style={{ fontSize: 18, fontWeight: 900, color: '#22c55e' }}>{ratio}%</div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Campaign Creator Modal */}
@@ -555,149 +695,6 @@ const CampaignPanel = () => {
         selectedDistrict={selectedDistrict}
         selectedConstit={selectedConstit}
       />
-
-      {/* List and Tables Tabs */}
-      <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-          {['volunteers', 'coverage', 'analytics'].map(t => (
-            <button key={t} onClick={() => setActiveTab(t)} style={{
-              flex: 1, padding: '12px 0', fontSize: 11, fontWeight: 800, border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '.06em',
-              background: 'transparent', color: activeTab === t ? navy : '#94a3b8',
-              borderBottom: activeTab === t ? `2px solid ${saffron}` : '2px solid transparent',
-              transition: 'all 0.15s ease'
-            }}>{t}</button>
-          ))}
-        </div>
-
-        <div style={{ padding: 16 }}>
-          {activeTab === 'volunteers' && (
-            <VolunteerList
-              selectedVol={selectedVol}
-              setSelectedVol={setSelectedVol}
-              newTaskText={newTaskText}
-              setNewTaskText={setNewTaskText}
-              newTaskStatus={newTaskStatus}
-              setNewTaskStatus={setNewTaskStatus}
-              handleSaveTask={handleSaveTask}
-              loading={loading}
-              filteredVolunteersList={filteredVolunteersList}
-              handleMarkCovered={handleMarkCovered}
-            />
-          )}
-
-          {activeTab === 'coverage' && (
-            <CoverageTable
-              selectedDistrict={selectedDistrict}
-              handleDistrictClick={handleDistrictClick}
-              handleMarkAllCovered={handleMarkAllCovered}
-              constitNames={constitNames}
-              distCov={distCov}
-              coverageMap={coverageMap}
-              DELHI_DISTRICTS={DELHI_DISTRICTS}
-              CONSTITUENCIES={CONSTITUENCIES}
-            />
-          )}
-
-          {activeTab === 'analytics' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
-                Campaign Density Analytics
-              </div>
-              
-              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 6 }}>District Distribution</div>
-                {(() => {
-                  const distCounts = {};
-                  DELHI_DISTRICTS.forEach(d => { distCounts[d] = 0; });
-                  volunteers.forEach(v => {
-                    if (v.district) distCounts[v.district] = (distCounts[v.district] || 0) + 1;
-                  });
-                  const entries = Object.entries(distCounts).sort((a, b) => b[1] - a[1]);
-                  const highest = entries[0];
-                  const lowest = entries[entries.length - 1];
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-                      <div><strong>Highest Density:</strong> {highest ? `${highest[0]} (${highest[1]} Vols)` : '—'}</div>
-                      <div><strong>Lowest Density:</strong> {lowest ? `${lowest[0]} (${lowest[1]} Vols)` : '—'}</div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 6 }}>Top Constituencies</div>
-                {(() => {
-                  const constCounts = {};
-                  volunteers.forEach(v => {
-                    if (v.constituency) {
-                      constCounts[v.constituency] = (constCounts[v.constituency] || 0) + 1;
-                    }
-                  });
-                  const sorted = Object.entries(constCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-                      {sorted.length === 0 ? <div>No volunteer data available.</div> : sorted.map(([name, count], idx) => (
-                        <div key={name} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>{idx + 1}. {name}</span>
-                          <span style={{ fontWeight: 800 }}>{count} Vols</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase', marginBottom: 8 }}>Task Status breakdown</div>
-                {(() => {
-                  const unassigned = volunteers.filter(v => (v.task_status || 'unassigned') === 'unassigned').length;
-                  const assigned = volunteers.filter(v => v.task_status === 'assigned').length;
-                  const accepted = volunteers.filter(v => v.task_status === 'accepted').length;
-                  const completed = volunteers.filter(v => v.task_status === 'completed').length;
-                  const total = volunteers.length || 1;
-
-                  const pct = (val) => Math.round((val / total) * 100);
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
-                      {[
-                        { label: 'Unassigned', val: unassigned, color: '#9ca3af' },
-                        { label: 'Assigned', val: assigned, color: '#4b5563' },
-                        { label: 'Accepted', val: accepted, color: '#3b82f6' },
-                        { label: 'Completed', val: completed, color: '#22c55e' }
-                      ].map(s => (
-                        <div key={s.label}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 2 }}>
-                            <span>{s.label} ({s.val})</span>
-                            <span style={{ fontWeight: 800 }}>{pct(s.val)}%</span>
-                          </div>
-                          <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }}>
-                            <div style={{ height: '100%', background: s.color, borderRadius: 2, width: `${pct(s.val)}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: 10, borderRadius: 4, border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: navy, textTransform: 'uppercase' }}>Active Ratio</div>
-                  <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Sending real-time location logs</div>
-                </div>
-                {(() => {
-                  const active = volunteers.filter(v => v.status === 'active').length;
-                  const total = volunteers.length || 1;
-                  const ratio = Math.round((active / total) * 100);
-                  return (
-                    <div style={{ fontSize: 18, fontWeight: 900, color: '#22c55e' }}>{ratio}%</div>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

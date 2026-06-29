@@ -121,13 +121,55 @@ export const buildCovMap = (coverageArr) => {
 
 export const normUserGeo = (s) => (s || '').toLowerCase().replace(/^c-/, '').replace(/[\s\-\._]/g, '');
 
+const DISTRICT_MAP = {
+  'CD': 'Central',
+  'ED': 'East',
+  'ND': 'New Delhi',
+  'N':  'North',
+  'NE': 'North East',
+  'NW': 'North West',
+  'SH': 'Shahdara',
+  'S':  'South',
+  'SE': 'South East',
+  'SW': 'South West',
+  'W':  'West'
+};
+
 export const getDisplayDistrict = (districtId) => {
   if (!districtId) return null;
+  const mapped = DISTRICT_MAP[districtId.toUpperCase()];
+  if (mapped) return mapped;
   return DELHI_DISTRICTS.find(d => normUserGeo(d) === normUserGeo(districtId)) || null;
 };
 
 export const getDisplayConstituency = (districtName, constituencyId) => {
   if (!districtName || !constituencyId) return '';
   const list = [...(CONSTITUENCIES_NEW[districtName] || []), ...(CONSTITUENCIES_OLD[districtName] || [])];
-  return list.find(c => normUserGeo(c) === normUserGeo(constituencyId)) || '';
+  
+  // 1. Exact or normalised match
+  let found = list.find(c => normUserGeo(c) === normUserGeo(constituencyId));
+  if (found) return found;
+
+  // 2. Initial letters / abbreviation match (e.g., "KRN" for "Krishna Nagar")
+  const normId = normUserGeo(constituencyId);
+  found = list.find(c => {
+    const words = c.toLowerCase().split(/[\s\-]+/);
+    const initials = words.map(w => w[0]).join('');
+    if (initials === normId) return true;
+    
+    const normC = normUserGeo(c);
+    if (normC.startsWith(normId)) return true;
+
+    // Check subsequence
+    let idIdx = 0;
+    for (let char of normC) {
+      if (char === normId[idIdx]) {
+        idIdx++;
+        if (idIdx === normId.length) return true;
+      }
+    }
+    return false;
+  });
+  
+  return found || '';
 };
