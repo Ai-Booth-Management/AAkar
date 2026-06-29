@@ -76,18 +76,19 @@ WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
 WHATSAPP_VERIFY_TOKEN=any_string_you_make_up
 ```
 
-### 3.1 WhatsApp Testing (Local Development)
+### 3.1 WhatsApp Webhook Setup (Local Development)
 
 To test WhatsApp integrations locally, you have two options:
 
-**Option A: The Fast Way (Frontend Simulator)**
-You do not need to configure webhooks or ngrok. Simply use the built-in frontend simulator:
-1. Start the frontend server (`npm run dev`)
-2. Go to `http://localhost:3000/whatsapp-simulator`
-3. If you have a real `WHATSAPP_TOKEN` in your backend `.env`, entering your real phone number in the simulator will trigger actual WhatsApp messages to your phone!
+**Option A: The Fast Way (Simulation)**
+You do not need a Meta account. Simply run the provided simulation script in a separate terminal while your backend is running:
+```bash
+python scripts/simulate_webhook.py
+```
+This bypasses Meta entirely and sends production-accurate JSON payloads directly to your local endpoint.
 
 **Option B: The Full Way (Meta Dashboard & Ngrok)**
-If you need to test incoming messages from a physical phone:
+If you need to test with a physical phone:
 1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/) and create a "Business" app.
 2. Add the **WhatsApp** product to your app.
 3. Expose your local server using ngrok: `ngrok http 8000`.
