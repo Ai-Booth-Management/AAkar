@@ -16,8 +16,8 @@ _IS_SIMULATION = WHATSAPP_TOKEN in ("dummy_token", "", "your_meta_whatsapp_acces
 
 async def send_text(to: str, message: str) -> dict:
     global _simulated_replies
+    _simulated_replies.append(message)
     if _IS_SIMULATION:
-        _simulated_replies.append(message)
         return {"status": "simulated", "to": to, "message": message}
 
     headers = {

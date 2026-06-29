@@ -517,6 +517,15 @@ async def receive_whatsapp_message(request: Request):
                         f"Your Aadhar: {aadhar}\n"
                         "You will receive task assignments here.",
                     )
+                    
+                    menu = (
+                        f"Welcome back {name}!\n\n"
+                        "Reply with:\n"
+                        "  • TASKS to see your assigned tasks\n"
+                        "  • COMPLAINT to lodge an issue\n"
+                        "  • Or just ask me an election-related question!"
+                    )
+                    await send_text(from_number, menu)
 
                 else:
                     state.current_step = "awaiting_name"
