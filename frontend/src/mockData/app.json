@@ -1,0 +1,183 @@
+{
+  "MOCK_STATE_STATS": {
+    "districts": 11,
+    "constituencies": 70,
+    "booths": 13500,
+    "volunteers": 150000,
+    "coverage_pct": 78,
+    "bosi_avg": 82,
+    "complaints": { "total": 145, "resolved": 120 },
+    "districts_scores": [
+      { "code": "NDL", "name": "New Delhi", "score": 85, "coverage_pct": 90 },
+      { "code": "SOU", "name": "South Delhi", "score": 78, "coverage_pct": 82 },
+      { "code": "NOR", "name": "North Delhi", "score": 38, "coverage_pct": 25 },
+      { "code": "SHA", "name": "Shahdara", "score": 35, "coverage_pct": 28 },
+      { "code": "CEN", "name": "Central Delhi", "score": 92, "coverage_pct": 95 }
+    ]
+  },
+  "MOCK_DISTRICTS": [
+    { "code": "NDL", "name": "New Delhi", "incharge": "Rajiv Kumar", "score": 85, "coverage_pct": 90, "volunteers": 15000 },
+    { "code": "SOU", "name": "South Delhi", "incharge": "Priya Singh", "score": 78, "coverage_pct": 82, "volunteers": 14200 },
+    { "code": "EAS", "name": "East Delhi", "incharge": "Amit Sharma", "score": 65, "coverage_pct": 70, "volunteers": 12500 },
+    { "code": "WES", "name": "West Delhi", "incharge": "Sneha Patel", "score": 72, "coverage_pct": 75, "volunteers": 13400 },
+    { "code": "NOR", "name": "North Delhi", "incharge": "Not Assigned", "score": 38, "coverage_pct": 25, "volunteers": 4100 },
+    { "code": "CEN", "name": "Central Delhi", "incharge": "Neha Gupta", "score": 92, "coverage_pct": 95, "volunteers": 18000 },
+    { "code": "SHA", "name": "Shahdara", "incharge": "Not Assigned", "score": 35, "coverage_pct": 28, "volunteers": 3200 }
+  ],
+  "MOCK_CONSTITUENCIES": [
+    { "code": "AC-40", "name": "New Delhi", "incharge": "Vikram Singh", "score": 88, "coverage_pct": 92, "volunteers": 2500 },
+    { "code": "AC-41", "name": "Jangpura", "incharge": "Anita Desai", "score": 82, "coverage_pct": 85, "volunteers": 2100 },
+    { "code": "AC-42", "name": "Kasturba Nagar", "incharge": "Rohan Mehra", "score": 79, "coverage_pct": 80, "volunteers": 1900 },
+    { "code": "AC-43", "name": "Malviya Nagar", "incharge": "Not Assigned", "score": 45, "coverage_pct": 40, "volunteers": 800 },
+    { "code": "AC-44", "name": "RK Puram", "incharge": "Sanjay Dutt", "score": 85, "coverage_pct": 88, "volunteers": 2300 }
+  ],
+  "MOCK_DISTRICT_STATS": {
+    "constituencies": 10,
+    "mandals": 45,
+    "booths": 1200,
+    "volunteers": 15000,
+    "coverage_pct": 85,
+    "bosi_avg": 78,
+    "complaints": { "total": 34, "resolved": 28 }
+  },
+  "MOCK_MANDALS": [
+    { "code": "MDL-01", "name": "RK Puram North", "incharge": "Ajay Verma", "score": 82, "coverage_pct": 85, "volunteers": 500 },
+    { "code": "MDL-02", "name": "RK Puram South", "incharge": "Pooja Rani", "score": 88, "coverage_pct": 90, "volunteers": 580 },
+    { "code": "MDL-03", "name": "Munirka", "incharge": "Suresh Kumar", "score": 75, "coverage_pct": 80, "volunteers": 420 },
+    { "code": "MDL-04", "name": "Vasant Vihar", "incharge": "Not Assigned", "score": 40, "coverage_pct": 35, "volunteers": 150 }
+  ],
+  "MOCK_CONSTITUENCY_STATS": {
+    "booths": 150,
+    "volunteers": 2500,
+    "mandals": 5,
+    "coverage_pct": 88,
+    "bosi_avg": 82
+  },
+  "MOCK_BOOTH_DIRECTORY": [
+    {
+      "mandal_code": "MDL-01",
+      "mandal_name": "RK Puram North",
+      "booths": [
+        { "code": "B-145", "name": "Sec 1 Community Center", "score": 85, "voters": 1200, "households": 300, "coverage_pct": 90, "volunteers": 45, "male": 620, "female": 580, "youth": 340, "seniors": 150 },
+        { "code": "B-146", "name": "Primary School, Sec 2", "score": 78, "voters": 950, "households": 240, "coverage_pct": 85, "volunteers": 35, "male": 500, "female": 450, "youth": 280, "seniors": 120 },
+        { "code": "B-147", "name": "CGHS Dispensary", "score": 92, "voters": 1400, "households": 350, "coverage_pct": 95, "volunteers": 55, "male": 720, "female": 680, "youth": 410, "seniors": 200 }
+      ]
+    },
+    {
+      "mandal_code": "MDL-02",
+      "mandal_name": "RK Puram South",
+      "booths": [
+        { "code": "B-148", "name": "Sec 5 Market", "score": 72, "voters": 1100, "households": 280, "coverage_pct": 75, "volunteers": 30, "male": 580, "female": 520, "youth": 310, "seniors": 140 },
+        { "code": "B-149", "name": "Sec 6 Park", "score": 88, "voters": 1050, "households": 260, "coverage_pct": 92, "volunteers": 40, "male": 540, "female": 510, "youth": 290, "seniors": 130 }
+      ]
+    }
+  ],
+  "MOCK_MANDAL_STATS": {
+    "voters": 25000,
+    "volunteers": 500,
+    "booths": 25,
+    "bosi_avg": 75,
+    "demographics": { "households": 6000, "male": 13000, "female": 12000, "youth": 8000, "seniors": 3000 }
+  },
+  "MOCK_BOOTHS": [
+    { "code": "B-145", "name": "Sec 1 Community Center", "score": 85, "voters": 1200, "households": 300, "coverage_pct": 90, "volunteers": 45 },
+    { "code": "B-146", "name": "Primary School, Sec 2", "score": 78, "voters": 950, "households": 240, "coverage_pct": 85, "volunteers": 35 },
+    { "code": "B-147", "name": "CGHS Dispensary", "score": 92, "voters": 1400, "households": 350, "coverage_pct": 95, "volunteers": 55 },
+    { "code": "B-148", "name": "Sec 5 Market", "score": 72, "voters": 1100, "households": 280, "coverage_pct": 75, "volunteers": 30 },
+    { "code": "B-149", "name": "Sec 6 Park", "score": 88, "voters": 1050, "households": 260, "coverage_pct": 92, "volunteers": 40 }
+  ],
+  "MOCK_VOLUNTEER_STATS": { "active": 480, "pending_tasks": 142, "completed_tasks": 1310 },
+  "MOCK_VOLUNTEER_DIRECTORY": [
+    {
+      "booth_code": "B-145",
+      "booth_name": "Sec 1 Community Center",
+      "volunteers": [
+        { "name": "Ramesh Gupta", "phone": "9876543210" },
+        { "name": "Sita Devi", "phone": "9876543211" },
+        { "name": "Arjun Patel", "phone": "9876543222" },
+        { "name": "Meera Singh", "phone": "9876543233" }
+      ]
+    },
+    {
+      "booth_code": "B-146",
+      "booth_name": "Primary School, Sec 2",
+      "volunteers": [
+        { "name": "Anil Kumar", "phone": "9876543212" },
+        { "name": "Pooja Singh", "phone": "9876543213" },
+        { "name": "Vikram Rathore", "phone": "9876543244" }
+      ]
+    }
+  ],
+  "MOCK_COMPLAINT_STATS": { "total": 15, "resolved": 12 },
+  "MOCK_COMPLAINTS": [
+    {
+      "booth_code": "B-145",
+      "booth_name": "Sec 1 Community Center",
+      "complaints": [
+        { "type": "Voter ID", "description": "Name missing from list", "status": "Pending" },
+        { "type": "Infrastructure", "description": "No electricity at booth", "status": "Resolved" }
+      ]
+    },
+    {
+      "booth_code": "B-147",
+      "booth_name": "CGHS Dispensary",
+      "complaints": [
+        { "type": "Opposition", "description": "Distributing pamphlets near booth", "status": "Resolved" }
+      ]
+    }
+  ],
+  "MOCK_BOOTH_STATS": {
+    "voters": 1200,
+    "volunteers": 45,
+    "demographics": { "households": 300, "male": 620, "female": 580, "youth": 340, "seniors": 150 }
+  },
+  "MOCK_HOUSEHOLDS": {
+    "metrics": { "total": 300, "covered": 250, "left": 50 },
+    "households": [
+      { "id": 1, "house_no": "A-100", "members": 4, "covered": true },
+      { "id": 2, "house_no": "A-101", "members": 3, "covered": false },
+      { "id": 3, "house_no": "A-102", "members": 5, "covered": true },
+      { "id": 4, "house_no": "A-103", "members": 2, "covered": true },
+      { "id": 5, "house_no": "A-104", "members": 6, "covered": false },
+      { "id": 6, "house_no": "A-105", "members": 4, "covered": true },
+      { "id": 7, "house_no": "A-106", "members": 3, "covered": true },
+      { "id": 8, "house_no": "A-107", "members": 2, "covered": false },
+      { "id": 9, "house_no": "A-108", "members": 5, "covered": true },
+      { "id": 10, "house_no": "A-109", "members": 4, "covered": true },
+      { "id": 11, "house_no": "A-110", "members": 3, "covered": true },
+      { "id": 12, "house_no": "A-111", "members": 6, "covered": false },
+      { "id": 13, "house_no": "A-112", "members": 4, "covered": true },
+      { "id": 14, "house_no": "A-113", "members": 2, "covered": true },
+      { "id": 15, "house_no": "A-114", "members": 5, "covered": false },
+      { "id": 16, "house_no": "A-115", "members": 3, "covered": true },
+      { "id": 17, "house_no": "A-116", "members": 4, "covered": true },
+      { "id": 18, "house_no": "A-117", "members": 2, "covered": true },
+      { "id": 19, "house_no": "A-118", "members": 5, "covered": false },
+      { "id": 20, "house_no": "A-119", "members": 3, "covered": true }
+    ]
+  },
+  "MOCK_VOLUNTEERS": [
+    { "id": 1, "name": "Ramesh Gupta", "phone": "9876543210", "pincode": "110022", "aadhar": "123456789012", "address": "Sec 1, RK Puram", "status": "active", "assigned_tasks": 2, "completed_tasks": 5, "registered_at": "2024-03-15T10:00:00.000Z" },
+    { "id": 2, "name": "Sita Devi", "phone": "9876543211", "pincode": "110022", "aadhar": "987654321098", "address": "Sec 1, RK Puram", "status": "active", "assigned_tasks": 0, "completed_tasks": 3, "registered_at": "2024-03-15T11:30:00.000Z" },
+    { "id": 3, "name": "Anil Kumar", "phone": "9876543212", "pincode": "110022", "aadhar": "456789123456", "address": "Sec 2, RK Puram", "status": "inactive", "assigned_tasks": 0, "completed_tasks": 1, "registered_at": "2024-03-16T09:15:00.000Z" },
+    { "id": 4, "name": "Pooja Singh", "phone": "9876543213", "pincode": "110022", "aadhar": "789123456789", "address": "Sec 2, RK Puram", "status": "active", "assigned_tasks": 1, "completed_tasks": 4, "registered_at": "2024-03-16T14:45:00.000Z" },
+    { "id": 5, "name": "Suresh Verma", "phone": "9876543214", "pincode": "110022", "aadhar": "321654987321", "address": "Sec 1, RK Puram", "status": "active", "assigned_tasks": 3, "completed_tasks": 8, "registered_at": "2024-03-17T10:20:00.000Z" },
+    { "id": 6, "name": "Meera Sharma", "phone": "9876543215", "pincode": "110022", "aadhar": "654321987654", "address": "Sec 1, RK Puram", "status": "active", "assigned_tasks": 1, "completed_tasks": 6, "registered_at": "2024-03-18T10:20:00.000Z" },
+    { "id": 7, "name": "Vikram Das", "phone": "9876543216", "pincode": "110022", "aadhar": "951753852456", "address": "Sec 2, RK Puram", "status": "active", "assigned_tasks": 2, "completed_tasks": 10, "registered_at": "2024-03-19T10:20:00.000Z" },
+    { "id": 8, "name": "Neha Gupta", "phone": "9876543217", "pincode": "110022", "aadhar": "159357258456", "address": "Sec 1, RK Puram", "status": "active", "assigned_tasks": 0, "completed_tasks": 2, "registered_at": "2024-03-20T10:20:00.000Z" }
+  ],
+  "MOCK_TASKS": [
+    { "id": 1, "title": "Distribute Voter Slips", "description": "Hand out slips in Sector 1 blocks A and B", "volunteer_name": "Ramesh Gupta", "status": "pending", "assigned_at": "2024-05-10T10:00:00.000Z", "completed_at": null, "has_proof": false },
+    { "id": 2, "title": "Check missing names", "description": "Visit households with missing names", "volunteer_name": "Sita Devi", "status": "completed", "assigned_at": "2024-05-09T10:00:00.000Z", "completed_at": "2024-05-10T12:00:00.000Z", "has_proof": true },
+    { "id": 3, "title": "Organize Corner Meeting", "description": "Set up chairs and mic for evening meeting", "volunteer_name": "Pooja Singh", "status": "pending", "assigned_at": "2024-05-11T10:00:00.000Z", "completed_at": null, "has_proof": false },
+    { "id": 4, "title": "Door-to-Door Campaign", "description": "Cover Block C in Sector 2", "volunteer_name": "Suresh Verma", "status": "pending", "assigned_at": "2024-05-11T11:00:00.000Z", "completed_at": null, "has_proof": false },
+    { "id": 5, "title": "Distribute Manifestos", "description": "Hand out manifestos at local market", "volunteer_name": "Meera Sharma", "status": "completed", "assigned_at": "2024-05-08T10:00:00.000Z", "completed_at": "2024-05-09T16:00:00.000Z", "has_proof": true }
+  ],
+  "MOCK_VOLUNTEER_MGT_STATS": {
+    "total_volunteers": 45,
+    "active_volunteers": 38,
+    "assigned_tasks": 16,
+    "completed_tasks": 121,
+    "completion_rate": 88
+  }
+}
