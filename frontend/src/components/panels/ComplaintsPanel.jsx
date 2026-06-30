@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API_BASE = '/api/v1';
 
-// Design Tokens - matching NIC style
+// ── Design Tokens ──────────────────────────────────────────────────────────────
 const navy = "#04122e";
 const navyLight = "#1a2744";
 const saffron = "#D4A843";
@@ -13,46 +13,71 @@ const white = "#ffffff";
 const gray400 = "#94a3b8";
 const gray600 = "#475569";
 
-const getDistrictForBooth = (boothId) => {
-    const lower = String(boothId).toLowerCase();
-    if (lower.includes('northwest') || lower.includes('nw')) return 'North West';
-    if (lower.includes('northeast') || lower.includes('ne')) return 'North East';
-    if (lower.includes('newdelhi') || lower.includes('nd') || lower.includes('40_004')) return 'New Delhi';
-    if (lower.includes('central') || lower.includes('c')) return 'Central';
-    if (lower.includes('southwest') || lower.includes('sw')) return 'South West';
-    if (lower.includes('southeast') || lower.includes('se')) return 'South East';
-    if (lower.includes('south') || lower.includes('s')) return 'South';
-    if (lower.includes('north') || lower.includes('n')) return 'North';
-    if (lower.includes('east') || lower.includes('e')) return 'East';
-    if (lower.includes('west') || lower.includes('w')) return 'West';
-    if (lower.includes('shahdara') || lower.includes('sh')) return 'Shahdara';
-    
-    const districts = [
-        "North West", "North", "North East", "Shahdara", "East", "West", 
-        "Central", "New Delhi", "South West", "South", "South East"
-    ];
-    let hash = 0;
-    for (let i = 0; i < lower.length; i++) {
-        hash = lower.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return districts[Math.abs(hash) % districts.length];
+// ── Normalise status strings ────────────────────────────────────────────────
+const normaliseStatus = (s = '') => {
+    const v = s.toLowerCase().trim();
+    if (!v || v === 'open') return 'Open';
+    if (v === 'under review' || v === 'under_review') return 'Under Review';
+    if (v === 'resolved') return 'Resolved';
+    if (v === 'closed') return 'Closed';
+    return s;
 };
 
+// ── Status badge colours ───────────────────────────────────────────────────
+const statusColour = (status) => {
+    switch (normaliseStatus(status)) {
+        case 'Open':         return { bg: '#fffbeb', color: '#d97706', border: '#fde68a' };
+        case 'Under Review': return { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' };
+        case 'Resolved':     return { bg: '#f0fdf4', color: '#22c55e', border: '#bbf7d0' };
+        case 'Closed':       return { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' };
+        default:             return { bg: '#f8fafc', color: '#64748b', border: '#e2e8f0' };
+    }
+};
+
+// ── Priority badge colours ─────────────────────────────────────────────────
+const priorityColour = (p = '') => {
+    switch (p.toUpperCase()) {
+        case 'HIGH':   return { bg: '#fef2f2', color: '#ef4444', border: '#fecaca' };
+        case 'MEDIUM': return { bg: '#fffbeb', color: '#d97706', border: '#fde68a' };
+        default:       return { bg: '#f0fdf4', color: '#22c55e', border: '#bbf7d0' };
+    }
+};
+
+// ── Roles that can change status ───────────────────────────────────────────
+const CAN_UPDATE_STATUS = ['DM', 'DISTRICT_ADMIN', 'CM', 'STATE_ADMIN', 'ELECTION_ADMIN', 'SUPER'];
+
 const ComplaintsPanel = () => {
+    const { currentUser } = useAuth();
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [expandedRows, setExpandedRows] = useState(new Set());
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [updatingStatus, setUpdatingStatus] = useState(null);
+    const pollingRef = useRef(null);
 
-    useEffect(() => {
-        fetchComplaints();
-    }, []);
+    const userRole = (currentUser?.role || '').toUpperCase();
+    const canUpdateStatus = CAN_UPDATE_STATUS.includes(userRole);
+    const isDM = userRole === 'DM' || userRole === 'DISTRICT_ADMIN';
 
-    const fetchComplaints = async () => {
-        setLoading(true);
+    // ── Build query params ──────────────────────────────────────────────────
+    const buildUrl = useCallback(() => {
+        const params = new URLSearchParams({ limit: '200' });
+        // DM scope enforcement — pass district_id so backend can filter
+        if (isDM && currentUser?.district_id) {
+            params.set('district_id', currentUser.district_id);
+        }
+        if (statusFilter) params.set('status', statusFilter);
+        if (searchQuery.trim()) params.set('search', searchQuery.trim());
+        return `${API_BASE}/complaints/?${params.toString()}`;
+    }, [isDM, currentUser, statusFilter, searchQuery]);
+
+    // ── Fetch from backend ──────────────────────────────────────────────────
+    const fetchComplaints = useCallback(async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/complaints/`, {
+            const res = await fetch(buildUrl(), {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -60,22 +85,30 @@ const ComplaintsPanel = () => {
             setComplaints(Array.isArray(data) ? data : []);
         } catch (e) {
             console.error("Failed to fetch complaints:", e);
-            setComplaints([]);
+            if (!silent) setComplaints([]);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
-    };
+    }, [buildUrl]);
 
+    // ── Initial fetch + 30-second polling ──────────────────────────────────
+    useEffect(() => {
+        fetchComplaints();
+        pollingRef.current = setInterval(() => fetchComplaints(true), 30_000);
+        return () => clearInterval(pollingRef.current);
+    }, [fetchComplaints]);
+
+    // ── Legacy: resolve (mark as Resolved) ────────────────────────────────
     const handleResolve = async (id) => {
         try {
-            const res = await fetch(`${API_BASE}/complaints/resolve/${id}`, { 
+            const res = await fetch(`${API_BASE}/complaints/resolve/${id}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: `COMPLAINT #${id} RESOLVED & VOTER NOTIFIED.` });
-                setComplaints(prev => prev.map(c => 
-                    c.complaint_id === id ? { ...c, status: 'Resolved', Status: 'Resolved' } : c
+                setComplaints(prev => prev.map(c =>
+                    c.complaint_id === id ? { ...c, status: 'Resolved' } : c
                 ));
             } else {
                 setMessage({ type: 'error', text: 'FAILED TO RESOLVE COMPLAINT.' });
@@ -85,211 +118,239 @@ const ComplaintsPanel = () => {
         }
     };
 
+    // ── Status lifecycle update ────────────────────────────────────────────
+    const handleStatusChange = async (id, newStatus) => {
+        setUpdatingStatus(id);
+        try {
+            const res = await fetch(`${API_BASE}/complaints/status/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (res.ok) {
+                setMessage({ type: 'success', text: `COMPLAINT #${id} STATUS UPDATED TO ${newStatus.toUpperCase()}.` });
+                setComplaints(prev => prev.map(c =>
+                    c.complaint_id === id ? { ...c, status: newStatus } : c
+                ));
+            } else {
+                const err = await res.json().catch(() => ({}));
+                setMessage({ type: 'error', text: err.detail || 'FAILED TO UPDATE STATUS.' });
+            }
+        } catch (e) {
+            setMessage({ type: 'error', text: 'SYSTEM ERROR: STATUS UPDATE FAILED.' });
+        } finally {
+            setUpdatingStatus(null);
+        }
+    };
+
     const toggleRowExpansion = (id) => {
-        const newExpandedRows = new Set(expandedRows);
-        if (newExpandedRows.has(id)) newExpandedRows.delete(id);
-        else newExpandedRows.add(id);
-        setExpandedRows(newExpandedRows);
+        const next = new Set(expandedRows);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setExpandedRows(next);
     };
 
-    const { currentUser } = useAuth();
-    const isDM = currentUser?.role === 'dm';
-
-    const getDistrictFromEmail = (email) => {
-        if (!email) return null;
-        const lowerEmail = email.toLowerCase();
-        if (lowerEmail.includes('north_west')) return 'North West';
-        if (lowerEmail.includes('north_east')) return 'North East';
-        if (lowerEmail.includes('new_delhi')) return 'New Delhi';
-        if (lowerEmail.includes('south_west')) return 'South West';
-        if (lowerEmail.includes('south_east')) return 'South East';
-        if (lowerEmail.includes('_north_')) return 'North';
-        if (lowerEmail.includes('shahdara')) return 'Shahdara';
-        if (lowerEmail.includes('_east_')) return 'East';
-        if (lowerEmail.includes('_west_')) return 'West';
-        if (lowerEmail.includes('central')) return 'Central';
-        if (lowerEmail.includes('_south_')) return 'South';
-        return null;
-    };
-
-    const dmDistrict = isDM ? getDistrictFromEmail(currentUser?.email) : null;
-
-    const safeComplaints = Array.isArray(complaints) ? complaints : [];
-    const visibleComplaints = isDM && dmDistrict
-        ? safeComplaints.filter(c => getDistrictForBooth(c.booth_id) === dmDistrict)
-        : safeComplaints;
-
-    // Calculate Stats
-    const totalComplaints = visibleComplaints.length;
-    const openComplaints = visibleComplaints.filter(c => (c.status || c.Status) === 'Open').length;
-    const resolvedComplaints = visibleComplaints.filter(c => (c.status || c.Status) === 'Resolved').length;
-
-    // Filter logic
-    const filteredComplaints = visibleComplaints.filter(c => {
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        const idMatch = String(c.complaint_id).toLowerCase().includes(q);
-        const epicMatch = String(c.voter_epic || c.epic || c.EPIC || '').toLowerCase().includes(q);
-        const boothMatch = String(c.booth_id || '').toLowerCase().includes(q);
-        const typeMatch = String(c.type || c.issue_type || c.Issue_Type || '').toLowerCase().includes(q);
-        return idMatch || epicMatch || boothMatch || typeMatch;
-    });
+    // ── Stats (computed client-side from fetched data) ─────────────────────
+    const safe = Array.isArray(complaints) ? complaints : [];
+    const totalComplaints = safe.length;
+    const openComplaints = safe.filter(c => normaliseStatus(c.status) === 'Open').length;
+    const underReview = safe.filter(c => normaliseStatus(c.status) === 'Under Review').length;
+    const resolvedComplaints = safe.filter(c => normaliseStatus(c.status) === 'Resolved').length;
 
     return (
         <div style={{ padding: '40px', backgroundColor: surface, minHeight: '100%', fontFamily: '"Public Sans", "Inter", sans-serif' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                
-                {/* Header Section */}
-                <header style={{ borderLeft: `6px solid ${navy}`, paddingLeft: '24px' }}>
-                    <h2 style={{ fontSize: '10px', fontWeight: '900', color: gray400, letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '8px' }}>
-                        The Sovereign Ledger
-                    </h2>
-                    <h1 style={{ fontSize: '24px', fontWeight: '900', color: navy, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
-                        Voter Complaints Management
-                    </h1>
+            <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+                {/* ── Header ── */}
+                <header style={{ borderLeft: `6px solid ${navy}`, paddingLeft: '24px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <div>
+                        <h2 style={{ fontSize: '10px', fontWeight: '900', color: gray400, letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                            The Sovereign Ledger
+                        </h2>
+                        <h1 style={{ fontSize: '24px', fontWeight: '900', color: navy, letterSpacing: '-0.02em', textTransform: 'uppercase', margin: 0 }}>
+                            Voter Complaints Registry
+                        </h1>
+                        {isDM && currentUser?.district_id && (
+                            <div style={{ marginTop: '6px', fontSize: '11px', fontWeight: '700', color: '#2563eb' }}>
+                                Filtered to District: {currentUser.district_id}
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px', fontWeight: '800', color: gray400 }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+                        AUTO-REFRESHING EVERY 30s
+                    </div>
                 </header>
 
-                {/* Notifications */}
+                {/* ── Notification ── */}
                 {message && (
-                    <div style={{ 
-                        padding: '20px', 
+                    <div style={{
+                        padding: '16px 20px',
                         backgroundColor: message.type === 'success' ? '#f0fdf4' : '#fef2f2',
                         borderLeft: `4px solid ${message.type === 'success' ? '#22c55e' : '#ef4444'}`,
                         color: message.type === 'success' ? '#166534' : '#991b1b',
-                        fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em'
+                        fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                     }}>
                         {message.text}
+                        <button onClick={() => setMessage(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: '14px' }}>✕</button>
                     </div>
                 )}
 
-                {/* Stat Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0' }}>
-                    
-                    <div style={{ backgroundColor: white, padding: '32px', border: `1px solid ${surfaceDeep}`, borderRight: 'none' }}>
-                        <div style={{ fontSize: '10px', fontWeight: '900', color: gray400, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Total Complaints</div>
-                        <div style={{ fontSize: '36px', fontWeight: '900', color: navy, letterSpacing: '-0.02em' }}>{totalComplaints}</div>
-                    </div>
-
-                    <div style={{ backgroundColor: white, padding: '32px', border: `1px solid ${surfaceDeep}`, borderRight: 'none' }}>
-                        <div style={{ fontSize: '10px', fontWeight: '900', color: gray400, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Open Complaints</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ fontSize: '36px', fontWeight: '900', color: navy, letterSpacing: '-0.02em' }}>{openComplaints}</div>
-                            <span style={{ 
-                                fontSize: '9px', fontWeight: '900', padding: '4px 8px', 
-                                backgroundColor: '#fffbeb', color: '#d97706', 
-                                border: '1px solid #fde68a', textTransform: 'uppercase'
-                            }}>Requires Attention</span>
+                {/* ── Stat Cards ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0' }}>
+                    {[
+                        { label: 'Total', value: totalComplaints, accent: navy },
+                        { label: 'Open', value: openComplaints, accent: '#d97706' },
+                        { label: 'Under Review', value: underReview, accent: '#2563eb' },
+                        { label: 'Resolved', value: resolvedComplaints, accent: '#22c55e' },
+                    ].map((stat, i) => (
+                        <div key={stat.label} style={{
+                            backgroundColor: white, padding: '28px',
+                            border: `1px solid ${surfaceDeep}`,
+                            borderRight: i < 3 ? 'none' : `1px solid ${surfaceDeep}`,
+                            borderBottom: `3px solid ${stat.accent}`
+                        }}>
+                            <div style={{ fontSize: '10px', fontWeight: '900', color: gray400, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
+                                {stat.label}
+                            </div>
+                            <div style={{ fontSize: '32px', fontWeight: '900', color: navy, letterSpacing: '-0.02em' }}>
+                                {stat.value}
+                            </div>
                         </div>
-                    </div>
-
-                    <div style={{ backgroundColor: white, padding: '32px', border: `1px solid ${surfaceDeep}` }}>
-                        <div style={{ fontSize: '10px', fontWeight: '900', color: gray400, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Resolved Complaints</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ fontSize: '36px', fontWeight: '900', color: navy, letterSpacing: '-0.02em' }}>{resolvedComplaints}</div>
-                            <span style={{ 
-                                fontSize: '9px', fontWeight: '900', padding: '4px 8px',
-                                backgroundColor: '#f0fdf4', color: '#22c55e',
-                                border: '1px solid #bbf7d0', textTransform: 'uppercase'
-                            }}>Resolved</span>
-                        </div>
-                    </div>
-
+                    ))}
                 </div>
 
-                {/* Search Bar */}
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                        <input 
-                            type="text" 
-                            placeholder="Search by Complaint ID, EPIC Number or Booth ID..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ 
-                                width: '100%', padding: '16px', fontSize: '13px', fontWeight: '700',
-                                backgroundColor: surface, border: `1px solid ${surfaceDeep}`, 
-                                color: navy, outline: 'none', boxSizing: 'border-box',
-                                fontFamily: '"Public Sans", "Inter", sans-serif'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = navy}
-                            onBlur={(e) => e.target.style.borderColor = surfaceDeep}
-                        />
-                    </div>
+                {/* ── Filters ── */}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search by Complaint ID, EPIC, or Booth ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            flex: 1, padding: '13px 16px', fontSize: '13px', fontWeight: '700',
+                            backgroundColor: surface, border: `1px solid ${surfaceDeep}`,
+                            color: navy, outline: 'none', boxSizing: 'border-box',
+                            fontFamily: '"Public Sans", "Inter", sans-serif'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = navy}
+                        onBlur={(e) => e.target.style.borderColor = surfaceDeep}
+                    />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        style={{
+                            padding: '13px 16px', fontSize: '12px', fontWeight: '700',
+                            backgroundColor: white, border: `1px solid ${surfaceDeep}`,
+                            color: navy, cursor: 'pointer', outline: 'none'
+                        }}
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="Open">Open</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
                 </div>
 
-                {/* Data Table */}
+                {/* ── Data Table ── */}
                 <div style={{ backgroundColor: white, border: `1px solid ${surfaceDeep}`, overflow: 'hidden' }}>
-                    <h3 style={{ fontSize: '12px', fontWeight: '900', color: navy, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '24px 24px 0', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <h3 style={{
+                        fontSize: '12px', fontWeight: '900', color: navy, letterSpacing: '0.2em',
+                        textTransform: 'uppercase', padding: '20px 24px 0', margin: 0,
+                        display: 'flex', alignItems: 'center', gap: '12px'
+                    }}>
                         <div style={{ width: '4px', height: '16px', backgroundColor: saffron }} />
                         Complaint Registry
+                        <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: '700', color: gray400 }}>
+                            {safe.length} record{safe.length !== 1 ? 's' : ''}
+                        </span>
                     </h3>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                             <thead>
                                 <tr style={{ borderBottom: `2px solid ${navy}`, textAlign: 'left' }}>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>ID</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Date</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Booth ID</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Voter EPIC</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contact</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Complaint Type</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</th>
-                                    <th style={{ padding: '16px 24px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Action</th>
+                                    {['ID', 'Date', 'Booth', 'District', 'Voter EPIC', 'Category', 'Priority', 'Status', 'Actions'].map(h => (
+                                        <th key={h} style={{ padding: '14px 20px', color: gray400, fontWeight: '900', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>{h}</th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center', color: gray400, fontSize: '11px', fontWeight: '700' }}>Synchronizing with registry...</td></tr>
-                                ) : filteredComplaints.length === 0 ? (
-                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center', color: gray400, fontStyle: 'italic', fontSize: '11px' }}>No complaints match your criteria.</td></tr>
+                                    <tr><td colSpan="9" style={{ padding: '60px', textAlign: 'center', color: gray400, fontSize: '11px', fontWeight: '700' }}>Synchronizing with registry...</td></tr>
+                                ) : safe.length === 0 ? (
+                                    <tr><td colSpan="9" style={{ padding: '60px', textAlign: 'center', color: gray400, fontStyle: 'italic', fontSize: '11px' }}>
+                                        No complaints found. Complaints submitted from the Booth portal will appear here automatically.
+                                    </td></tr>
                                 ) : (
-                                    filteredComplaints.map((c, i) => {
+                                    safe.map((c, i) => {
                                         const isExpanded = expandedRows.has(c.complaint_id);
-                                        const isOpen = (c.status || c.Status) === 'Open';
+                                        const normStatus = normaliseStatus(c.status);
+                                        const sc = statusColour(normStatus);
+                                        const pc = priorityColour(c.priority);
                                         return (
                                             <React.Fragment key={c.complaint_id}>
-                                                <tr style={{ 
+                                                <tr style={{
                                                     backgroundColor: i % 2 === 0 ? 'transparent' : surface,
                                                     borderBottom: isExpanded ? 'none' : `1px solid ${surfaceDeep}`
                                                 }}>
-                                                    <td style={{ padding: '16px 24px', fontWeight: '800', color: navy, fontSize: '13px' }}>#{c.complaint_id}</td>
-                                                    <td style={{ padding: '16px 24px', color: gray600, fontSize: '12px', fontWeight: '600' }}>{new Date(c.timestamp).toLocaleDateString()}</td>
-                                                    <td style={{ padding: '16px 24px', fontWeight: '800', color: gray600, fontSize: '12px' }}>{c.booth_id || 'UNKNOWN'}</td>
-                                                    <td style={{ padding: '16px 24px', fontWeight: '700', color: navy, fontFamily: 'monospace', fontSize: '12px' }}>{c.voter_epic || c.epic || c.EPIC}</td>
-                                                    <td style={{ padding: '16px 24px', color: gray600, fontSize: '12px' }}>{c.phone || c.phone_number || c.Contact_no || 'N/A'}</td>
-                                                    <td style={{ padding: '16px 24px' }}>
-                                                        <span style={{ 
-                                                            fontSize: '9px', fontWeight: '900', padding: '4px 8px',
-                                                            backgroundColor: '#f0f9ff', color: '#0369a1',
-                                                            border: '1px solid #bae6fd', textTransform: 'uppercase'
-                                                        }}>
-                                                            {c.type || c.issue_type || c.Issue_Type}
+                                                    <td style={{ padding: '14px 20px', fontWeight: '800', color: navy, fontSize: '13px', fontFamily: 'monospace' }}>#{c.complaint_id}</td>
+                                                    <td style={{ padding: '14px 20px', color: gray600, fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                                        {c.timestamp ? new Date(c.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                                    </td>
+                                                    <td style={{ padding: '14px 20px', fontWeight: '700', color: gray600, fontSize: '11px', fontFamily: 'monospace' }}>{c.booth_id || '—'}</td>
+                                                    <td style={{ padding: '14px 20px', fontWeight: '700', color: gray600, fontSize: '11px' }}>{c.district_id || '—'}</td>
+                                                    <td style={{ padding: '14px 20px', fontWeight: '700', color: navy, fontFamily: 'monospace', fontSize: '11px' }}>{c.epic || '—'}</td>
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        <span style={{ fontSize: '9px', fontWeight: '900', padding: '3px 8px', backgroundColor: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd', textTransform: 'uppercase' }}>
+                                                            {c.type || '—'}
                                                         </span>
                                                     </td>
-                                                    <td style={{ padding: '16px 24px' }}>
-                                                        <span style={{ 
-                                                            fontSize: '9px', fontWeight: '900', padding: '4px 8px',
-                                                            backgroundColor: isOpen ? '#fffbeb' : '#f0fdf4',
-                                                            color: isOpen ? '#d97706' : '#22c55e',
-                                                            border: `1px solid ${isOpen ? '#fde68a' : '#bbf7d0'}`,
-                                                            display: 'inline-flex', alignItems: 'center', gap: '6px',
-                                                            textTransform: 'uppercase'
-                                                        }}>
-                                                            <span style={{ width: '6px', height: '6px', backgroundColor: isOpen ? '#d97706' : '#22c55e' }} />
-                                                            {(c.status || c.Status || '').toUpperCase()}
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        <span style={{ fontSize: '9px', fontWeight: '900', padding: '3px 8px', backgroundColor: pc.bg, color: pc.color, border: `1px solid ${pc.border}`, textTransform: 'uppercase' }}>
+                                                            {c.priority || 'LOW'}
                                                         </span>
                                                     </td>
-                                                    <td style={{ padding: '16px 24px' }}>
-                                                        <button 
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        {canUpdateStatus ? (
+                                                            <select
+                                                                value={normStatus}
+                                                                onChange={(e) => handleStatusChange(c.complaint_id, e.target.value)}
+                                                                disabled={updatingStatus === c.complaint_id}
+                                                                style={{
+                                                                    fontSize: '10px', fontWeight: '900', padding: '4px 8px',
+                                                                    backgroundColor: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
+                                                                    cursor: 'pointer', outline: 'none', textTransform: 'uppercase',
+                                                                    opacity: updatingStatus === c.complaint_id ? 0.6 : 1
+                                                                }}
+                                                            >
+                                                                <option value="Open">OPEN</option>
+                                                                <option value="Under Review">UNDER REVIEW</option>
+                                                                <option value="Resolved">RESOLVED</option>
+                                                                <option value="Closed">CLOSED</option>
+                                                            </select>
+                                                        ) : (
+                                                            <span style={{ fontSize: '9px', fontWeight: '900', padding: '3px 8px', backgroundColor: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                                                <span style={{ width: '5px', height: '5px', backgroundColor: sc.color, borderRadius: '50%' }} />
+                                                                {normStatus.toUpperCase()}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td style={{ padding: '14px 20px' }}>
+                                                        <button
                                                             onClick={() => toggleRowExpansion(c.complaint_id)}
-                                                            style={{ 
-                                                                backgroundColor: surface, color: navy, 
-                                                                padding: '8px 16px', border: `1px solid ${surfaceDeep}`,
+                                                            style={{
+                                                                backgroundColor: surface, color: navy,
+                                                                padding: '6px 12px', border: `1px solid ${surfaceDeep}`,
                                                                 fontSize: '10px', fontWeight: '900', cursor: 'pointer',
-                                                                transition: 'all 0.2s', textTransform: 'uppercase',
-                                                                letterSpacing: '0.05em'
+                                                                transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em'
                                                             }}
-                                                            onMouseOver={(e) => { e.target.style.backgroundColor = navyLight; e.target.style.color = white; e.target.style.borderColor = navyLight; }}
-                                                            onMouseOut={(e) => { e.target.style.backgroundColor = surface; e.target.style.color = navy; e.target.style.borderColor = surfaceDeep; }}
+                                                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = navyLight; e.currentTarget.style.color = white; }}
+                                                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = surface; e.currentTarget.style.color = navy; }}
                                                         >
                                                             {isExpanded ? 'Hide' : 'Details'}
                                                         </button>
@@ -297,33 +358,42 @@ const ComplaintsPanel = () => {
                                                 </tr>
                                                 {isExpanded && (
                                                     <tr style={{ backgroundColor: i % 2 === 0 ? 'transparent' : surface, borderBottom: `1px solid ${surfaceDeep}` }}>
-                                                        <td colSpan="8" style={{ padding: '0 24px 24px 24px' }}>
-                                                            <div style={{ 
-                                                                backgroundColor: white, padding: '24px', border: `1px solid ${surfaceDeep}`,
-                                                                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '32px'
+                                                        <td colSpan="9" style={{ padding: '0 20px 20px 20px' }}>
+                                                            <div style={{
+                                                                backgroundColor: white, padding: '20px', border: `1px solid ${surfaceDeep}`,
+                                                                display: 'grid', gridTemplateColumns: '1fr auto', gap: '24px', alignItems: 'flex-start'
                                                             }}>
-                                                                <div style={{ flex: 1 }}>
+                                                                <div>
                                                                     <div style={{ fontSize: '10px', fontWeight: '900', color: gray400, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
                                                                         Detailed Description
                                                                     </div>
-                                                                    <div style={{ color: navy, fontSize: '13px', lineHeight: '1.6', fontWeight: '600' }}>
-                                                                        {c.description || c.Description || c.subject || 'No description available for this record.'}
+                                                                    <div style={{ color: navy, fontSize: '13px', lineHeight: '1.7', fontWeight: '600' }}>
+                                                                        {c.description || 'No description available for this record.'}
                                                                     </div>
+                                                                    {c.phone && (
+                                                                        <div style={{ marginTop: '12px', fontSize: '11px', color: gray400 }}>
+                                                                            <strong>Contact:</strong> {c.phone}
+                                                                        </div>
+                                                                    )}
+                                                                    {(c.constituency_id || c.constituency) && (
+                                                                        <div style={{ marginTop: '4px', fontSize: '11px', color: gray400 }}>
+                                                                            <strong>Constituency:</strong> {c.constituency_id || c.constituency}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                                {isOpen && (
-                                                                    <button 
+                                                                {canUpdateStatus && normaliseStatus(c.status) === 'Open' && (
+                                                                    <button
                                                                         onClick={() => handleResolve(c.complaint_id)}
-                                                                        style={{ 
-                                                                            backgroundColor: navy, color: white, 
-                                                                            padding: '16px 28px', border: 'none',
+                                                                        style={{
+                                                                            backgroundColor: navy, color: white,
+                                                                            padding: '14px 24px', border: 'none',
                                                                             fontSize: '11px', fontWeight: '900', cursor: 'pointer',
                                                                             textTransform: 'uppercase', letterSpacing: '0.2em',
                                                                             borderBottom: `4px solid ${saffron}`,
-                                                                            transition: 'all 0.2s',
-                                                                            whiteSpace: 'nowrap'
+                                                                            transition: 'all 0.2s', whiteSpace: 'nowrap'
                                                                         }}
-                                                                        onMouseOver={(e) => e.target.style.backgroundColor = navyLight}
-                                                                        onMouseOut={(e) => e.target.style.backgroundColor = navy}
+                                                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = navyLight}
+                                                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = navy}
                                                                     >
                                                                         Mark as Resolved
                                                                     </button>
@@ -341,6 +411,13 @@ const ComplaintsPanel = () => {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.4; }
+                }
+            `}</style>
         </div>
     );
 };

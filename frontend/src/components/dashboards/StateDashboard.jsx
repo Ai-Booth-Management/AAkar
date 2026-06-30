@@ -4,6 +4,7 @@ import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
 import VideoCallPanel from '../shared/VideoCallPanel';
+import ComplaintsPanel from '../panels/ComplaintsPanel';
 import dynamic from 'next/dynamic';
 
 const CampaignPanel = dynamic(() => import('../panels/CampaignPanel'), {
@@ -24,6 +25,7 @@ export default function StateDashboard({ tab, hierarchy }) {
     case 'overview':     return <StateOverview state={stateName} />;
     case 'analytics':    return <DistrictAnalytics state={stateName} />;
     case 'campaign':     return <CampaignPanel />;
+    case 'complaints':   return <ComplaintsPanel />;
     case 'ai-suggestions': return null;
     case 'hub':          return <Hub hierarchy={hierarchy} userRole="STATE_ADMIN" />;
     case 'video-call':   return <VideoCallPanel hierarchy={hierarchy} userRole="STATE_ADMIN" />;

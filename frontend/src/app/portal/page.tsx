@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import BoothDashboard from '../../components/dashboards/BoothDashboard';
 import logo from '../../assets/logo.png';
 import { useRouter } from 'next/navigation';
 import LodgeComplaintPanel from '../../components/shared/LodgeComplaintPanel';
 
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const NAVY    = '#0F172A';
+const NAVY_2  = '#17233B';
+const GOLD    = '#C9A227';
+const BORDER  = '#D9DEE8';
+
 export default function BoothUserPortal() {
   const { currentUser, logout, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
 
   React.useEffect(() => {
@@ -18,7 +22,22 @@ export default function BoothUserPortal() {
     }
   }, [loading, currentUser, router]);
 
-  if (loading) return <div>Initialising Secure Portal...</div>;
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh', background: NAVY,
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        <div style={{
+          fontSize: '11px', fontWeight: 900, color: GOLD,
+          letterSpacing: '0.3em', textTransform: 'uppercase'
+        }}>
+          Initialising Secure Portal...
+        </div>
+      </div>
+    );
+  }
+
   if (!currentUser) return null;
 
   const handleLogout = async () => {
@@ -26,70 +45,114 @@ export default function BoothUserPortal() {
     router.push('/login');
   };
 
-  const hierarchy = {
-    state: currentUser.state_id,
-    district: currentUser.district_id,
-    constituency: currentUser.constituency_id,
-    mandal: currentUser.mandal_id,
-    booth: currentUser.booth_id
-  };
-
   const userRole = (currentUser.role || '').toUpperCase();
   const isFieldUser = userRole === 'BOOTH' || userRole === 'BOOTH_PRESIDENT';
 
+  // Non-field users: same complaint form, minimal wrapper
   if (!isFieldUser) {
-    const boothId = currentUser.email ? currentUser.email.split('@')[0].split('_').slice(1).join('_') : null;
+    const boothId = currentUser.email
+      ? currentUser.email.split('@')[0].split('_').slice(1).join('_')
+      : null;
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        <div style={{ padding: '12px 40px', background: 'white', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Terminate Session <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--red-500)' }} />
+      <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+        <div style={{
+          padding: '12px 40px', background: NAVY,
+          borderBottom: `1px solid ${NAVY_2}`,
+          display: 'flex', justifyContent: 'flex-end'
+        }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              background: 'none', border: `1px solid rgba(201,162,39,0.3)`,
+              color: GOLD, fontSize: '10px', fontWeight: 800,
+              textTransform: 'uppercase', letterSpacing: '0.15em',
+              cursor: 'pointer', padding: '6px 14px'
+            }}
+          >
+            Terminate Session
           </button>
         </div>
-        <div className="content" style={{ padding: '0' }}>
-          <LodgeComplaintPanel boothId={boothId} />
-        </div>
+        <LodgeComplaintPanel boothId={boothId} />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', paddingBottom: '70px' }}>
-      <header style={{ padding: '16px 24px', backgroundColor: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <img src={logo.src} alt="Logo" style={{ height: '28px' }} />
-          <div style={{ height: '20px', width: '1px', backgroundColor: '#e2e8f0' }} />
+    <div style={{ minHeight: '100vh', background: '#F8FAFC' }}>
+      {/* ── Sticky Header ── */}
+      <header style={{
+        background: NAVY,
+        borderBottom: `3px solid ${GOLD}`,
+        padding: '0 32px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: '64px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+      }}>
+        {/* Left: logo + title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <img
+            src={logo.src}
+            alt="Aakar Logo"
+            style={{ height: '30px', filter: 'brightness(0) invert(1)' }}
+          />
+          <div style={{
+            width: '1px', height: '28px',
+            background: 'rgba(201,162,39,0.3)'
+          }} />
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Booth Intelligence Node</div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{currentUser.booth_id || 'LOCAL_SECTOR'}</div>
+            <div style={{
+              fontSize: '9px', fontWeight: 900, color: GOLD,
+              letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '3px'
+            }}>
+              Complaint Registration Portal
+            </div>
+            <div style={{
+              fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.9)',
+              letterSpacing: '0.05em', fontFamily: 'monospace'
+            }}>
+              {currentUser.booth_id || 'LOCAL_SECTOR'}
+            </div>
           </div>
         </div>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #fee2e2', backgroundColor: '#fef2f2', color: '#dc2626', fontSize: '10px', fontWeight: 900, cursor: 'pointer' }}>TERMINATE</button>
+
+        {/* Right: terminate */}
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: '8px 20px',
+            background: 'transparent',
+            border: `1px solid rgba(220,38,38,0.5)`,
+            color: '#F87171',
+            fontSize: '10px',
+            fontWeight: 900,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+          onMouseOver={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = '#dc2626';
+            (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+            (e.currentTarget as HTMLButtonElement).style.borderColor = '#dc2626';
+          }}
+          onMouseOut={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = '#F87171';
+            (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(220,38,38,0.5)';
+          }}
+        >
+          Terminate
+        </button>
       </header>
 
-      <main style={{ padding: '24px' }}>
-        <BoothDashboard hierarchy={hierarchy} tab={activeTab} />
+      {/* ── Complaint Form — fills the entire viewport below header ── */}
+      <main>
+        <LodgeComplaintPanel boothId={currentUser.booth_id} />
       </main>
-
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-around', padding: '12px 0', zIndex: 100 }}>
-        <NavButton label="Home" active={activeTab === 'profile' || activeTab === 'overview'} onClick={() => setActiveTab(userRole === 'BOOTH_PRESIDENT' ? 'profile' : 'overview')} icon="🏠" />
-        {userRole === 'BOOTH_PRESIDENT' ? (
-          <NavButton label="Team" active={activeTab === 'volunteer-management'} onClick={() => setActiveTab('volunteer-management')} icon="👥" />
-        ) : (
-          <NavButton label="Tasks" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} icon="📋" />
-        )}
-        <NavButton label="Data" active={activeTab === 'households' || activeTab === 'surveys'} onClick={() => setActiveTab(userRole === 'BOOTH_PRESIDENT' ? 'households' : 'surveys')} icon="📊" />
-        <NavButton label="Intel" active={activeTab === 'knowledge'} onClick={() => setActiveTab('knowledge')} icon="🧠" />
-      </nav>
     </div>
-  );
-}
-
-function NavButton({ label, active, onClick, icon }: { label: string; active: boolean; onClick: () => void; icon: React.ReactNode }) {
-  return (
-    <button onClick={onClick} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', color: active ? '#0f172a' : '#94a3b8', opacity: active ? 1 : 0.7 }}>
-      <span style={{ fontSize: '20px' }}>{icon}</span>
-      <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' }}>{label}</span>
-    </button>
   );
 }
