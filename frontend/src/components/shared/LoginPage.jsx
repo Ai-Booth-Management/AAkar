@@ -13,6 +13,7 @@ export default function LoginPage() {
     const [view, setView] = useState('login');
     const [portalMode, setPortalMode] = useState('election');
     const [userType, setUserType] = useState('BOOTH_PRESIDENT');
+    const [selectedRole, setSelectedRole] = useState('State Admin');
 
     const navy = "#0f172a";
     const gold = "#D4AF37";
@@ -213,6 +214,16 @@ export default function LoginPage() {
                                 )}
                                 {view === 'login' && (
                                     <>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <label style={{ fontSize: '9px', fontWeight: 900, color: slate400, textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: '4px' }}>Role</label>
+                                            <select value={selectedRole} onChange={e => setSelectedRole(e.target.value)} style={{ width: '100%', backgroundColor: slate50, border: `1px solid ${slate200}`, borderRadius: '12px', padding: '16px', fontSize: '12px', fontWeight: 700, outline: 'none', transition: 'all 0.2s ease', cursor: 'pointer' }} onFocus={(e) => e.target.style.borderColor = "#D4AF37"} onBlur={(e) => e.target.style.borderColor = slate200}>
+                                                <option value="State Admin">State Admin</option>
+                                                <option value="District Admin">District Admin</option>
+                                                <option value="Constituency Manager">Constituency Manager</option>
+                                                <option value="Mandal Manager">Mandal Manager</option>
+                                                <option value="Booth Manager">Booth Manager</option>
+                                            </select>
+                                        </div>
                                         <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
                                     </>
                                 )}
