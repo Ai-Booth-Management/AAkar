@@ -113,11 +113,31 @@ export default function LoginPage() {
                 justifyContent: 'center',
                 padding: '0 80px',
                 position: 'relative',
-                borderRight: `1px solid ${gold}22`
+                borderRight: `1px solid ${gold}22`,
+                overflow: 'hidden'
             }} className="lg-flex">
                 <style dangerouslySetInnerHTML={{ __html: `@media (min-width: 1024px) { .lg-flex { display: flex !important; } }` }} />
 
-                <div style={{ maxWidth: '448px' }}>
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        zIndex: 0,
+                        opacity: 0.35
+                    }}
+                >
+                    <source src="/Background.mp4" type="video/mp4" />
+                </video>
+
+                <div style={{ maxWidth: '448px', position: 'relative', zIndex: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '64px' }}>
                         <img src={logo?.src || logo} alt="Logo" style={{ height: '120px', objectFit: 'contain', objectPosition: 'left', display: 'block', marginBottom: '32px' }} />
                         <div style={{ height: '6px', width: '80px', backgroundColor: gold, marginBottom: '24px' }} />
