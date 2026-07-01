@@ -164,26 +164,7 @@ export default function LoginPage() {
                 <div style={{ maxWidth: '520px', width: '100%', margin: '0 auto', padding: '60px 0' }}>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
-                        <div style={{ display: 'flex', gap: '8px', background: slate50, padding: '4px', borderRadius: '12px', border: `1px solid ${slate100}` }}>
-                            <button
-                                onClick={() => { setPortalMode('admin'); setUserType('cm'); }}
-                                style={{
-                                    padding: '10px 16px', borderRadius: '10px', fontSize: '10px', fontWeight: 900, border: 'none', cursor: 'pointer',
-                                    backgroundColor: portalMode === 'admin' ? navy : 'transparent',
-                                    color: portalMode === 'admin' ? white : slate400,
-                                    boxShadow: portalMode === 'admin' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
-                                }}
-                            >ADMINISTRATION</button>
-                            <button
-                                onClick={() => setPortalMode('election')}
-                                style={{
-                                    padding: '10px 16px', borderRadius: '10px', fontSize: '10px', fontWeight: 900, border: 'none', cursor: 'pointer',
-                                    backgroundColor: portalMode === 'election' ? navy : 'transparent',
-                                    color: portalMode === 'election' ? white : slate400,
-                                    boxShadow: portalMode === 'election' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
-                                }}
-                            >ELECTION MGMT</button>
-                        </div>
+
                         <button onClick={() => setView(view === 'login' ? 'signup' : 'login')} style={{ background: 'none', border: 'none', color: gold, fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer' }}>
                             {view === 'login' ? 'Request Access →' : 'Back to Login'}
                         </button>
