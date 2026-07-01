@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
     ShieldCheck, User, Lock, Building2, MapPin,
-    ArrowRight, Globe, BadgeCheck, LayoutDashboard, Flag
+    ArrowRight, Globe, BadgeCheck, Flag
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import { useAuth } from '../../contexts/AuthContext';

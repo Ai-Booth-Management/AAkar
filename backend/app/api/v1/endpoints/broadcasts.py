@@ -1,9 +1,7 @@
-import os
 import uuid
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.core.security import get_current_user

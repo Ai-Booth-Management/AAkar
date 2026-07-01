@@ -5,7 +5,6 @@ import {
   normDistrict,
   CONSTITUENCIES_NEW,
   CONSTITUENCIES_OLD,
-  DELHI_DISTRICTS,
 } from './campaignUtils';
 
 const navy = '#04122e';

@@ -2,23 +2,19 @@ import {
   DELHI_DISTRICTS,
   CONSTITUENCIES_OLD,
   CONSTITUENCIES_NEW,
-  DISTRICT_CENTERS,
   normDistrict,
   normConstit,
-  getDistrictFromEmail,
 } from '../../constants/constituencies';
 
 export {
   DELHI_DISTRICTS,
   CONSTITUENCIES_OLD,
   CONSTITUENCIES_NEW,
-  DISTRICT_CENTERS,
   normDistrict,
   normConstit,
-  getDistrictFromEmail,
 };
 
-export const pointInPolygon = (x, y, poly) => {
+const pointInPolygon = (x, y, poly) => {
   let inside = false;
   const n = poly.length;
   if (n === 0) return false;
@@ -119,7 +115,7 @@ export const buildCovMap = (coverageArr) => {
   return m;
 };
 
-export const normUserGeo = (s) => (s || '').toLowerCase().replace(/^c-/, '').replace(/[\s\-\._]/g, '');
+const normUserGeo = (s) => (s || '').toLowerCase().replace(/^c-/, '').replace(/[\s\-\._]/g, '');
 
 const DISTRICT_MAP = {
   'CD': 'Central',

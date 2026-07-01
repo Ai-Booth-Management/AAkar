@@ -275,7 +275,7 @@ class BOSIEngine:
         
         mandals = session.exec(select(HierarchyNode).where(HierarchyNode.parent_id == constituency.id, HierarchyNode.level == "mandal")).all()
         
-        from app.api.v1.endpoints.dashboard import _booth_voter_stats, _count_users
+        from app.api.v1.endpoints.dashboard import _booth_voter_stats
         
         results = []
         for m in mandals:

@@ -2,7 +2,7 @@ import random
 from datetime import datetime, timedelta
 from app.infrastructure.db.sqlite_client import get_session
 from app.domain.models.complaint import Complaint
-from sqlmodel import select, delete
+from sqlmodel import delete
 
 def seed_complaints():
     with next(get_session()) as session:

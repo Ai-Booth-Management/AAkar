@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { Shield } from 'lucide-react';
 import Hub from '../shared/Hub';
 import HeatmapAnalysis from './HeatmapAnalysis';
 

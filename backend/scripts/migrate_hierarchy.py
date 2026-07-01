@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from datetime import datetime, timezone
 from app.infrastructure.db.sqlite_client import get_session
 from app.domain.models.hierarchy import HierarchyNode
 from app.domain.models.user import User

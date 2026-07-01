@@ -40,7 +40,6 @@ free-form text (the send_text function below). No template approval needed.
 import httpx
 import json
 import logging
-import os
 import asyncio
 import base64
 from datetime import datetime, timezone
@@ -49,11 +48,10 @@ from sqlmodel import Session, select
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.infrastructure.db.sqlite_client import engine
-from app.domain.models.hierarchy import HierarchyNode
 from app.domain.models.volunteer import Volunteer, Task, ConversationState
 from app.domain.services.ask_election_service import ask_election_question
 import app.domain.services.whatsapp_service as ws_service
-from app.domain.services.whatsapp_service import send_text, send_template, download_media
+from app.domain.services.whatsapp_service import send_text, download_media
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,9 @@
 "use client";
 import React from 'react';
-import {
-  LayoutDashboard, TrendingUp, BarChart3, Users, Radio,
+import { BarChart3, Users, Radio,
   FileText, Map, AlertTriangle, Activity, Shield,
   CheckSquare, Camera, MessageSquare, ClipboardList,
-  Target, Globe, Zap, Search, Settings, Database, UserCog, Video
+  Target, Globe, Zap, Database, UserCog, Video
 } from 'lucide-react';
 
 export const ROLE_NAV = {

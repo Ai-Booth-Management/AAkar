@@ -1,4 +1,3 @@
-import asyncio
 from app.core.security import create_access_token
 from app.infrastructure.db.sqlite_client import get_session
 from app.domain.models.user import User

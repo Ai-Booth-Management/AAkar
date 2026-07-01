@@ -27,7 +27,7 @@ class Neo4jClient:
         """Create constraints and indexes if they don't exist (idempotent)."""
         try:
             self.run_query("RETURN 1")
-        except Exception as e:
+        except Exception:
             print(f"Warning: Neo4j is not reachable. Skipping index creation.")
             return
 

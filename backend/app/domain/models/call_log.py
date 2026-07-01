@@ -1,6 +1,6 @@
 """CallLog model — tracks video call history in SQLite."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 from sqlmodel import SQLModel, Field
 

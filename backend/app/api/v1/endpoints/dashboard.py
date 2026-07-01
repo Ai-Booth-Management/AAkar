@@ -355,7 +355,6 @@ def get_mandal_volunteer_analytics(
     booth_codes = session.exec(select(HierarchyNode.code).where(HierarchyNode.parent_id == mandal.id, HierarchyNode.level == "booth")).all()
     if not booth_codes: return {"active": 0, "pending_tasks": 0, "completed_tasks": 0}
 
-    from sqlmodel import or_
     from app.domain.models.volunteer import Volunteer, Task
     assigned_active = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id.in_(list(booth_codes)), Volunteer.status == "active")).one()
     unassigned_active = session.exec(select(func.count(Volunteer.id)).where(Volunteer.booth_id == None, Volunteer.status == "active")).one()

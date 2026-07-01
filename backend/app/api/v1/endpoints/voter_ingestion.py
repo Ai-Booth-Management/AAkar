@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlmodel import Session, select
 import json
-from typing import List
 from app.core.security import get_current_user
 from app.domain.models.user import User
 from app.domain.models.hierarchy import HierarchyNode

@@ -13,9 +13,6 @@
  *     normDistrict,
  *     normConstit,
  *     getDistrictFromEmail,
- *     getAllConstituencies,
- *     getConstituenciesForDistrict,
- *     getDistrictForConstituency,
  *   } from '../constants/constituencies';
  */
 
@@ -111,58 +108,6 @@ export const normConstit = (s) =>
 // ─── Derived lookups ──────────────────────────────────────────────────────────
 
 /** Build a normalised-name → district map for fast reverse lookup. */
-function buildReverseMap(constituencies) {
-  const map = {};
-  for (const [district, list] of Object.entries(constituencies)) {
-    for (const c of list) {
-      map[normConstit(c)] = district;
-    }
-  }
-  return map;
-}
-
-const REVERSE_MAP_OLD = buildReverseMap(CONSTITUENCIES_OLD);
-const REVERSE_MAP_NEW = buildReverseMap(CONSTITUENCIES_NEW);
-
-/**
- * Look up which district a constituency belongs to.
- * @param {string} constituencyName
- * @param {'old'|'new'|'abs'} mode  'new' and 'abs' use 2025 boundaries
- * @returns {string|null}
- */
-export function getDistrictForConstituency(constituencyName, mode = 'new') {
-  const map = (mode === 'old') ? REVERSE_MAP_OLD : REVERSE_MAP_NEW;
-  return map[normConstit(constituencyName)] ?? null;
-}
-
-/**
- * Get the constituency list for a district.
- * Returns union of old+new to avoid missing entries.
- * @param {string} districtName
- * @param {'old'|'new'|'abs'|'both'} mode
- * @returns {string[]}
- */
-export function getConstituenciesForDistrict(districtName, mode = 'new') {
-  if (mode === 'both') {
-    const combined = new Set([
-      ...(CONSTITUENCIES_NEW[districtName] || []),
-      ...(CONSTITUENCIES_OLD[districtName] || []),
-    ]);
-    return [...combined];
-  }
-  const src = (mode === 'old') ? CONSTITUENCIES_OLD : CONSTITUENCIES_NEW;
-  return src[districtName] || [];
-}
-
-/**
- * Flat list of all unique constituencies across all districts.
- * @param {'old'|'new'|'abs'} mode
- * @returns {string[]}
- */
-export function getAllConstituencies(mode = 'new') {
-  const src = (mode === 'old') ? CONSTITUENCIES_OLD : CONSTITUENCIES_NEW;
-  return Object.values(src).flat();
-}
 
 // ─── Email → district helper ──────────────────────────────────────────────────
 

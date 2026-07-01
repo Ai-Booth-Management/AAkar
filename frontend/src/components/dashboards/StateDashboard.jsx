@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Globe, Radio, FileText, Zap, TrendingUp, Download, FileSpreadsheet, Users, AlertCircle } from 'lucide-react';
+import { Globe, Radio, Zap, TrendingUp, Download, FileSpreadsheet, Users, AlertCircle } from 'lucide-react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
