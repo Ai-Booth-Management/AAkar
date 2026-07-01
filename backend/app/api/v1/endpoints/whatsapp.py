@@ -417,16 +417,27 @@ async def receive_whatsapp_message(request: Request):
                         data["region"] = region
                         data["block"] = block
                         state.collected_data = json.dumps(data)
-                        state.current_step = "awaiting_address"
+                        state.current_step = "awaiting_booth_id"
                         state.updated_at = datetime.now(timezone.utc)
                         session.add(state)
                         session.commit()
                         
-                        msg = f"Got it. What is your House/Flat No. and Street Name?"
+                        msg = f"Got it. What is your Booth Number / ID? (e.g. nd-rjn-m1-b1)"
                         if state_name and district_name:
                             msg = f"Valid pincode detected ({area_name}, {district_name}, {state_name}).\n" + msg
                             
                         await send_text(from_number, msg)
+
+                elif state.current_step == "awaiting_booth_id":
+                    data = json.loads(state.collected_data)
+                    data["booth_id"] = text_body.strip()
+                    state.collected_data = json.dumps(data)
+                    state.current_step = "awaiting_address"
+                    state.updated_at = datetime.now(timezone.utc)
+                    session.add(state)
+                    session.commit()
+                    
+                    await send_text(from_number, "Got it. What is your House/Flat No. and Street Name?")
 
                 elif state.current_step == "awaiting_address":
                     data = json.loads(state.collected_data)
@@ -448,6 +459,7 @@ async def receive_whatsapp_message(request: Request):
                     pincode = data.get("pincode", "")
                     name = data.get("name", "")
                     address = data.get("address", "")
+                    booth_id = data.get("booth_id", "")
                     state_name = data.get("state", "")
                     district_name = data.get("district", "")
                     area_name = data.get("area_name", "")
@@ -460,7 +472,7 @@ async def receive_whatsapp_message(request: Request):
                     if not volunteer:
                         volunteer = Volunteer(
                             phone=from_number,
-                            booth_id=None,
+                            booth_id=booth_id or None,
                             status="active",
                         )
                         session.add(volunteer)
@@ -469,6 +481,7 @@ async def receive_whatsapp_message(request: Request):
                     volunteer.pincode = pincode
                     volunteer.address = address
                     volunteer.aadhar = aadhar
+                    volunteer.booth_id = booth_id or None
                     volunteer.area_name = area_name
                     volunteer.block = block
                     volunteer.district = district_name
@@ -495,6 +508,7 @@ async def receive_whatsapp_message(request: Request):
                             "name": name,
                             "address": address,
                             "pincode": pincode,
+                            "booth_id": booth_id,
                             "area_name": area_name,
                             "block": block,
                             "district": district_name,
@@ -513,6 +527,7 @@ async def receive_whatsapp_message(request: Request):
                     await send_text(
                         from_number,
                         f"\u2705 Registration complete! Welcome to the team, {name}.\n"
+                        f"Your Booth ID: {booth_id}\n"
                         f"Your Pincode: {pincode}\n"
                         f"Your Aadhar: {aadhar}\n"
                         "You will receive task assignments here.",

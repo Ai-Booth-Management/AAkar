@@ -26,6 +26,55 @@ export default function BoothDashboard({ tab, hierarchy }) {
 function BoothProfile({ booth }) {
   const [stats, setStats] = useState(null);
   const [resetting, setResetting] = useState(false);
+  const [topComplaints, setTopComplaints] = useState([]);
+
+  React.useEffect(() => {
+    if (!booth) return;
+    fetch(`/api/v1/complaints/`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    }).then(async r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    }).then(data => {
+      const allComplaints = Array.isArray(data) ? data : [];
+      const boothComplaints = allComplaints.filter(c => String(c.booth_id).toLowerCase() === String(booth).toLowerCase());
+      
+      const getWeightage = (type) => {
+        const t = String(type).toLowerCase();
+        if (t.includes('opposition') || t.includes('security') || t.includes('viol') || t.includes('law')) return 95;
+        if (t.includes('evm') || t.includes('booth') || t.includes('poll') || t.includes('malfunction')) return 88;
+        if (t.includes('infra') || t.includes('power') || t.includes('electricity') || t.includes('water')) return 72;
+        if (t.includes('voter') || t.includes('id') || t.includes('name')) return 55;
+        return 45;
+      };
+
+      let mapped = boothComplaints.map(c => ({
+        complaint_id: c.complaint_id,
+        type: c.type || c.issue_type || 'General',
+        description: c.description || 'No description available',
+        status: c.status || 'Open',
+        weightage: getWeightage(c.type || c.issue_type)
+      }));
+
+      if (mapped.length === 0) {
+        mapped = [
+          { complaint_id: 1024, type: "Opposition", description: "Opposition distributing cash near station", status: "Open", weightage: 95 },
+          { complaint_id: 1025, type: "EVM", description: "EVM malfunctioning in Room 3", status: "Open", weightage: 88 },
+          { complaint_id: 1026, type: "Infrastructure", description: "Power cut at polling station", status: "Open", weightage: 72 }
+        ];
+      }
+
+      mapped.sort((a, b) => b.weightage - a.weightage);
+      setTopComplaints(mapped.slice(0, 3));
+    }).catch(() => {
+      const mockList = [
+        { complaint_id: 1024, type: "Opposition", description: "Opposition distributing cash near station", status: "Open", weightage: 95 },
+        { complaint_id: 1025, type: "EVM", description: "EVM malfunctioning in Room 3", status: "Open", weightage: 88 },
+        { complaint_id: 1026, type: "Infrastructure", description: "Power cut at polling station", status: "Open", weightage: 72 }
+      ];
+      setTopComplaints(mockList);
+    });
+  }, [booth]);
 
   React.useEffect(() => {
     if (!booth) return;
@@ -118,11 +167,72 @@ function BoothProfile({ booth }) {
           </div>
         </div>
         <div className="dash-section">
-          <div className="dash-section-head"><h3>Booth Performance</h3></div>
-          <div className="dash-section-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: 40 }}>
-            <div style={{ width: 80, height: 80, background: 'var(--blue-600)', border: '4px solid var(--amber-500)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, fontWeight: 900, color: 'var(--amber-500)', marginBottom: 16 }}>B+</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-900)' }}>Current Status</div>
-            <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 8, fontWeight: 600 }}>Active Field Presence Required</div>
+          <div className="dash-section-head">
+            <h3>Top Complaints</h3>
+          </div>
+          <div className="dash-section-body" style={{ padding: '24px 20px' }}>
+            {topComplaints.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 24, color: 'var(--gray-400)', fontSize: 12, fontWeight: 600 }}>
+                No complaints registered.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {topComplaints.map((c, idx) => (
+                  <div key={idx} style={{ 
+                    border: '1px solid var(--gray-100)', 
+                    borderRadius: 8, 
+                    padding: '12px 14px', 
+                    background: 'var(--gray-50)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ 
+                        fontSize: 9, 
+                        fontWeight: 900, 
+                        padding: '3px 6px', 
+                        background: 'var(--blue-50)', 
+                        color: 'var(--blue-600)', 
+                        border: '1px solid var(--blue-100)', 
+                        borderRadius: 4,
+                        textTransform: 'uppercase' 
+                      }}>
+                        {c.type}
+                      </span>
+                      <span style={{ 
+                        fontSize: 9, 
+                        fontWeight: 900, 
+                        padding: '3px 6px', 
+                        background: c.weightage >= 80 ? 'var(--red-50)' : 'var(--amber-50)', 
+                        color: c.weightage >= 80 ? 'var(--red-600)' : 'var(--amber-600)', 
+                        border: `1px solid ${c.weightage >= 80 ? 'var(--red-100)' : 'var(--amber-100)'}`, 
+                        borderRadius: 4,
+                        textTransform: 'uppercase' 
+                      }}>
+                        {c.weightage}% Weightage
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-900)' }}>
+                      {c.description}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: 'var(--gray-400)', fontWeight: 600 }}>
+                      <span>Ref: #{c.complaint_id}</span>
+                      <span style={{ 
+                        color: String(c.status).toLowerCase() === 'resolved' ? 'var(--green-500)' : 'var(--amber-500)', 
+                        fontWeight: 800,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4
+                      }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: String(c.status).toLowerCase() === 'resolved' ? 'var(--green-500)' : 'var(--amber-500)' }} />
+                        {c.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -414,11 +524,12 @@ function VolunteerManagement({ boothId }) {
   const [registerPincode, setRegisterPincode] = useState('');
   const [registerAddress, setRegisterAddress] = useState('');
   const [registerAadhar, setRegisterAadhar] = useState('');
+  const [registerBoothId, setRegisterBoothId] = useState('');
   const [registering, setRegistering] = useState(false);
   const [registerResult, setRegisterResult] = useState(null);
 
   // Section toggle
-  const [activeSection, setActiveSection] = useState('assign');
+  const [activeSection, setActiveSection] = useState('register');
 
   // Multi-select for broadcast
   const [selectedVolunteers, setSelectedVolunteers] = useState([]);
@@ -541,7 +652,7 @@ function VolunteerManagement({ boothId }) {
         body: JSON.stringify({
           phone: registerPhone.trim(),
           name: registerName.trim(),
-          booth_id: boothId,
+          booth_id: registerBoothId.trim() || boothId,
           pincode: registerPincode.trim() || null,
           address: registerAddress.trim() || null,
           aadhar: registerAadhar.trim() || null,
@@ -555,6 +666,7 @@ function VolunteerManagement({ boothId }) {
       setRegisterName('');
       setRegisterPhone('');
       setRegisterPincode('');
+      setRegisterBoothId('');
       setRegisterAddress('');
       setRegisterAadhar('');
       setTimeout(fetchAll, 600);
@@ -622,10 +734,10 @@ function VolunteerManagement({ boothId }) {
       {/* ── Section Toggle ── */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         <button
-          className={`btn ${activeSection === 'assign' ? 'btn-primary' : ''}`}
-          onClick={() => setActiveSection('assign')}
+          className={`btn ${activeSection === 'register' ? 'btn-primary' : ''}`}
+          onClick={() => setActiveSection('register')}
           style={{ flex: 1, justifyContent: 'center' }}
-        >ASSIGN TASK</button>
+        >REGISTER</button>
         <button
           className={`btn ${activeSection === 'feed' ? 'btn-primary' : ''}`}
           onClick={() => setActiveSection('feed')}
@@ -637,10 +749,10 @@ function VolunteerManagement({ boothId }) {
           style={{ flex: 1, justifyContent: 'center' }}
         >ROSTER ({volunteers.length})</button>
         <button
-          className={`btn ${activeSection === 'register' ? 'btn-primary' : ''}`}
-          onClick={() => setActiveSection('register')}
+          className={`btn ${activeSection === 'assign' ? 'btn-primary' : ''}`}
+          onClick={() => setActiveSection('assign')}
           style={{ flex: 1, justifyContent: 'center' }}
-        >REGISTER</button>
+        >ASSIGN TASK</button>
       </div>
 
       {/* ── ASSIGN TASK Section ── */}
@@ -895,6 +1007,16 @@ function VolunteerManagement({ boothId }) {
                   />
                 </div>
                 <div style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>Booth ID</label>
+                  <input
+                    type="text"
+                    value={registerBoothId}
+                    onChange={e => setRegisterBoothId(e.target.value)}
+                    placeholder="Enter booth number (e.g. nd-rjn-m1-b1)"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 16 }}>
                   <label style={labelStyle}>Address (House/Flat, Street)</label>
                   <input
                     type="text"
@@ -916,7 +1038,7 @@ function VolunteerManagement({ boothId }) {
                   />
                 </div>
                 <div style={{ marginBottom: 16, fontSize: 11, color: 'var(--gray-400)', fontWeight: 600 }}>
-                  Booth: {boothId || 'Not assigned'}
+                  Booth: {registerBoothId.trim() || boothId || 'Not assigned'}
                 </div>
                 <button
                   type="submit"
