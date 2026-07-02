@@ -137,7 +137,17 @@ async def simulate_whatsapp(body: dict):
         async def json(self):
             return mock_payload
 
-    await receive_whatsapp_message(_MockRequest())
+    # Mark all downstream service calls as simulation so real Meta API is never contacted
+    ws_service._in_simulation = True
+    try:
+        result = await receive_whatsapp_message(_MockRequest())
+        # If the webhook returned an error status, surface it in the simulator
+        if isinstance(result, dict) and result.get("status") == "error":
+            ws_service._simulated_replies.append("⚠️ [Backend error] Check server logs for details.")
+    except Exception as exc:
+        ws_service._simulated_replies.append(f"⚠️ [Simulator exception] {exc}")
+    finally:
+        ws_service._in_simulation = False
 
     replies = list(ws_service._simulated_replies)
     ws_service._simulated_replies = []
@@ -264,6 +274,53 @@ async def receive_whatsapp_message(request: Request):
                         with open(filename, "wb") as f:
                             f.write(image_bytes)
                         image_path = filename
+
+                        # ── Forensic verification for complaint image ──────────────────
+                        from app.api.v1.endpoints.forensics import (
+                            extract_exif_gps, run_synthetic_detection
+                        )
+                        try:
+                            meta = extract_exif_gps(image_path)
+                            synthetic_res = run_synthetic_detection(image_path)
+
+                            # For complaints we only care about fabricated/edited images.
+                            # EXIF-device and resampling checks are skipped — they
+                            # produce false positives on browser-uploaded/re-encoded JPEGs.
+                            deductions = 0
+                            software = meta.get("software", "")
+                            if "Photoshop" in software or "GIMP" in software:
+                                deductions += 40
+                            if synthetic_res.get("is_synthetic"):
+                                deductions += 50
+                            score = max(0, 100 - deductions)
+                        except Exception as fe:
+                            logger.warning(f"Complaint forensics failed, defaulting to pass: {fe}")
+                            score = 100  # Never block on forensics errors
+                            meta = {"software": ""}
+                            synthetic_res = {}
+
+                        if score < 55:
+                            # Clean up the rejected image
+                            try: os.remove(image_path)
+                            except Exception: pass
+
+                            warnings = []
+                            software = meta.get("software", "")
+                            if "Photoshop" in software or "GIMP" in software:
+                                warnings.append("Image appears to have been edited with Photoshop/GIMP.")
+                            if synthetic_res.get("is_synthetic"):
+                                warnings.append("Image appears AI-generated or synthetic.")
+                            reason_str = " ".join(warnings) if warnings else "Image failed authenticity checks."
+
+                            await send_text(
+                                from_number,
+                                f"❌ Image verification failed (Score: {score}%).\n\nReason: {reason_str}\n\nPlease take a real photo of the issue and resubmit.",
+                            )
+                            return {"status": "received"}
+                        else:
+                            await send_text(from_number, f"✅ Image verified (Score: {score}%).")
+                        # ── End forensic verification ──────────────────────────────────
+
                     elif text_body.lower() not in ["skip", "no"]:
                         await send_text(from_number, "Please attach an image, or type 'skip' to proceed without one.")
                         return {"status": "received"}
