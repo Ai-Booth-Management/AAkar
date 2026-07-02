@@ -9,7 +9,9 @@ import {
   CheckSquare, 
   FileText, 
   Megaphone,
-  LogOut
+  LogOut,
+  UserCircle,
+  MessageSquare
 } from 'lucide-react';
 import { logoutAction } from '@/app/boothman/actions';
 
@@ -33,6 +35,8 @@ export function Sidebar({ role }: SidebarProps) {
       case 'COORDINATOR':
         return [
           { href: '/boothman/coordinator', icon: LayoutDashboard, label: 'Booth Status' },
+          { href: '/boothman/coordinator/profile', icon: UserCircle, label: 'Booth Profile' },
+          { href: '/boothman/coordinator/hub', icon: MessageSquare, label: 'Intel Hub' },
           { href: '/boothman/coordinator/volunteers', icon: Users, label: 'My Volunteers' },
           { href: '/boothman/coordinator/tasks', icon: CheckSquare, label: 'Tasks' },
           { href: '/boothman/coordinator/campaigns', icon: Megaphone, label: 'Campaigns' },

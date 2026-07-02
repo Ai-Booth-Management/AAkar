@@ -16,13 +16,19 @@ interface Volunteer {
   phone: string;
 }
 
+interface Task {
+  title: string;
+  status: string;
+}
+
 interface CampaignBoardProps {
   houses: House[];
   volunteers: Volunteer[];
   boothId: number;
+  tasks?: Task[];
 }
 
-export default function CampaignBoard({ houses, volunteers, boothId }: CampaignBoardProps) {
+export default function CampaignBoard({ houses, volunteers, boothId, tasks = [] }: CampaignBoardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedHouse, setSelectedHouse] = useState<House | null>(null);
   const [selectedVolunteerId, setSelectedVolunteerId] = useState<number | ''>('');
@@ -68,7 +74,7 @@ export default function CampaignBoard({ houses, volunteers, boothId }: CampaignB
     try {
       const res = await assignCampaignTaskAction(boothId, Number(selectedVolunteerId), selectedHouse.house_no);
       if (res.success) {
-        setSuccessMessage(`Assigned House #${selectedHouse.house_no} successfully!`);
+        setSuccessMessage('House assigned to be covered');
         setTimeout(() => setSuccessMessage(''), 3000);
         setSelectedHouse(null);
         setSelectedVolunteerId('');
@@ -150,9 +156,15 @@ export default function CampaignBoard({ houses, volunteers, boothId }: CampaignB
                     <Home size={16} color={isSelected ? gold : slate400} />
                     House #{house.house_no}
                   </div>
-                  <div style={{ backgroundColor: slate100, color: slate500, fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Users size={10} /> {house.voterCount} Voters
-                  </div>
+                  {tasks.some(t => t.title.includes(`House #${house.house_no}`)) ? (
+                    <div style={{ backgroundColor: green50, color: green700, fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <CheckCircle size={10} /> House assigned to be covered
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: slate100, color: slate500, fontSize: '10px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Users size={10} /> {house.voterCount} Voters
+                    </div>
+                  )}
                 </div>
                 <div style={{ fontSize: '12px', color: slate500, display: 'flex', alignItems: 'flex-start', gap: '4px', fontWeight: 500 }}>
                   <MapPin size={12} style={{ flexShrink: 0, marginTop: '2px', color: slate400 }} />

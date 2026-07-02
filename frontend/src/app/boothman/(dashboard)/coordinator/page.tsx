@@ -70,19 +70,7 @@ export default async function CoordinatorDashboard() {
     lng: booth.lng
   }];
 
-  const mapVolunteers = activeVolunteers.map((v: any) => ({
-    id: v.id,
-    name: v.name,
-    phone: v.phone,
-    status: v.status,
-    lat: v.lat,
-    lng: v.lng
-  }));
-
-  // Build a volunteer id -> location lookup using active volunteers assigned to this booth
-  const volLocationMap = new Map(activeVolunteers.map((v: any) => [v.id, { lat: v.lat, lng: v.lng }]));
-
-  let mapHouses = [];
+  let mapHouses: any[] = [];
   try {
     const housesPath = path.join(process.cwd(), 'prisma', 'houses.json');
     if (fs.existsSync(housesPath)) {
@@ -92,6 +80,30 @@ export default async function CoordinatorDashboard() {
   } catch (err) {
     console.error("Failed to load houses.json", err);
   }
+
+  const mapVolunteers = activeVolunteers.map((v: any, idx: number) => {
+    let lat = v.lat;
+    let lng = v.lng;
+    
+    // Snap volunteers to house locations since they live in these houses
+    if (mapHouses.length > 0) {
+      const house = mapHouses[idx % mapHouses.length];
+      lat = house.lat;
+      lng = house.lng;
+    }
+    
+    return {
+      id: v.id,
+      name: v.name,
+      phone: v.phone,
+      status: v.status,
+      lat,
+      lng
+    };
+  });
+
+  // Build a volunteer id -> location lookup using active volunteers assigned to this booth
+  const volLocationMap = new Map(mapVolunteers.map((v: any) => [v.id, { lat: v.lat, lng: v.lng }]));
 
   const mapTasks = booth.tasks.map((t: any, idx: number) => {
     // Use the assignee's real location if available
@@ -134,8 +146,8 @@ export default async function CoordinatorDashboard() {
               <Users className="text-blue-500" />
             </div>
             <div>
-              <span className="label">Assigned</span>
-              <span className="value">{activeVolunteers.length} / {booth.requiredVols}</span>
+              <span className="label">Assigned / Total</span>
+              <span className="value">{activeVolunteers.length} / {booth.volunteers.length}</span>
             </div>
           </div>
           <div className="stat-card">

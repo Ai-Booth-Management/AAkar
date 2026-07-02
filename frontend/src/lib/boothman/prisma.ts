@@ -21,7 +21,13 @@ function createMockModel(modelName: string) {
       let data = db[modelName] || [];
       if (args?.where) {
         data = data.filter((item: any) => {
-          return Object.keys(args.where).every(key => item[key] === args.where[key]);
+          return Object.keys(args.where).every(key => {
+            const val = args.where[key];
+            if (val !== null && typeof val === 'object' && 'not' in val) {
+              return item[key] !== val.not;
+            }
+            return item[key] === val;
+          });
         });
       }
       
@@ -49,7 +55,13 @@ function createMockModel(modelName: string) {
       let db = getDb();
       let data = db[modelName] || [];
       let item = data.find((item: any) => {
-        return Object.keys(args.where).every(key => item[key] === args.where[key]);
+        return Object.keys(args.where).every(key => {
+          const val = args.where[key];
+          if (val !== null && typeof val === 'object' && 'not' in val) {
+            return item[key] !== val.not;
+          }
+          return item[key] === val;
+        });
       });
       if (!item) return null;
       
@@ -123,7 +135,13 @@ function createMockModel(modelName: string) {
       let data = db[modelName] || [];
       if (args?.where) {
         data = data.filter((item: any) => {
-          return Object.keys(args.where).every(key => item[key] === args.where[key]);
+          return Object.keys(args.where).every(key => {
+            const val = args.where[key];
+            if (val !== null && typeof val === 'object' && 'not' in val) {
+              return item[key] !== val.not;
+            }
+            return item[key] === val;
+          });
         });
       }
       return data.length;
@@ -140,8 +158,8 @@ class MockPrismaClient {
   attendance = createMockModel('attendance');
 }
 
-const globalForPrisma = global as unknown as { prisma: MockPrismaClient }
+const globalForPrisma = global as unknown as { prismaBoothmanInstance: MockPrismaClient }
 
-export const prisma = globalForPrisma.prisma || new MockPrismaClient()
+export const prisma = globalForPrisma.prismaBoothmanInstance || new MockPrismaClient()
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prismaBoothmanInstance = prisma

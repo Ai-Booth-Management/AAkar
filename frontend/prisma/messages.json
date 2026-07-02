@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "direction": "from_above",
+    "is_read": false,
+    "subject": "URGENT: Voter Slip Distribution",
+    "message": "All Booth Coordinators must ensure that 100% of voter slips are distributed by tomorrow evening. Please assign tasks to your volunteers immediately and verify through the Task Board.",
+    "sender_name": "Mandal Manager",
+    "created_at": "2026-07-02T08:00:00Z",
+    "media_urls": []
+  },
+  {
+    "id": 2,
+    "direction": "from_below",
+    "is_read": true,
+    "subject": "Missing House Numbers in Sector 4",
+    "message": "We are unable to locate 15 households in Sector 4 block B. The address mappings seem incorrect. Need guidance on how to proceed.",
+    "sender_name": "Ravi Kumar (Volunteer)",
+    "created_at": "2026-07-01T15:30:00Z",
+    "media_urls": []
+  },
+  {
+    "id": 3,
+    "direction": "my_report",
+    "is_read": true,
+    "subject": "End of Day Status",
+    "message": "Covered 120 households today. Encountered resistance at 2 houses due to local disputes. Will re-attempt tomorrow with senior volunteers.",
+    "recipient_name": "Mandal Manager",
+    "created_at": "2026-07-01T19:00:00Z",
+    "media_urls": []
+  }
+]

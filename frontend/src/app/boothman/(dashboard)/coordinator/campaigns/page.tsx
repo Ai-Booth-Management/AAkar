@@ -15,7 +15,8 @@ export default async function CampaignsPage() {
     include: {
       volunteers: {
         where: { status: 'APPROVED' }
-      }
+      },
+      tasks: true
     }
   });
 
@@ -71,6 +72,7 @@ export default async function CampaignsPage() {
           houses={houses} 
           volunteers={booth.volunteers} 
           boothId={booth.id} 
+          tasks={booth.tasks}
         />
       </main>
     </div>

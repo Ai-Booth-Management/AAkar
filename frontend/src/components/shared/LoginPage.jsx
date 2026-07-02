@@ -8,6 +8,7 @@ import {
 import logo from '../../assets/logo.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { boothLoginAction } from '../../app/boothman/actions';
 
 export default function LoginPage() {
     const [view, setView] = useState('login');
@@ -60,7 +61,16 @@ export default function LoginPage() {
         try {
             if (portalMode === 'election') {
                 if (view === 'login') {
-                    await login(emailInput, passwordInput);
+                    if (selectedRole === 'Boothman') {
+                        const fd = new FormData();
+                        fd.append('partNumber', emailInput);
+                        fd.append('password', passwordInput);
+                        const res = await boothLoginAction(fd);
+                        if (res?.error) throw new Error(res.error);
+                        return; // Redirect is handled by the action
+                    } else {
+                        await login(emailInput, passwordInput);
+                    }
                 } else {
                     const role = userType;
                     const hierarchy = {
@@ -223,9 +233,14 @@ export default function LoginPage() {
                                                 <option value="Constituency Manager">Constituency Manager</option>
                                                 <option value="Mandal Manager">Mandal Manager</option>
                                                 <option value="Booth Manager">Booth Manager</option>
+                                                <option value="Boothman">Boothman</option>
                                             </select>
                                         </div>
-                                        <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
+                                        {selectedRole === 'Boothman' ? (
+                                            <FlatField label="Part Number" icon={<BadgeCheck size={16} />} placeholder="e.g. AC38-001" value={emailInput} onChange={setEmailInput} />
+                                        ) : (
+                                            <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
+                                        )}
                                     </>
                                 )}
                                 <FlatField label="Security Key" icon={<Lock size={16} />} placeholder="••••••••" type="password" value={passwordInput} onChange={setPasswordInput} />
