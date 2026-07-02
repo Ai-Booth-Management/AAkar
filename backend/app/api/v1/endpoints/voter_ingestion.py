@@ -72,7 +72,12 @@ async def ingest_voters(
         voter.house_no = v.clean_house_no,
         voter.parent_relation = v.`Guardian Relation`,
         voter.parent_name = v.`Father/Husband Name`,
-        voter.booth_id = $booth_id
+        voter.booth_id = $booth_id,
+        voter.occupation = coalesce(v.Occupation, ""),
+        voter.qualification = coalesce(v.Qualification, ""),
+        voter.religion = coalesce(v.Religion, ""),
+        voter.income = coalesce(v.Income, ""),
+        voter.caste = coalesce(v.Caste, "")
     
     // Create or Link Booth
     MERGE (b:Booth {booth_id: $booth_id})
@@ -98,6 +103,12 @@ async def ingest_voters(
         update_booth_metrics()
         categorize_voters()
         update_risk_scores()
+        
+        try:
+            from app.api.v1.endpoints.ward_identity import clear_ward_identity_cache
+            clear_ward_identity_cache()
+        except Exception:
+            pass
         
     except Exception as neo_err:
         print(f"Neo4j Error: {neo_err}")

@@ -38,6 +38,17 @@ const CampaignMap = ({
   onCampaignPinDrop,
   activeCampaigns,
   mapRef,
+  voterDemoMap = {},
+  filterActive = false,
+  filterSummary = null,
+  setFilterDrawerOpen = () => {},
+  activeFilters = null,
+  filterTags = [],
+  onClearFilter = () => {},
+  identityMode = false,
+  setIdentityMode = () => {},
+  clickedWardIdentity = null,
+  setClickedWardIdentity = () => {},
 }) => {
   const mapContainerRef  = useRef(null);
   const geojsonLayerRef  = useRef(null);
@@ -49,13 +60,44 @@ const CampaignMap = ({
   const [searchQuery,        setSearchQuery]        = useState('');
   const [searchResults,      setSearchResults]      = useState([]);
   const [searching,          setSearching]          = useState(false);
+  const [showCampaigns,      setShowCampaigns]      = useState(false);
+  const [identityData,       setIdentityData]       = useState(null);  // { wards, palette, field_labels }
+  const identityLayerRef = useRef(null);
 
   const CONSTITUENCIES = mode === 'new' || mode === 'blended' || mode === 'abs' ? CONSTITUENCIES_NEW : CONSTITUENCIES_OLD;
+
+  const getDemoData = useCallback((cName) => {
+    if (!voterDemoMap || !voterDemoMap.constituencies || !cName) return { matching: 0, total: 0 };
+    const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const target = norm(cName);
+    const key = Object.keys(voterDemoMap.constituencies).find(k => norm(k) === target);
+    return key ? voterDemoMap.constituencies[key] : { matching: 0, total: 0 };
+  }, [voterDemoMap]);
+
+  const getWardDemoData = useCallback((wNo) => {
+    if (!voterDemoMap || !voterDemoMap.wards || !wNo) return { matching: 0, total: 0 };
+    const target = String(wNo).trim().toLowerCase();
+    const key = Object.keys(voterDemoMap.wards).find(k => String(k).trim().toLowerCase() === target);
+    return key ? voterDemoMap.wards[key] : { matching: 0, total: 0 };
+  }, [voterDemoMap]);
 
   const pinModeActiveRef = useRef(pinModeActive);
   useEffect(() => {
     pinModeActiveRef.current = pinModeActive;
   }, [pinModeActive]);
+
+  // ── Ward Identity: fetch once when toggled on ──────────────────────────
+  useEffect(() => {
+    if (!identityMode) return;
+    if (identityData) return;  // already loaded
+    const token = localStorage.getItem('access_token');
+    fetch('/api/v1/voters/demographics/ward-identity', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(d => setIdentityData(d))
+      .catch(err => console.error('[WardIdentity] fetch error:', err));
+  }, [identityMode, identityData]);
 
   const findBoundariesForCoords = useCallback((lat, lng) => {
     let resolvedDistrict = '';
@@ -222,8 +264,27 @@ const CampaignMap = ({
 
         const dcov = coverageMap[dt] || {};
         const dcNames = CONSTITUENCIES[dt] || [];
-        const ratio = dcNames.length ? dcNames.filter(c => dcov[c]).length / dcNames.length : 0;
-        const covFill = ratio >= 1 ? '#22c55e' : ratio >= 0.6 ? '#84cc16' : ratio >= 0.3 ? '#f59e0b' : '#ef4444';
+
+        if (filterActive && Object.keys(voterDemoMap).length > 0) {
+          // Aggregate demographic ratio across all constituencies in this district
+          const dcVoterData = dcNames.map(c => getDemoData(c)).filter(Boolean);
+          const distTotal   = dcVoterData.reduce((s, d) => s + d.total,    0);
+          const distMatch   = dcVoterData.reduce((s, d) => s + d.matching, 0);
+          const ratio = distTotal ? distMatch / distTotal : 0;
+          const covFill = ratio >= 0.6 ? '#22c55e' : ratio >= 0.3 ? '#f59e0b' : '#ef4444';
+          if (hasSel) {
+            return isSelected
+              ? { color: '#1e40af', weight: 2.5, fillColor: 'transparent', fillOpacity: 0 }
+              : { color: '#cbd5e1', weight: 1, fillColor: '#f1f5f9', fillOpacity: 0.05 };
+          }
+          return { color: '#1e40af', weight: 1.5, fillColor: covFill, fillOpacity: 0.65 };
+        }
+
+        const volsInDistrict = volunteers.filter(v => normDistrict(v.district || '') === normDistrict(dt));
+        const completed = volsInDistrict.filter(v => v.task_status === 'completed').length;
+        const totalTasks = volsInDistrict.filter(v => ['assigned', 'accepted', 'completed'].includes(v.task_status)).length;
+        const taskRatio = totalTasks > 0 ? completed / totalTasks : 0;
+        const covFill = taskRatio >= 0.8 ? '#22c55e' : taskRatio >= 0.3 ? '#f59e0b' : '#ef4444';
 
         if (hasSel) {
           return isSelected
@@ -239,10 +300,28 @@ const CampaignMap = ({
         const covered = dcNames.filter(c => dcov[c]).length;
 
         if (!selectedDistrict && mode !== 'blended') {
-          lyr.bindTooltip(
-            `<strong>${dt} Delhi</strong><br/>Coverage: ${covered}/${dcNames.length} constituencies`,
-            { sticky: true }
-          );
+          if (filterActive) {
+            const dcVoterData = dcNames.map(c => getDemoData(c)).filter(Boolean);
+            const distTotal   = dcVoterData.reduce((s, d) => s + d.total,    0);
+            const distMatch   = dcVoterData.reduce((s, d) => s + d.matching, 0);
+            const ratio = distTotal ? distMatch / distTotal : 0;
+            lyr.bindTooltip(
+              `<strong>${dt} Delhi</strong><br/>` +
+              `<span style="color:#f59e0b;font-weight:800">🎯 Matching: ${distMatch.toLocaleString()} / ${distTotal.toLocaleString()} voters (${(ratio * 100).toFixed(0)}%)</span>`,
+              { sticky: true }
+            );
+          } else {
+            const volsInDistrict = volunteers.filter(v => normDistrict(v.district || '') === normDistrict(dt));
+            const completed = volsInDistrict.filter(v => v.task_status === 'completed').length;
+            const totalTasks = volsInDistrict.filter(v => ['assigned', 'accepted', 'completed'].includes(v.task_status)).length;
+            const pct = totalTasks > 0 ? (completed / totalTasks) * 100 : 0;
+            lyr.bindTooltip(
+              `<strong>${dt} Delhi</strong><br/>` +
+              `Volunteers: ${volsInDistrict.length}<br/>` +
+              `Task Completion: ${completed}/${totalTasks} (${pct.toFixed(0)}%)`,
+              { sticky: true }
+            );
+          }
         }
 
         lyr.on({
@@ -319,7 +398,22 @@ const CampaignMap = ({
           return {
             color: isSelected ? saffron : '#1e293b',
             weight: isSelected ? 3 : 1.5,
-            fillColor: isCovered ? '#22c55e' : '#ef4444',
+            fillColor: (() => {
+              const demoData = filterActive ? getDemoData(displayName) : null;
+              if (demoData) {
+                const { matching, total } = demoData;
+                const r = total ? matching / total : 0;
+                return r >= 0.6 ? '#22c55e' : r >= 0.3 ? '#f59e0b' : '#ef4444';
+              }
+              const volsInConstit = volunteers.filter(v =>
+                normDistrict(v.district || '') === normDistrict(selectedDistrict) &&
+                normConstit(v.constituency || '') === normConstit(displayName)
+              );
+              const completed = volsInConstit.filter(v => v.task_status === 'completed').length;
+              const totalTasks = volsInConstit.filter(v => ['assigned', 'accepted', 'completed'].includes(v.task_status)).length;
+              const taskRatio = totalTasks > 0 ? completed / totalTasks : 0;
+              return taskRatio >= 0.8 ? '#22c55e' : taskRatio >= 0.3 ? '#f59e0b' : '#ef4444';
+            })(),
             fillOpacity: isSelected ? 0.8 : 0.45
           };
         },
@@ -330,10 +424,38 @@ const CampaignMap = ({
           const isCovered = coverageMap[selectedDistrict]?.[displayName] || false;
 
           if (mode !== 'blended') {
-            lyr.bindTooltip(
-              `<strong>${displayName} Constituency</strong><br/>Status: ${isCovered ? 'Covered' : 'Pending'}`,
-              { sticky: true }
-            );
+            if (filterActive) {
+              const demoData = getDemoData(displayName);
+              if (demoData && demoData.total > 0) {
+                const { matching, total } = demoData;
+                const ratio = total ? matching / total : 0;
+                lyr.bindTooltip(
+                  `<strong>${displayName} Constituency</strong><br/>` +
+                  `<span style="color:#f59e0b;font-weight:800">🎯 Matching: ${matching.toLocaleString()} / ${total.toLocaleString()} voters (${(ratio * 100).toFixed(0)}%)</span>`,
+                  { sticky: true }
+                );
+              } else {
+                lyr.bindTooltip(
+                  `<strong>${displayName} Constituency</strong><br/>` +
+                  `<span style="color:#f59e0b;font-weight:800">🎯 Matching: 0 / 0 voters (0%)</span>`,
+                  { sticky: true }
+                );
+              }
+            } else {
+              const volsInConstit = volunteers.filter(v =>
+                normDistrict(v.district || '') === normDistrict(selectedDistrict) &&
+                normConstit(v.constituency || '') === normConstit(displayName)
+              );
+              const completed = volsInConstit.filter(v => v.task_status === 'completed').length;
+              const totalTasks = volsInConstit.filter(v => ['assigned', 'accepted', 'completed'].includes(v.task_status)).length;
+              const pct = totalTasks > 0 ? (completed / totalTasks) * 100 : 0;
+              lyr.bindTooltip(
+                `<strong>${displayName} Constituency</strong><br/>` +
+                `Volunteers: ${volsInConstit.length}<br/>` +
+                `Task Completion: ${completed}/${totalTasks} (${pct.toFixed(0)}%)`,
+                { sticky: true }
+              );
+            }
           }
 
           lyr.on({
@@ -392,37 +514,77 @@ const CampaignMap = ({
 
       wLayer = L.geoJSON(filteredWardFeatures, {
         style: (feature) => {
-          const isSelected = selectedWard === feature.properties.Ward_No;
+          const isSelected = String(selectedWard) === String(feature.properties.Ward_No);
+          const wNo = feature.properties.Ward_No || '';
+          const mapping = wardToConstit.find(w => String(w.Ward_No) === String(wNo));
+          const constName = mapping ? mapping.Constituency : '';
+          const demoData = filterActive ? getWardDemoData(wNo) : null;
+
+          let fillCol = '#ef4444';
+          if (demoData) {
+            const { matching, total } = demoData;
+            const r = total ? matching / total : 0;
+            fillCol = r >= 0.6 ? '#22c55e' : r >= 0.3 ? '#f59e0b' : '#ef4444';
+          } else {
+            const volsInWard = volunteers.filter(v => 
+              v.lat && v.lng && isPointInGeometry(v.lng, v.lat, feature.geometry)
+            );
+            const completed = volsInWard.filter(v => v.task_status === 'completed').length;
+            const totalTasks = volsInWard.filter(v => ['assigned', 'accepted', 'completed'].includes(v.task_status)).length;
+            const taskRatio = totalTasks > 0 ? completed / totalTasks : 0;
+            fillCol = taskRatio >= 0.8 ? '#22c55e' : taskRatio >= 0.3 ? '#f59e0b' : '#ef4444';
+          }
+
           return {
             color: isSelected ? saffron : '#4f46e5',
             weight: isSelected ? 3 : 1.5,
             dashArray: '4, 4',
-            fillColor: '#818cf8',
-            fillOpacity: isSelected ? 0.3 : 0.1
+            fillColor: fillCol,
+            fillOpacity: isSelected ? 0.5 : 0.3
           };
         },
         onEachFeature: (feature, lyr) => {
           const wName = feature.properties.Ward_Name || '';
           const wNo = feature.properties.Ward_No || '';
           
-          const volsInWard = volunteers.filter(v => 
-            v.lat && v.lng && isPointInGeometry(v.lng, v.lat, feature.geometry)
-          );
-          
-          const unassignedCount = volsInWard.filter(v => v.task_status === 'unassigned').length;
-          const assignedCount = volsInWard.filter(v => v.task_status === 'assigned').length;
-          const acceptedCount = volsInWard.filter(v => v.task_status === 'accepted').length;
-          const completedCount = volsInWard.filter(v => v.task_status === 'completed').length;
-
-          lyr.bindTooltip(
-            `<strong>Ward: ${wName} (${wNo})</strong><br/>` +
-            `Volunteers: ${volsInWard.length}<br/>` +
-            `<span style="color:#64748b">●</span> Unassigned: ${unassignedCount}<br/>` +
-            `<span style="color:#d1d5db;text-shadow:0 0 2px #000">●</span> Assigned: ${assignedCount}<br/>` +
-            `<span style="color:#3b82f6">●</span> Accepted: ${acceptedCount}<br/>` +
-            `<span style="color:#22c55e">●</span> Completed: ${completedCount}`,
-            { sticky: true }
-          );
+          if (filterActive) {
+            const demoData = getWardDemoData(wNo);
+            if (demoData && demoData.total > 0) {
+              const { matching, total } = demoData;
+              const ratio = total ? matching / total : 0;
+              lyr.bindTooltip(
+                `<strong>Ward: ${wName} (${wNo})</strong><br/>` +
+                `<span style="color:#f59e0b;font-weight:800">🎯 Matching: ${matching.toLocaleString()} / ${total.toLocaleString()} voters (${(ratio * 100).toFixed(0)}%)</span>`,
+                { sticky: true }
+              );
+            } else {
+              lyr.bindTooltip(
+                `<strong>Ward: ${wName} (${wNo})</strong><br/>` +
+                `<span style="color:#f59e0b;font-weight:800">🎯 Matching: 0 / 0 voters (0%)</span>`,
+                { sticky: true }
+              );
+            }
+          } else {
+            const volsInWard = volunteers.filter(v => 
+              v.lat && v.lng && isPointInGeometry(v.lng, v.lat, feature.geometry)
+            );
+            const unassignedCount = volsInWard.filter(v => v.task_status === 'unassigned').length;
+            const assignedCount = volsInWard.filter(v => v.task_status === 'assigned').length;
+            const acceptedCount = volsInWard.filter(v => v.task_status === 'accepted').length;
+            const completedCount = volsInWard.filter(v => v.task_status === 'completed').length;
+            const totalTasks = assignedCount + acceptedCount + completedCount;
+            const pct = totalTasks > 0 ? (completedCount / totalTasks) * 100 : 0;
+            lyr.bindTooltip(
+              `<strong>Ward: ${wName} (${wNo})</strong><br/>` +
+              `Volunteers: ${volsInWard.length}<br/>` +
+              `Task Completion: ${completedCount}/${totalTasks} (${pct.toFixed(0)}%)<br/>` +
+              `<span style="color:#64748b">●</span> Unassigned: ${unassignedCount}<br/>` +
+              `<span style="color:#d1d5db;text-shadow:0 0 2px #000">●</span> Assigned: ${assignedCount}<br/>` +
+              `<span style="color:#3b82f6">●</span> Accepted: ${acceptedCount}<br/>` +
+              `<span style="color:#22c55e">●</span> Completed: ${completedCount}`,
+              { sticky: true }
+            );
+          }
 
           lyr.on({
             click: (e) => {
@@ -439,15 +601,15 @@ const CampaignMap = ({
                 setPinModeActive(false);
                 return;
               }
-              if (lockWard && lockWard !== wNo) return;
+              if (lockWard && String(lockWard) !== String(wNo)) return;
               setSelectedWard(wNo);
             },
             mouseover: (e) => {
-              const isSelected = selectedWard === wNo;
+              const isSelected = String(selectedWard) === String(wNo);
               e.target.setStyle({ fillOpacity: 0.3, weight: isSelected ? 3.5 : 2.5 });
             },
             mouseout: (e) => {
-              const isSelected = selectedWard === wNo;
+              const isSelected = String(selectedWard) === String(wNo);
               e.target.setStyle({ fillOpacity: isSelected ? 0.3 : 0.1, weight: isSelected ? 3 : 1.5 });
             }
           });
@@ -464,7 +626,7 @@ const CampaignMap = ({
       let zoomed = false;
       if (selectedWard && wLayer) {
         wLayer.eachLayer(l => {
-          if (l.feature?.properties?.Ward_No === selectedWard) {
+          if (String(l.feature?.properties?.Ward_No) === String(selectedWard)) {
             map.fitBounds(l.getBounds());
             zoomed = true;
           }
@@ -551,7 +713,7 @@ const CampaignMap = ({
         }
       }
     });
-  }, [geojsonData, constitsData, wardsData, wardToConstit, volunteers, selectedDistrict, selectedConstit, selectedWard, coverageMap, lockDistrict, lockConstituency, lockWard, mode, campaignMode, onCampaignPinDrop, findBoundariesForCoords, mapRef]);
+  }, [geojsonData, constitsData, wardsData, wardToConstit, volunteers, selectedDistrict, selectedConstit, selectedWard, coverageMap, lockDistrict, lockConstituency, lockWard, mode, campaignMode, onCampaignPinDrop, findBoundariesForCoords, mapRef, voterDemoMap, filterActive]);
 
   // Temp pin markerpopup
   const tempMarkerRef = useRef(null);
@@ -678,7 +840,7 @@ const CampaignMap = ({
     volLayerRef.current.forEach(m => map.removeLayer(m));
     volLayerRef.current = [];
 
-    if (mode === 'blended') return;
+    if (mode === 'blended' || filterActive || identityMode) return;
 
     volunteers.forEach(v => {
       if (!v.lat || !v.lng) return;
@@ -733,7 +895,7 @@ const CampaignMap = ({
       marker.addTo(map);
       volLayerRef.current.push(marker);
     });
-  }, [volunteers, mode, lockDistrict, lockConstituency, lockWard, selectedDistrict, selectedConstit, selectedWard, wardsData, setSelectedVol, mapRef]);
+  }, [volunteers, mode, lockDistrict, lockConstituency, lockWard, selectedDistrict, selectedConstit, selectedWard, wardsData, setSelectedVol, mapRef, filterActive, identityMode]);
 
   // Campaign markers
   const campaignLayerRef = useRef(null);
@@ -747,7 +909,7 @@ const CampaignMap = ({
       campaignLayerRef.current = null;
     }
 
-    if (activeCampaigns && activeCampaigns.length > 0) {
+    if (showCampaigns && activeCampaigns && activeCampaigns.length > 0) {
       const markers = activeCampaigns.map(c => {
         if (!c.lat || !c.lng) return null;
         const icon = L.divIcon({
@@ -774,7 +936,7 @@ const CampaignMap = ({
         campaignLayerRef.current = layer;
       }
     }
-  }, [activeCampaigns, campaignMode, mapRef]);
+  }, [activeCampaigns, campaignMode, mapRef, showCampaigns]);
 
   // Heatmap for Blended Mode
   useEffect(() => {
@@ -788,7 +950,7 @@ const CampaignMap = ({
       heatLayerRef.current = null;
     }
 
-    if (mode === 'blended') {
+    if (mode === 'blended' && !identityMode) {
       const points = volunteers
         .filter(v => v.lat && v.lng)
         .map(v => {
@@ -814,7 +976,77 @@ const CampaignMap = ({
         heatLayerRef.current = heatLayer;
       }
     }
-  }, [volunteers, mode, mapRef]);
+  }, [volunteers, mode, mapRef, identityMode]);
+
+  // ── Ward Identity layer rendering ──────────────────────────────────────
+  useEffect(() => {
+    if (!mapRef.current || !wardsData) return;
+    const L = require('leaflet');
+    const map = mapRef.current;
+
+    // Remove existing identity layer
+    if (identityLayerRef.current) {
+      map.removeLayer(identityLayerRef.current);
+      identityLayerRef.current = null;
+    }
+
+    if (!identityMode || !identityData || !identityData.wards) return;
+
+    const { wards, palette } = identityData;
+
+    const layer = L.geoJSON(wardsData, {
+      filter: (feature) => {
+        return feature.properties && feature.properties.Ward_No && feature.properties.Ward_Name;
+      },
+      style: (feature) => {
+        const wNo = String(feature.properties.Ward_No || '');
+        const info = wards[wNo];
+        const color = info ? (palette[info.identity_value] || '#94a3b8') : '#e2e8f0';
+        return {
+          fillColor: color,
+          fillOpacity: info ? 0.72 : 0.15,
+          color: '#ffffff',
+          weight: 0.8,
+          opacity: 0.9,
+        };
+      },
+      onEachFeature: (feature, lyr) => {
+        const wNo   = String(feature.properties.Ward_No || '');
+        const wName = feature.properties.Ward_Name || wNo;
+        const info  = wards[wNo];
+        if (info) {
+          const fieldLabel = identityData.field_labels?.[info.identity_field] || info.identity_field;
+          lyr.bindTooltip(
+            `<strong>Ward ${wNo} — ${wName}</strong><br/>` +
+            `<span style="color:#475569;font-size:10px">${fieldLabel}</span><br/>` +
+            `<strong>${info.identity_value}</strong><br/>` +
+            `Ward: <strong>${info.ward_pct}%</strong> &nbsp;|&nbsp; ` +
+            `Delhi avg: ${info.city_avg_pct}% &nbsp;|&nbsp; ` +
+            `<strong style="color:#16a34a">+${info.deviation}pp</strong><br/>` +
+            `<small>${info.total_voters.toLocaleString()} voters</small>`,
+            { sticky: true, className: 'ward-identity-tooltip' }
+          );
+          lyr.on('click', () => {
+            if (lyr.getBounds) {
+              map.fitBounds(lyr.getBounds(), { maxZoom: 14, animate: true });
+            }
+            setClickedWardIdentity({
+              wNo,
+              wName,
+              ...info
+            });
+          });
+        } else {
+          lyr.bindTooltip(
+            `<strong>Ward ${wNo} — ${wName}</strong><br/><em>No identity data</em>`,
+            { sticky: true }
+          );
+        }
+      },
+    }).addTo(map);
+
+    identityLayerRef.current = layer;
+  }, [identityMode, identityData, wardsData, mapRef]);
 
   return (
     <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0 }}>
@@ -827,7 +1059,87 @@ const CampaignMap = ({
             {selectedDistrict ? `${selectedConstit || 'All constituencies'}` : 'Click on district boundary polygons to zoom and view volunteers'}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {/* Filter active: pills + matching count + clear */}
+          {filterActive && activeFilters && (
+            <>
+              {filterTags.map(tag => (
+                <span key={tag} style={{
+                  padding: '4px 9px', fontSize: 10, fontWeight: 800,
+                  background: '#f1f5f9', color: navy, borderRadius: 4,
+                  border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {tag}
+                </span>
+              ))}
+              {filterSummary && (
+                <span style={{
+                  padding: '4px 9px', fontSize: 10, fontWeight: 800,
+                  background: '#fefce8', color: '#92400e',
+                  border: '1px solid #fde68a', borderRadius: 4,
+                  display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
+                }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }} />
+                  {filterSummary.total_matching?.toLocaleString()} matching voters
+                  {filterSummary.is_simulated ? ' (demo)' : ''}
+                </span>
+              )}
+              <button
+                onClick={onClearFilter}
+                style={{
+                  padding: '4px 9px', fontSize: 10, fontWeight: 900,
+                  background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2',
+                  borderRadius: 4, cursor: 'pointer', display: 'flex',
+                  alignItems: 'center', gap: 3, whiteSpace: 'nowrap', transition: 'all 0.1s ease',
+                }}
+              >
+                ✕ Clear
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setFilterDrawerOpen(true)}
+            style={{
+              padding: '6px 12px', fontSize: '11px', fontWeight: '800', borderRadius: 4,
+              border: filterActive ? `2px solid ${saffron}` : '1px solid #cbd5e1',
+              cursor: 'pointer',
+              background: filterActive ? '#fefce8' : '#ffffff',
+              color: filterActive ? navy : '#64748b',
+              display: 'flex', alignItems: 'center', gap: 4,
+              transition: 'all 0.15s ease',
+            }}
+          >
+            🎯 {filterActive ? 'Filter ON' : 'Filter'}
+          </button>
+          <button
+            onClick={() => setShowCampaigns(p => !p)}
+            style={{
+              padding: '6px 12px', fontSize: '11px', fontWeight: '800', borderRadius: 4,
+              border: showCampaigns ? `2px solid ${saffron}` : '1px solid #cbd5e1',
+              cursor: 'pointer',
+              background: showCampaigns ? '#fefce8' : '#ffffff',
+              color: showCampaigns ? navy : '#64748b',
+              display: 'flex', alignItems: 'center', gap: 4,
+              transition: 'all 0.15s ease',
+            }}
+          >
+            📢 {showCampaigns ? 'Campaigns ON' : 'Show Campaigns'}
+          </button>
+          <button
+            onClick={() => setIdentityMode(p => !p)}
+            style={{
+              padding: '6px 12px', fontSize: '11px', fontWeight: '800', borderRadius: 4,
+              border: identityMode ? '2px solid #6366f1' : '1px solid #cbd5e1',
+              cursor: 'pointer',
+              background: identityMode ? '#eef2ff' : '#ffffff',
+              color: identityMode ? '#4338ca' : '#64748b',
+              display: 'flex', alignItems: 'center', gap: 4,
+              transition: 'all 0.15s ease',
+            }}
+          >
+            🧠 {identityMode ? 'Identity ON' : 'Ward Identity'}
+          </button>
           <span style={{ fontSize: '10px', fontWeight: '800', padding: '3px 8px', background: '#e2e8f0', color: '#475569', borderRadius: 2 }}>DELHI_NCT</span>
         </div>
       </div>
@@ -902,56 +1214,80 @@ const CampaignMap = ({
           </button>
         </div>
 
-        <div style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 20,
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
-          padding: '12px 16px',
-          zIndex: 1000,
-          borderRadius: 4,
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8
-        }}>
-          <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em' }}>COVERAGE STATUS</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '11px', fontWeight: '700', color: '#475569' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#22c55e', borderRadius: 2 }} />
-              Fully covered
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#f59e0b', borderRadius: 2 }} />
-              Partial
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#ef4444', borderRadius: 2 }} />
-              Not started
-            </div>
+        {/* ── Ward Identity Legend / Coverage Legend swap ── */}
+        {identityMode && identityData && identityData.palette ? (
+          <div style={{
+            position: 'absolute', bottom: 20, left: 20,
+            background: '#ffffff', border: '1px solid #e2e8f0',
+            padding: '12px 16px', zIndex: 1000, borderRadius: 4,
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08)',
+            display: 'flex', flexDirection: 'column', gap: 6,
+            maxHeight: 340, overflowY: 'auto', minWidth: 200,
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em', marginBottom: 2 }}>WARD IDENTITY</span>
+            <span style={{ fontSize: '9px', color: '#64748b', marginBottom: 4 }}>Strongest demographic deviation from Delhi avg</span>
+            {Object.entries(identityData.palette)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([val, color]) => (
+                <div key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '10px', fontWeight: '700', color: '#374151' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: 2, background: color, flexShrink: 0 }} />
+                  {val}
+                </div>
+              ))
+            }
           </div>
+        ) : (
+          <div style={{
+            position: 'absolute',
+            bottom: 20,
+            left: 20,
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            padding: '12px 16px',
+            zIndex: 1000,
+            borderRadius: 4,
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em' }}>COVERAGE STATUS</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '11px', fontWeight: '700', color: '#475569' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#22c55e', borderRadius: 2 }} />
+                Fully covered
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#f59e0b', borderRadius: 2 }} />
+                Partial
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#ef4444', borderRadius: 2 }} />
+                Not started
+              </div>
+            </div>
 
-          <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em', marginTop: 4 }}>VOLUNTEERS</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '11px', fontWeight: '700', color: '#475569' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#22c55e', borderRadius: '50%' }} />
-              Completed work (Green)
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#3b82f6', borderRadius: '50%' }} />
-              Accepted (Blue)
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#ffffff', border: '1.5px solid #04122e', borderRadius: '50%' }} />
-              Assigned (White)
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 10, height: 10, background: '#9ca3af', borderRadius: '50%' }} />
-              Unassigned (Grey)
+            <span style={{ fontSize: '10px', fontWeight: '900', color: navy, letterSpacing: '0.08em', marginTop: 4 }}>VOLUNTEERS</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '11px', fontWeight: '700', color: '#475569' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#22c55e', borderRadius: '50%' }} />
+                Completed work (Green)
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#3b82f6', borderRadius: '50%' }} />
+                Accepted (Blue)
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#ffffff', border: '1.5px solid #04122e', borderRadius: '50%' }} />
+                Assigned (White)
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 10, height: 10, background: '#9ca3af', borderRadius: '50%' }} />
+                Unassigned (Grey)
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

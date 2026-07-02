@@ -29,6 +29,7 @@ import VolunteerList from '../campaign/VolunteerList';
 import CoverageTable from '../campaign/CoverageTable';
 import CampaignMap from '../campaign/CampaignMap';
 import CampaignCreator from '../campaign/CampaignCreator';
+import VoterFilterDrawer from '../campaign/VoterFilterDrawer';
 
 const API = '/api/v1';
 
@@ -127,6 +128,43 @@ const CampaignPanel = () => {
   const [showCampaignCreator, setShowCampaignCreator] = useState(false);
   const [activeCampaigns,    setActiveCampaigns]    = useState([]);
   const [campaignsLoaded,    setCampaignsLoaded]    = useState(false);
+
+  // Voter demographics filter
+  const [filterDrawerOpen,   setFilterDrawerOpen]   = useState(false);
+  const [filterActive,       setFilterActive]       = useState(false);
+  const [filterLoading,      setFilterLoading]      = useState(false);
+  const [voterDemoMap,       setVoterDemoMap]       = useState({});   // { constituency: { matching, total } }
+  const [filterSummary,      setFilterSummary]      = useState(null);
+  const [activeFilters,      setActiveFilters]      = useState(null);
+
+  // Ward Identity state
+  const [identityMode,       setIdentityMode]       = useState(false);
+  const [clickedWardIdentity, setClickedWardIdentity] = useState(null);
+
+  // Clear clicked ward identity when identity mode is toggled off
+  useEffect(() => {
+    if (!identityMode) {
+      setClickedWardIdentity(null);
+    }
+  }, [identityMode]);
+
+  const getFilterTags = () => {
+    if (!activeFilters) return [];
+    const tags = [];
+    const f = activeFilters;
+    if (f.age_min || f.age_max) {
+      if (f.age_min && f.age_max) tags.push(`Age: ${f.age_min}-${f.age_max}`);
+      else if (f.age_min) tags.push(`Age: ≥${f.age_min}`);
+      else if (f.age_max) tags.push(`Age: ≤${f.age_max}`);
+    }
+    if (f.gender && f.gender.length) tags.push(`Gender: ${f.gender.join(', ')}`);
+    if (f.occupation) tags.push(`Job: ${f.occupation}`);
+    if (f.qualification && f.qualification.length) tags.push(`Edu: ${f.qualification.join(', ')}`);
+    if (f.religion && f.religion.length) tags.push(`Religion: ${f.religion.join(', ')}`);
+    if (f.income && f.income.length) tags.push(`Income: ${f.income.join(', ')}`);
+    if (f.caste) tags.push(`Caste: ${f.caste}`);
+    return tags;
+  };
 
   const CONSTITUENCIES = mode === 'new' || mode === 'blended' || mode === 'abs' ? CONSTITUENCIES_NEW : CONSTITUENCIES_OLD;
 
@@ -302,6 +340,21 @@ const CampaignPanel = () => {
     }
   }, [selectedDistrict, currentUser, loadCoverage, mode, CONSTITUENCIES]);
 
+  const handleMarkWardCovered = useCallback(async (wardName) => {
+    const wardVols = volunteers.filter(v => 
+      (v.block && v.block.toLowerCase() === wardName.toLowerCase()) ||
+      (v.area_name && v.area_name.toLowerCase() === wardName.toLowerCase())
+    );
+    for (const v of wardVols) {
+      await apiMarkCovered(v.id, mode);
+    }
+    setVolunteers(prev => prev.map(v => {
+      const isMatch = (v.block && v.block.toLowerCase() === wardName.toLowerCase()) ||
+                      (v.area_name && v.area_name.toLowerCase() === wardName.toLowerCase());
+      return isMatch ? { ...v, coverage_status: 'covered', task_status: 'completed' } : v;
+    }));
+  }, [volunteers, mode]);
+
   const handleDistrictClick = (d) => {
     setSelectedDistrict(d);
     setSelectedConstit('');
@@ -358,6 +411,39 @@ const CampaignPanel = () => {
     setCampaignsLoaded(false);
   }, []);
 
+  // Apply voter demographics filter → fetch from backend → update map
+  const handleApplyFilter = useCallback(async (queryParams, rawFilters) => {
+    setFilterLoading(true);
+    try {
+      const qs = new URLSearchParams(
+        Object.fromEntries(Object.entries(queryParams).map(([k, v]) => [k, String(v)]))
+      ).toString();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const r = await fetch(`/api/v1/voters/demographics/constituency-summary${qs ? '?' + qs : ''}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setVoterDemoMap(data || {});
+        setFilterSummary(data.filter_summary || null);
+        setFilterActive(true);
+        setActiveFilters(rawFilters);
+      }
+    } catch (err) {
+      console.error('Demographics filter error:', err);
+    } finally {
+      setFilterLoading(false);
+      setFilterDrawerOpen(false);
+    }
+  }, []);
+
+  const handleClearFilter = useCallback(() => {
+    setVoterDemoMap({});
+    setFilterSummary(null);
+    setFilterActive(false);
+    setActiveFilters(null);
+  }, []);
+
   // Stats derivations
   const activeVols   = volunteers.filter(v => v.status === 'active').length;
   const coveredVols  = volunteers.filter(v => v.coverage_status === 'covered').length;
@@ -370,13 +456,13 @@ const CampaignPanel = () => {
     if (lockDistrict && v.district !== lockDistrict) return false;
     if (lockConstituency && v.constituency !== lockConstituency) return false;
     if (lockWard && wardsData) {
-      const wardFeature = (wardsData.features || []).find(f => f.properties.Ward_No === lockWard);
+      const wardFeature = (wardsData.features || []).find(f => String(f.properties.Ward_No) === String(lockWard));
       if (wardFeature && v.lat && v.lng && !isPointInGeometry(v.lng, v.lat, wardFeature.geometry)) return false;
     }
     if (selectedDistrict && v.district !== selectedDistrict) return false;
     if (selectedConstit && v.constituency !== selectedConstit) return false;
     if (selectedWard && wardsData && wardToConstit.length) {
-      const wardFeature = (wardsData.features || []).find(f => f.properties.Ward_No === selectedWard);
+      const wardFeature = (wardsData.features || []).find(f => String(f.properties.Ward_No) === String(selectedWard));
       if (wardFeature && v.lat && v.lng) {
         return isPointInGeometry(v.lng, v.lat, wardFeature.geometry);
       }
@@ -429,7 +515,7 @@ const CampaignPanel = () => {
               : 'Real-time volunteer tracking · Constituency coverage · Delhi-wide overview'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <button onClick={() => setSimulateLive(p => !p)} style={{
             padding: '8px 16px', fontSize: '12px', fontWeight: '800', borderRadius: 4, border: 'none', cursor: 'pointer',
             background: simulateLive ? '#22c55e' : 'rgba(4,18,46,0.15)',
@@ -472,6 +558,8 @@ const CampaignPanel = () => {
           </button>
         </div>
       </div>
+
+      {/* Active Filters row removed — now shown inside CampaignMap toolbar */}
 
       {/* Top Stats */}
       <CampaignStats
@@ -517,42 +605,57 @@ const CampaignPanel = () => {
           onCampaignPinDrop={handleCampaignPinDrop}
           activeCampaigns={activeCampaigns}
           mapRef={mapRef}
+          voterDemoMap={voterDemoMap}
+          filterActive={filterActive}
+          filterSummary={filterSummary}
+          setFilterDrawerOpen={setFilterDrawerOpen}
+          activeFilters={activeFilters}
+          filterTags={getFilterTags()}
+          onClearFilter={handleClearFilter}
+          identityMode={identityMode}
+          setIdentityMode={setIdentityMode}
+          clickedWardIdentity={clickedWardIdentity}
+          setClickedWardIdentity={setClickedWardIdentity}
         />
 
         {/* Sidebar Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {/* Selectors */}
-          <DistrictSelector
-            selectedDistrict={selectedDistrict}
-            handleDistrictClick={handleDistrictClick}
-            lockDistrict={lockDistrict}
-            coverageMap={coverageMap}
-            DELHI_DISTRICTS={DELHI_DISTRICTS}
-            CONSTITUENCIES={CONSTITUENCIES}
-            constitCovered={constitCovered}
-            constitNames={constitNames}
-          />
+          {/* Selectors — Hidden when Ward Identity is active */}
+          {!identityMode && (
+            <>
+              <DistrictSelector
+                selectedDistrict={selectedDistrict}
+                handleDistrictClick={handleDistrictClick}
+                lockDistrict={lockDistrict}
+                coverageMap={coverageMap}
+                DELHI_DISTRICTS={DELHI_DISTRICTS}
+                CONSTITUENCIES={CONSTITUENCIES}
+                constitCovered={constitCovered}
+                constitNames={constitNames}
+              />
 
-          <ConstituencyFilter
-            selectedDistrict={selectedDistrict}
-            selectedConstit={selectedConstit}
-            setSelectedConstit={setSelectedConstit}
-            setSelectedWard={setSelectedWard}
-            lockConstituency={lockConstituency}
-            constitNames={constitNames}
-            distCov={distCov}
-          />
+              <ConstituencyFilter
+                selectedDistrict={selectedDistrict}
+                selectedConstit={selectedConstit}
+                setSelectedConstit={setSelectedConstit}
+                setSelectedWard={setSelectedWard}
+                lockConstituency={lockConstituency}
+                constitNames={constitNames}
+                distCov={distCov}
+              />
 
-          <WardSelector
-            selectedDistrict={selectedDistrict}
-            selectedConstit={selectedConstit}
-            selectedWard={selectedWard}
-            setSelectedWard={setSelectedWard}
-            lockWard={lockWard}
-            wardToConstit={wardToConstit}
-            volunteers={volunteers}
-            wardsData={wardsData}
-          />
+              <WardSelector
+                selectedDistrict={selectedDistrict}
+                selectedConstit={selectedConstit}
+                selectedWard={selectedWard}
+                setSelectedWard={setSelectedWard}
+                lockWard={lockWard}
+                wardToConstit={wardToConstit}
+                volunteers={volunteers}
+                wardsData={wardsData}
+              />
+            </>
+          )}
 
           {/* List and Tables Tabs */}
           <div className="card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -596,6 +699,14 @@ const CampaignPanel = () => {
                   coverageMap={coverageMap}
                   DELHI_DISTRICTS={DELHI_DISTRICTS}
                   CONSTITUENCIES={CONSTITUENCIES}
+                  selectedConstit={selectedConstit}
+                  setSelectedConstit={setSelectedConstit}
+                  volunteers={volunteers}
+                  wardsData={wardsData}
+                  wardToConstit={wardToConstit}
+                  handleMarkWardCovered={handleMarkWardCovered}
+                  voterDemoMap={voterDemoMap}
+                  filterActive={filterActive}
                 />
               )}
 
@@ -699,6 +810,74 @@ const CampaignPanel = () => {
               )}
             </div>
           </div>
+
+          {/* Ward Identity Details Card — rendered inside Sidebar Column under Tabs card */}
+          {identityMode && clickedWardIdentity && (
+            <div className="card" style={{
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              borderRadius: 0,
+              padding: '16px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: 8 }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: navy, textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                  Ward Demographic Profile
+                </span>
+                <button
+                  onClick={() => setClickedWardIdentity(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 12, padding: 0 }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: navy }}>
+                  Ward {clickedWardIdentity.wNo} — {clickedWardIdentity.wName}
+                </div>
+                <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                  Total voters: <strong>{clickedWardIdentity.total_voters?.toLocaleString()}</strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                  Dominant Deviation Traits
+                </div>
+                {clickedWardIdentity.top3 && clickedWardIdentity.top3.length > 0 ? (
+                  clickedWardIdentity.top3.map((trait, idx) => (
+                    <div key={idx} style={{
+                      background: idx === 0 ? '#f0fdf4' : '#f8fafc',
+                      border: idx === 0 ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                      padding: '10px 12px',
+                      borderRadius: 4,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: idx === 0 ? '#16a34a' : navy }}>
+                          {idx + 1}. {trait.value}
+                        </span>
+                        <span style={{ fontSize: 9, fontWeight: 900, color: '#16a34a', background: '#dcfce7', padding: '2px 6px', borderRadius: 2 }}>
+                          +{trait.deviation}pp
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b' }}>
+                        <span>Category: {trait.field}</span>
+                        <span>Ward: {trait.ward_pct}% vs City: {trait.city_avg_pct}%</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: 10, color: '#64748b', fontStyle: 'italic' }}>No deviation traits found.</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -710,6 +889,15 @@ const CampaignPanel = () => {
         onCampaignCreated={handleCampaignCreated}
         selectedDistrict={selectedDistrict}
         selectedConstit={selectedConstit}
+      />
+
+      {/* Voter Demographics Filter Drawer */}
+      <VoterFilterDrawer
+        isOpen={filterDrawerOpen}
+        onClose={() => setFilterDrawerOpen(false)}
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        loading={filterLoading}
       />
     </div>
   );
