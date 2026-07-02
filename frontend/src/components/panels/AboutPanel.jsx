@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ScanLine, Network, Bot } from 'lucide-react';
+import { User, ScanLine } from 'lucide-react';
 
 
 const AboutPanel = () => {

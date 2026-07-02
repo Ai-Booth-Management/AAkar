@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, AlertTriangle, TrendingUp, Users } from 'lucide-react';
+import { Bot, Send, Sparkles, Users } from 'lucide-react';
 
 function renderMarkdown(text) {
     if (!text) return text;

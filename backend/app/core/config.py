@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     WHATSAPP_PHONE_NUMBER_ID: str
     WHATSAPP_VERIFY_TOKEN: str
 
+    # NewsAPI
+    NEWSAPI_KEY: str = ""
+
     # Database
     DATABASE_URL: str = "sqlite:///./data/app.db"
 

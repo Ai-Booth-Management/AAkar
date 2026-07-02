@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlmodel import Session, select
@@ -295,7 +295,7 @@ def mark_volunteer_covered(volunteer_id: int, mode: str = Query("abs")):
         
         # Also update constituency coverage if volunteer has one
         if vol.constituency:
-            resolved_dist = get_resolved_district(vol, mode)
+            get_resolved_district(vol, mode)
             cov = session.exec(
                 select(ConstituencyCoverage)
                 .where(ConstituencyCoverage.constituency == vol.constituency)

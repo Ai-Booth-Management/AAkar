@@ -1,3 +1,172 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+@source "../../src";
 @import "../styles/index.css";
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  --color-brand: #D4AF37;
+  --color-aakar-navy: #0f172a;
+  
+  --color-blue-50: #eef2ff;
+  --color-blue-100: #d5e3fc;
+  --color-blue-500: #3a4665;
+  --color-blue-600: #1a2744;
+  --color-blue-700: #0f172a;
+
+  --color-amber-50: #fefce8;
+  --color-amber-500: #D4AF37;
+  
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+  --color-gray-950: #0a0a0a;
+
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer components {
+  /* Layout */
+  .app {
+    @apply flex h-screen overflow-hidden relative;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    @apply absolute left-0 top-0 bottom-0 w-64 bg-aakar-navy flex flex-col justify-between overflow-hidden z-50 border-r border-white/5;
+  }
+
+  .sidebar-brand {
+    @apply flex items-center gap-3 px-6 pb-7 pt-6 whitespace-nowrap overflow-hidden;
+  }
+  
+  .sidebar-brand .logo {
+    @apply w-8 h-8 bg-brand rounded-sm flex items-center justify-center text-aakar-navy font-black text-[15px] shrink-0;
+  }
+
+  .sidebar-brand .brand-name {
+    @apply text-sm font-black text-brand tracking-widest uppercase;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3.5 px-6 py-3.5 text-[11px] font-extrabold text-white/60 cursor-pointer transition-all uppercase tracking-widest border-l-4 border-transparent hover:bg-white/10 hover:text-white;
+  }
+
+  .nav-item.active {
+    @apply bg-white/10 text-brand border-brand;
+  }
+
+  /* Main */
+  .main {
+    @apply flex-1 flex flex-col overflow-hidden min-w-0 ml-64;
+  }
+
+  .header {
+    @apply px-8 py-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0;
+  }
+
+  .header h1 {
+    @apply text-[17px] font-bold text-gray-900 tracking-tight;
+  }
+
+  .content {
+    @apply flex-1 overflow-y-auto px-8 py-7;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-semibold border border-gray-200 bg-white text-gray-700 cursor-pointer transition-colors hover:bg-gray-50 hover:border-gray-300;
+  }
+  
+  .btn-primary {
+    @apply bg-gray-900 text-white border-gray-900 hover:bg-gray-800;
+  }
+  
+  /* Cards */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl p-6;
+  }
+
+  .card-dark {
+    @apply bg-aakar-navy border border-white/10 text-white p-6 rounded-xl;
+  }
+
+  .card h3 {
+    @apply text-xs font-extrabold text-gray-900 mb-5 tracking-wider uppercase;
+  }
+
+  .card-dark h3 {
+    @apply text-white border-b border-white/10 pb-3 mb-3;
+  }
+
+  /* Stat Cards */
+  .stat-card {
+    @apply bg-white border border-gray-200 rounded-xl p-6 flex items-center transition-all hover:shadow-sm hover:-translate-y-[1px];
+  }
+  
+  .stat-icon {
+    @apply w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mr-4;
+  }
+  
+  .stat-card .label {
+    @apply text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block mb-1;
+  }
+  
+  .stat-card .value {
+    @apply text-3xl font-black text-gray-900 tracking-tight leading-none;
+  }
+  
+  /* Badges */
+  .badge {
+    @apply inline-block px-2 py-1 rounded-[3px] text-[10px] font-extrabold uppercase tracking-wider;
+  }
+  .badge-high { @apply bg-red-50 text-red-500; }
+  .badge-med { @apply bg-amber-50 text-amber-500; }
+  .badge-low { @apply bg-green-50 text-green-500; }
+  
+  /* Tables */
+  .table-container {
+    @apply w-full overflow-hidden rounded-lg border border-gray-200;
+  }
+  
+  table {
+    @apply w-full border-collapse text-[13px];
+  }
+  
+  th {
+    @apply px-4 py-3.5 text-left font-bold text-gray-500 text-[11px] uppercase tracking-wider border-b border-gray-200 bg-gray-50;
+  }
+  
+  td {
+    @apply px-4 py-3.5 text-sm text-gray-700 bg-white border-b border-gray-100;
+  }
+  
+  tr:last-child td {
+    @apply border-b-0;
+  }
+}
+
+/* Trigger Tailwind Rebuild - Fix Layout */
+

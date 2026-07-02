@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import BroadcastPanel from '../shared/BroadcastPanel';
 import ManageUsers from '../shared/ManageUsers';
 import Hub from '../shared/Hub';
-import AICopilot from '../shared/AICopilot';
 import VideoCallPanel from '../shared/VideoCallPanel';
 import dynamic from 'next/dynamic';
 

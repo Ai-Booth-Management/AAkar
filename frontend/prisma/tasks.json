@@ -1,0 +1,1072 @@
+[
+  {
+    "id": 999,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.389Z",
+    "updatedAt": "2026-07-01T19:20:15.389Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1000,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "COMPLETED",
+    "assigneeId": 1321,
+    "createdAt": "2026-07-01T19:20:15.391Z",
+    "updatedAt": "2026-07-01T19:20:15.391Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1001,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1314,
+    "createdAt": "2026-07-01T19:20:15.393Z",
+    "updatedAt": "2026-07-01T19:20:15.393Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1002,
+    "title": "Distribute Volunteer Badges",
+    "description": "Hand out official volunteer ID badges and caps to the team arriving for the morning shift.",
+    "status": "COMPLETED",
+    "assigneeId": 1321,
+    "createdAt": "2026-07-01T19:20:15.394Z",
+    "updatedAt": "2026-07-01T19:20:15.394Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1003,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.395Z",
+    "updatedAt": "2026-07-01T19:20:15.395Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1004,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.396Z",
+    "updatedAt": "2026-07-01T19:20:15.396Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1005,
+    "title": "Check Booth Accessibility",
+    "description": "Ensure the wheelchair ramps are clear and adequate lighting is functional before polling begins.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.397Z",
+    "updatedAt": "2026-07-01T19:20:15.397Z",
+    "partNumber": "AC38-001"
+  },
+  {
+    "id": 1006,
+    "title": "Check Booth Accessibility",
+    "description": "Ensure the wheelchair ramps are clear and adequate lighting is functional before polling begins.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.399Z",
+    "updatedAt": "2026-07-01T19:20:15.399Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1007,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1338,
+    "createdAt": "2026-07-01T19:20:15.400Z",
+    "updatedAt": "2026-07-01T19:20:15.400Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1008,
+    "title": "Identify Missing Voters",
+    "description": "Review the provided list of absent/shifted/dead (ASD) voters and verify with neighbors.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.400Z",
+    "updatedAt": "2026-07-01T19:20:15.400Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1009,
+    "title": "Verify EPIC Card Details",
+    "description": "Assist voters who lost their slips by looking up their EPIC numbers in the digital roll.",
+    "status": "COMPLETED",
+    "assigneeId": 1348,
+    "createdAt": "2026-07-01T19:20:15.401Z",
+    "updatedAt": "2026-07-01T19:20:15.401Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1010,
+    "title": "Post-poll Area Cleanup",
+    "description": "Help clear any campaign materials and dismantle the volunteer desk after voting concludes.",
+    "status": "COMPLETED",
+    "assigneeId": 1341,
+    "createdAt": "2026-07-01T19:20:15.402Z",
+    "updatedAt": "2026-07-01T19:20:15.402Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1011,
+    "title": "Manage Parking Congestion",
+    "description": "Guide vehicles away from the immediate vicinity of the polling station to prevent traffic jams.",
+    "status": "COMPLETED",
+    "assigneeId": 1332,
+    "createdAt": "2026-07-01T19:20:15.403Z",
+    "updatedAt": "2026-07-01T19:20:15.403Z",
+    "partNumber": "AC38-002"
+  },
+  {
+    "id": 1012,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "COMPLETED",
+    "assigneeId": 1367,
+    "createdAt": "2026-07-01T19:20:15.404Z",
+    "updatedAt": "2026-07-01T19:20:15.404Z",
+    "partNumber": "AC38-003"
+  },
+  {
+    "id": 1013,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "COMPLETED",
+    "assigneeId": 1373,
+    "createdAt": "2026-07-01T19:20:15.405Z",
+    "updatedAt": "2026-07-01T19:20:15.405Z",
+    "partNumber": "AC38-003"
+  },
+  {
+    "id": 1014,
+    "title": "Manage Parking Congestion",
+    "description": "Guide vehicles away from the immediate vicinity of the polling station to prevent traffic jams.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.405Z",
+    "updatedAt": "2026-07-01T19:20:15.405Z",
+    "partNumber": "AC38-003"
+  },
+  {
+    "id": 1015,
+    "title": "Identify Missing Voters",
+    "description": "Review the provided list of absent/shifted/dead (ASD) voters and verify with neighbors.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.406Z",
+    "updatedAt": "2026-07-01T19:20:15.406Z",
+    "partNumber": "AC38-003"
+  },
+  {
+    "id": 1016,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1375,
+    "createdAt": "2026-07-01T19:20:15.406Z",
+    "updatedAt": "2026-07-01T19:20:15.406Z",
+    "partNumber": "AC38-003"
+  },
+  {
+    "id": 1017,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1385,
+    "createdAt": "2026-07-01T19:20:15.407Z",
+    "updatedAt": "2026-07-01T19:20:15.407Z",
+    "partNumber": "AC38-004"
+  },
+  {
+    "id": 1018,
+    "title": "Emergency Medical Support",
+    "description": "Keep the first-aid kit stocked and assist any voters who feel unwell while standing in line.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1395,
+    "createdAt": "2026-07-01T19:20:15.408Z",
+    "updatedAt": "2026-07-01T19:20:15.408Z",
+    "partNumber": "AC38-004"
+  },
+  {
+    "id": 1019,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1397,
+    "createdAt": "2026-07-01T19:20:15.408Z",
+    "updatedAt": "2026-07-01T19:20:15.408Z",
+    "partNumber": "AC38-004"
+  },
+  {
+    "id": 1020,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1377,
+    "createdAt": "2026-07-01T19:20:15.409Z",
+    "updatedAt": "2026-07-01T19:20:15.409Z",
+    "partNumber": "AC38-004"
+  },
+  {
+    "id": 1021,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.410Z",
+    "updatedAt": "2026-07-01T19:20:15.410Z",
+    "partNumber": "AC38-004"
+  },
+  {
+    "id": 1022,
+    "title": "Manage Parking Congestion",
+    "description": "Guide vehicles away from the immediate vicinity of the polling station to prevent traffic jams.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1404,
+    "createdAt": "2026-07-01T19:20:15.411Z",
+    "updatedAt": "2026-07-01T19:20:15.411Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1023,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "COMPLETED",
+    "assigneeId": 1401,
+    "createdAt": "2026-07-01T19:20:15.412Z",
+    "updatedAt": "2026-07-01T19:20:15.412Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1024,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "COMPLETED",
+    "assigneeId": 1421,
+    "createdAt": "2026-07-01T19:20:15.412Z",
+    "updatedAt": "2026-07-01T19:20:15.412Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1025,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "COMPLETED",
+    "assigneeId": 1421,
+    "createdAt": "2026-07-01T19:20:15.413Z",
+    "updatedAt": "2026-07-01T19:20:15.413Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1026,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1417,
+    "createdAt": "2026-07-01T19:20:15.414Z",
+    "updatedAt": "2026-07-01T19:20:15.414Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1027,
+    "title": "Crowd Management & Queuing",
+    "description": "Assist officials in maintaining an orderly, single-file queue during peak morning hours.",
+    "status": "COMPLETED",
+    "assigneeId": 1424,
+    "createdAt": "2026-07-01T19:20:15.414Z",
+    "updatedAt": "2026-07-01T19:20:15.414Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1028,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.415Z",
+    "updatedAt": "2026-07-01T19:20:15.415Z",
+    "partNumber": "AC38-005"
+  },
+  {
+    "id": 1029,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.416Z",
+    "updatedAt": "2026-07-01T19:20:15.416Z",
+    "partNumber": "AC38-006"
+  },
+  {
+    "id": 1030,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "COMPLETED",
+    "assigneeId": 1439,
+    "createdAt": "2026-07-01T19:20:15.417Z",
+    "updatedAt": "2026-07-01T19:20:15.417Z",
+    "partNumber": "AC38-006"
+  },
+  {
+    "id": 1031,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1438,
+    "createdAt": "2026-07-01T19:20:15.418Z",
+    "updatedAt": "2026-07-01T19:20:15.418Z",
+    "partNumber": "AC38-006"
+  },
+  {
+    "id": 1032,
+    "title": "Post-poll Area Cleanup",
+    "description": "Help clear any campaign materials and dismantle the volunteer desk after voting concludes.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.418Z",
+    "updatedAt": "2026-07-01T19:20:15.418Z",
+    "partNumber": "AC38-006"
+  },
+  {
+    "id": 1033,
+    "title": "Emergency Medical Support",
+    "description": "Keep the first-aid kit stocked and assist any voters who feel unwell while standing in line.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.419Z",
+    "updatedAt": "2026-07-01T19:20:15.419Z",
+    "partNumber": "AC38-006"
+  },
+  {
+    "id": 1034,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "COMPLETED",
+    "assigneeId": 1456,
+    "createdAt": "2026-07-01T19:20:15.421Z",
+    "updatedAt": "2026-07-01T19:20:15.421Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1035,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.422Z",
+    "updatedAt": "2026-07-01T19:20:15.422Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1036,
+    "title": "Identify Missing Voters",
+    "description": "Review the provided list of absent/shifted/dead (ASD) voters and verify with neighbors.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1457,
+    "createdAt": "2026-07-01T19:20:15.422Z",
+    "updatedAt": "2026-07-01T19:20:15.422Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1037,
+    "title": "Verify EPIC Card Details",
+    "description": "Assist voters who lost their slips by looking up their EPIC numbers in the digital roll.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.423Z",
+    "updatedAt": "2026-07-01T19:20:15.423Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1038,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1458,
+    "createdAt": "2026-07-01T19:20:15.423Z",
+    "updatedAt": "2026-07-01T19:20:15.423Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1039,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "COMPLETED",
+    "assigneeId": 1467,
+    "createdAt": "2026-07-01T19:20:15.424Z",
+    "updatedAt": "2026-07-01T19:20:15.424Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1040,
+    "title": "Coordinate with Sector Officer",
+    "description": "Act as the primary point of contact for the Sector Officer during their routine inspection.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.425Z",
+    "updatedAt": "2026-07-01T19:20:15.425Z",
+    "partNumber": "AC38-007"
+  },
+  {
+    "id": 1041,
+    "title": "Verify EPIC Card Details",
+    "description": "Assist voters who lost their slips by looking up their EPIC numbers in the digital roll.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.426Z",
+    "updatedAt": "2026-07-01T19:20:15.426Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1042,
+    "title": "Emergency Medical Support",
+    "description": "Keep the first-aid kit stocked and assist any voters who feel unwell while standing in line.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.427Z",
+    "updatedAt": "2026-07-01T19:20:15.427Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1043,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.428Z",
+    "updatedAt": "2026-07-01T19:20:15.428Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1044,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1500,
+    "createdAt": "2026-07-01T19:20:15.429Z",
+    "updatedAt": "2026-07-01T19:20:15.429Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1045,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.429Z",
+    "updatedAt": "2026-07-01T19:20:15.429Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1046,
+    "title": "Coordinate with Sector Officer",
+    "description": "Act as the primary point of contact for the Sector Officer during their routine inspection.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.430Z",
+    "updatedAt": "2026-07-01T19:20:15.430Z",
+    "partNumber": "AC38-008"
+  },
+  {
+    "id": 1047,
+    "title": "Evening Turnout Reporting",
+    "description": "Submit the final estimated voter turnout figures and queue length just before 5 PM.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.431Z",
+    "updatedAt": "2026-07-01T19:20:15.431Z",
+    "partNumber": "AC38-009"
+  },
+  {
+    "id": 1048,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.432Z",
+    "updatedAt": "2026-07-01T19:20:15.432Z",
+    "partNumber": "AC38-009"
+  },
+  {
+    "id": 1049,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.433Z",
+    "updatedAt": "2026-07-01T19:20:15.433Z",
+    "partNumber": "AC38-009"
+  },
+  {
+    "id": 1050,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.434Z",
+    "updatedAt": "2026-07-01T19:20:15.434Z",
+    "partNumber": "AC38-009"
+  },
+  {
+    "id": 1051,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "COMPLETED",
+    "assigneeId": 1526,
+    "createdAt": "2026-07-01T19:20:15.435Z",
+    "updatedAt": "2026-07-01T19:20:15.435Z",
+    "partNumber": "AC38-010"
+  },
+  {
+    "id": 1052,
+    "title": "Verify EPIC Card Details",
+    "description": "Assist voters who lost their slips by looking up their EPIC numbers in the digital roll.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.436Z",
+    "updatedAt": "2026-07-01T19:20:15.436Z",
+    "partNumber": "AC38-010"
+  },
+  {
+    "id": 1053,
+    "title": "Manage Parking Congestion",
+    "description": "Guide vehicles away from the immediate vicinity of the polling station to prevent traffic jams.",
+    "status": "COMPLETED",
+    "assigneeId": 1530,
+    "createdAt": "2026-07-01T19:20:15.436Z",
+    "updatedAt": "2026-07-01T19:20:15.436Z",
+    "partNumber": "AC38-010"
+  },
+  {
+    "id": 1054,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1533,
+    "createdAt": "2026-07-01T19:20:15.437Z",
+    "updatedAt": "2026-07-01T19:20:15.437Z",
+    "partNumber": "AC38-010"
+  },
+  {
+    "id": 1055,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.438Z",
+    "updatedAt": "2026-07-01T19:20:15.438Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1056,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.438Z",
+    "updatedAt": "2026-07-01T19:20:15.438Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1057,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1555,
+    "createdAt": "2026-07-01T19:20:15.439Z",
+    "updatedAt": "2026-07-01T19:20:15.439Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1058,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.440Z",
+    "updatedAt": "2026-07-01T19:20:15.440Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1059,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1552,
+    "createdAt": "2026-07-01T19:20:15.440Z",
+    "updatedAt": "2026-07-01T19:20:15.440Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1060,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.441Z",
+    "updatedAt": "2026-07-01T19:20:15.441Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1061,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.442Z",
+    "updatedAt": "2026-07-01T19:20:15.442Z",
+    "partNumber": "AC38-011"
+  },
+  {
+    "id": 1062,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "COMPLETED",
+    "assigneeId": 1591,
+    "createdAt": "2026-07-01T19:20:15.443Z",
+    "updatedAt": "2026-07-01T19:20:15.443Z",
+    "partNumber": "AC38-012"
+  },
+  {
+    "id": 1063,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1594,
+    "createdAt": "2026-07-01T19:20:15.444Z",
+    "updatedAt": "2026-07-01T19:20:15.444Z",
+    "partNumber": "AC38-012"
+  },
+  {
+    "id": 1064,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1589,
+    "createdAt": "2026-07-01T19:20:15.444Z",
+    "updatedAt": "2026-07-01T19:20:15.444Z",
+    "partNumber": "AC38-012"
+  },
+  {
+    "id": 1065,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.446Z",
+    "updatedAt": "2026-07-01T19:20:15.446Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1066,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "COMPLETED",
+    "assigneeId": 1611,
+    "createdAt": "2026-07-01T19:20:15.446Z",
+    "updatedAt": "2026-07-01T19:20:15.446Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1067,
+    "title": "Coordinate with Sector Officer",
+    "description": "Act as the primary point of contact for the Sector Officer during their routine inspection.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1613,
+    "createdAt": "2026-07-01T19:20:15.447Z",
+    "updatedAt": "2026-07-01T19:20:15.447Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1068,
+    "title": "Distribute Volunteer Badges",
+    "description": "Hand out official volunteer ID badges and caps to the team arriving for the morning shift.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1610,
+    "createdAt": "2026-07-01T19:20:15.448Z",
+    "updatedAt": "2026-07-01T19:20:15.448Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1069,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.448Z",
+    "updatedAt": "2026-07-01T19:20:15.448Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1070,
+    "title": "Manage Parking Congestion",
+    "description": "Guide vehicles away from the immediate vicinity of the polling station to prevent traffic jams.",
+    "status": "COMPLETED",
+    "assigneeId": 1621,
+    "createdAt": "2026-07-01T19:20:15.449Z",
+    "updatedAt": "2026-07-01T19:20:15.449Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1071,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1621,
+    "createdAt": "2026-07-01T19:20:15.450Z",
+    "updatedAt": "2026-07-01T19:20:15.450Z",
+    "partNumber": "AC38-013"
+  },
+  {
+    "id": 1072,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "COMPLETED",
+    "assigneeId": 1640,
+    "createdAt": "2026-07-01T19:20:15.451Z",
+    "updatedAt": "2026-07-01T19:20:15.451Z",
+    "partNumber": "AC38-014"
+  },
+  {
+    "id": 1073,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1626,
+    "createdAt": "2026-07-01T19:20:15.451Z",
+    "updatedAt": "2026-07-01T19:20:15.451Z",
+    "partNumber": "AC38-014"
+  },
+  {
+    "id": 1074,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.452Z",
+    "updatedAt": "2026-07-01T19:20:15.452Z",
+    "partNumber": "AC38-014"
+  },
+  {
+    "id": 1075,
+    "title": "Crowd Management & Queuing",
+    "description": "Assist officials in maintaining an orderly, single-file queue during peak morning hours.",
+    "status": "COMPLETED",
+    "assigneeId": 1634,
+    "createdAt": "2026-07-01T19:20:15.453Z",
+    "updatedAt": "2026-07-01T19:20:15.453Z",
+    "partNumber": "AC38-014"
+  },
+  {
+    "id": 1076,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "COMPLETED",
+    "assigneeId": 1663,
+    "createdAt": "2026-07-01T19:20:15.454Z",
+    "updatedAt": "2026-07-01T19:20:15.454Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1077,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1666,
+    "createdAt": "2026-07-01T19:20:15.454Z",
+    "updatedAt": "2026-07-01T19:20:15.454Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1078,
+    "title": "Emergency Medical Support",
+    "description": "Keep the first-aid kit stocked and assist any voters who feel unwell while standing in line.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.455Z",
+    "updatedAt": "2026-07-01T19:20:15.455Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1079,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.456Z",
+    "updatedAt": "2026-07-01T19:20:15.456Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1080,
+    "title": "Distribute Voter Awareness Pamphlets",
+    "description": "Hand out informational pamphlets in the local market to encourage high voter turnout.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1666,
+    "createdAt": "2026-07-01T19:20:15.456Z",
+    "updatedAt": "2026-07-01T19:20:15.456Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1081,
+    "title": "Identify Missing Voters",
+    "description": "Review the provided list of absent/shifted/dead (ASD) voters and verify with neighbors.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.457Z",
+    "updatedAt": "2026-07-01T19:20:15.457Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1082,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.459Z",
+    "updatedAt": "2026-07-01T19:20:15.459Z",
+    "partNumber": "AC38-015"
+  },
+  {
+    "id": 1083,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "COMPLETED",
+    "assigneeId": 1690,
+    "createdAt": "2026-07-01T19:20:15.460Z",
+    "updatedAt": "2026-07-01T19:20:15.460Z",
+    "partNumber": "AC38-016"
+  },
+  {
+    "id": 1084,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "COMPLETED",
+    "assigneeId": 1700,
+    "createdAt": "2026-07-01T19:20:15.461Z",
+    "updatedAt": "2026-07-01T19:20:15.461Z",
+    "partNumber": "AC38-016"
+  },
+  {
+    "id": 1085,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.462Z",
+    "updatedAt": "2026-07-01T19:20:15.462Z",
+    "partNumber": "AC38-016"
+  },
+  {
+    "id": 1086,
+    "title": "Door-to-door Voter Verification",
+    "description": "Cross-check voter list details for households in the assigned block and identify missing names.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1720,
+    "createdAt": "2026-07-01T19:20:15.463Z",
+    "updatedAt": "2026-07-01T19:20:15.463Z",
+    "partNumber": "AC38-017"
+  },
+  {
+    "id": 1087,
+    "title": "Voter Mobilization Drives",
+    "description": "Call local supporters in the afternoon to remind them to cast their votes before the booth closes.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.464Z",
+    "updatedAt": "2026-07-01T19:20:15.464Z",
+    "partNumber": "AC38-017"
+  },
+  {
+    "id": 1088,
+    "title": "Evening Turnout Reporting",
+    "description": "Submit the final estimated voter turnout figures and queue length just before 5 PM.",
+    "status": "COMPLETED",
+    "assigneeId": 1705,
+    "createdAt": "2026-07-01T19:20:15.465Z",
+    "updatedAt": "2026-07-01T19:20:15.465Z",
+    "partNumber": "AC38-017"
+  },
+  {
+    "id": 1089,
+    "title": "Manage Local Inquiries",
+    "description": "Answer general questions from the public about polling timings and acceptable ID documents.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.465Z",
+    "updatedAt": "2026-07-01T19:20:15.465Z",
+    "partNumber": "AC38-017"
+  },
+  {
+    "id": 1090,
+    "title": "Check Booth Accessibility",
+    "description": "Ensure the wheelchair ramps are clear and adequate lighting is functional before polling begins.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.466Z",
+    "updatedAt": "2026-07-01T19:20:15.466Z",
+    "partNumber": "AC38-018"
+  },
+  {
+    "id": 1091,
+    "title": "Setup Volunteer Help Desk",
+    "description": "Organize the desk outside the 100m perimeter with the printed electoral roll and search tools.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.467Z",
+    "updatedAt": "2026-07-01T19:20:15.467Z",
+    "partNumber": "AC38-018"
+  },
+  {
+    "id": 1092,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.468Z",
+    "updatedAt": "2026-07-01T19:20:15.468Z",
+    "partNumber": "AC38-018"
+  },
+  {
+    "id": 1093,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1742,
+    "createdAt": "2026-07-01T19:20:15.469Z",
+    "updatedAt": "2026-07-01T19:20:15.469Z",
+    "partNumber": "AC38-018"
+  },
+  {
+    "id": 1094,
+    "title": "Crowd Management & Queuing",
+    "description": "Assist officials in maintaining an orderly, single-file queue during peak morning hours.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.469Z",
+    "updatedAt": "2026-07-01T19:20:15.469Z",
+    "partNumber": "AC38-018"
+  },
+  {
+    "id": 1095,
+    "title": "Distribute Volunteer Badges",
+    "description": "Hand out official volunteer ID badges and caps to the team arriving for the morning shift.",
+    "status": "COMPLETED",
+    "assigneeId": 1759,
+    "createdAt": "2026-07-01T19:20:15.471Z",
+    "updatedAt": "2026-07-01T19:20:15.471Z",
+    "partNumber": "AC38-019"
+  },
+  {
+    "id": 1096,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.472Z",
+    "updatedAt": "2026-07-01T19:20:15.472Z",
+    "partNumber": "AC38-019"
+  },
+  {
+    "id": 1097,
+    "title": "Distribute Refreshments",
+    "description": "Ensure drinking water is available and distributed to volunteers working at the help desk.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.472Z",
+    "updatedAt": "2026-07-01T19:20:15.472Z",
+    "partNumber": "AC38-019"
+  },
+  {
+    "id": 1098,
+    "title": "Assist First-time Voters",
+    "description": "Help guide young voters through the identification process before they enter the booth.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.473Z",
+    "updatedAt": "2026-07-01T19:20:15.473Z",
+    "partNumber": "AC38-019"
+  },
+  {
+    "id": 1099,
+    "title": "Coordinate with Sector Officer",
+    "description": "Act as the primary point of contact for the Sector Officer during their routine inspection.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1760,
+    "createdAt": "2026-07-01T19:20:15.474Z",
+    "updatedAt": "2026-07-01T19:20:15.474Z",
+    "partNumber": "AC38-019"
+  },
+  {
+    "id": 1100,
+    "title": "Morning Turnout Reporting",
+    "description": "Estimate the number of voters in the queue at 9 AM and submit a quick turnout report.",
+    "status": "COMPLETED",
+    "assigneeId": 1796,
+    "createdAt": "2026-07-01T19:20:15.475Z",
+    "updatedAt": "2026-07-01T19:20:15.475Z",
+    "partNumber": "AC38-020"
+  },
+  {
+    "id": 1101,
+    "title": "Coordinate Elderly Transport",
+    "description": "Call and confirm pickup times for senior citizens who requested transport assistance.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1782,
+    "createdAt": "2026-07-01T19:20:15.476Z",
+    "updatedAt": "2026-07-01T19:20:15.476Z",
+    "partNumber": "AC38-020"
+  },
+  {
+    "id": 1102,
+    "title": "Distribute Voter Information Slips",
+    "description": "Hand out official voter slips to residents, ensuring they know their correct booth number.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1780,
+    "createdAt": "2026-07-01T19:20:15.476Z",
+    "updatedAt": "2026-07-01T19:20:15.476Z",
+    "partNumber": "AC38-020"
+  },
+  {
+    "id": 1103,
+    "title": "Coordinate with Sector Officer",
+    "description": "Act as the primary point of contact for the Sector Officer during their routine inspection.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.477Z",
+    "updatedAt": "2026-07-01T19:20:15.477Z",
+    "partNumber": "AC38-020"
+  },
+  {
+    "id": 1104,
+    "title": "Verify EPIC Card Details",
+    "description": "Assist voters who lost their slips by looking up their EPIC numbers in the digital roll.",
+    "status": "IN_PROGRESS",
+    "assigneeId": 1776,
+    "createdAt": "2026-07-01T19:20:15.477Z",
+    "updatedAt": "2026-07-01T19:20:15.477Z",
+    "partNumber": "AC38-020"
+  },
+  {
+    "id": 1105,
+    "title": "Evening Turnout Reporting",
+    "description": "Submit the final estimated voter turnout figures and queue length just before 5 PM.",
+    "status": "TODO",
+    "assigneeId": null,
+    "createdAt": "2026-07-01T19:20:15.478Z",
+    "updatedAt": "2026-07-01T19:20:15.478Z",
+    "partNumber": "AC38-020"
+  }
+]

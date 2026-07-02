@@ -40,7 +40,6 @@ free-form text (the send_text function below). No template approval needed.
 import httpx
 import json
 import logging
-import os
 import asyncio
 import base64
 from datetime import datetime, timezone
@@ -49,11 +48,11 @@ from sqlmodel import Session, select
 from app.core.security import get_current_user
 from app.core.config import settings
 from app.infrastructure.db.sqlite_client import engine
-from app.domain.models.hierarchy import HierarchyNode
 from app.domain.models.volunteer import Volunteer, Task, ConversationState
 from app.domain.services.ask_election_service import ask_election_question
 import app.domain.services.whatsapp_service as ws_service
-from app.domain.services.whatsapp_service import send_text, send_template, download_media
+from app.domain.services.whatsapp_service import send_text, download_media
+from app.domain.services import booth_demographics
 
 logger = logging.getLogger(__name__)
 
@@ -492,37 +491,14 @@ async def receive_whatsapp_message(request: Request):
 
                     session.delete(state)
                     session.commit()
-                    
                     try:
-                        json_path = os.path.join("data", "uploads", "volunteers.json")
-                        os.makedirs(os.path.dirname(json_path), exist_ok=True)
-                        vol_data = []
-                        if os.path.exists(json_path):
-                            with open(json_path, "r") as f:
-                                try:
-                                    vol_data = json.load(f)
-                                except json.JSONDecodeError:
-                                    pass
-                        vol_data.append({
-                            "phone": from_number,
-                            "name": name,
-                            "address": address,
-                            "pincode": pincode,
-                            "booth_id": booth_id,
-                            "area_name": area_name,
-                            "block": block,
-                            "district": district_name,
-                            "division": division,
-                            "region": region,
-                            "circle": circle,
-                            "state": state_name,
-                            "aadhar": aadhar,
-                            "registered_at": datetime.now(timezone.utc).isoformat()
-                        })
-                        with open(json_path, "w") as f:
-                            json.dump(vol_data, f, indent=2)
+                        from app.domain.services.volunteer_sync import append_volunteer_to_json
+                        # Re-fetch the volunteer object after commit so it has an id
+                        volunteer = session.exec(select(Volunteer).where(Volunteer.phone == from_number)).first()
+                        if volunteer:
+                            append_volunteer_to_json(volunteer)
                     except Exception as e:
-                        logger.error(f"Failed to save volunteer to JSON: {e}")
+                        logger.error(f"Failed to sync volunteer to JSON: {e}")
 
                     await send_text(
                         from_number,
@@ -624,15 +600,48 @@ async def receive_whatsapp_message(request: Request):
                         )
 
                 else:
-                    # Treat anything else as a question to the LLM
+                    # --- VOLUNTEER ASSISTANT: demographic-aware LLM guidance ---
                     try:
-                        # ask_election_question does synchronous network/DB calls,
-                        # wrap it in to_thread to avoid blocking the event loop.
-                        llm_response = await asyncio.to_thread(ask_election_question, text_body, None, volunteer)
-                        answer = llm_response.get("answer", "I couldn't process your question right now.")
-                        await send_text(from_number, answer)
+                        from app.infrastructure.ai.ollama_client import ollama_client
+
+                        # Determine booth part_number
+                        vol_booth_id = getattr(volunteer, 'booth_id', None) or ''
+
+                        # Compute booth demographics from voter.json
+                        profile = booth_demographics.get_booth_profile(vol_booth_id)
+
+                        # Extract volunteer surname and find caste-matched voters
+                        vol_surname = booth_demographics._extract_surname(volunteer.name or '')
+                        matching_voters = booth_demographics.get_matching_voters(vol_booth_id, vol_surname)
+
+                        # Format the profile text for the prompt
+                        profile_text = booth_demographics.format_profile_for_prompt(
+                            profile, matching_voters, vol_surname
+                        )
+
+                        # Fetch active tasks for this volunteer
+                        vol_tasks = session.exec(
+                            select(Task).where(
+                                Task.volunteer_id == volunteer.id,
+                                Task.status == "assigned"
+                            )
+                        ).all()
+                        tasks_list = [
+                            {"title": t.title, "description": t.description or "", "status": t.status}
+                            for t in vol_tasks
+                        ]
+
+                        # Call the demographic-aware LLM
+                        llm_answer = await asyncio.to_thread(
+                            ollama_client.volunteer_assist,
+                            text_body,
+                            volunteer.name or "Volunteer",
+                            profile_text,
+                            tasks_list
+                        )
+                        await send_text(from_number, llm_answer)
                     except Exception as llm_error:
-                        logger.error(f"Error calling LLM from WhatsApp: {llm_error}", exc_info=True)
+                        logger.error(f"Error calling volunteer LLM: {llm_error}", exc_info=True)
                         await send_text(
                             from_number,
                             "Sorry, I encountered an issue processing your request.",

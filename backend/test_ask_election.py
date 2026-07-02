@@ -1,5 +1,4 @@
 import requests
-import json
 from app.infrastructure.db.sqlite_client import get_session
 from app.domain.models.user import User
 from sqlmodel import select

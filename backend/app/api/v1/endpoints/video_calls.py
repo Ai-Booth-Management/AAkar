@@ -5,11 +5,10 @@ All calls are logged to SQLite for audit / history.
 """
 
 from datetime import datetime, timezone
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session, select, or_, func
+from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.security import get_current_user

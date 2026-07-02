@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, {  useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import logo from '../../assets/logo.png';
 import { ROLE_NAV, ROLE_TITLES } from '../../config/navigation';
 
 export default function ElectionLayout({ children }: { children: React.ReactNode }) {
   const { currentUser, loading, logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  
   const searchParams = useSearchParams();
 
   const activeTab = searchParams.get('tab') || 'overview';

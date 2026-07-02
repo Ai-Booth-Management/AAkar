@@ -1,5 +1,5 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import 'leaflet/dist/leaflet.css';

@@ -50,7 +50,7 @@ const msgBadge = (dir) => {
   return { bg: '#f5f3ff', color: '#7c3aed', label: 'Message' };
 };
 
-export default function Hub({ hierarchy, userRole }) {
+export default function Hub({ hierarchy, userRole, initialStats }) {
   const [messages, setMessages] = useState([]);
   const [superior, setSuperior] = useState(null);
   const [stats, setStats] = useState(null);
@@ -82,6 +82,10 @@ export default function Hub({ hierarchy, userRole }) {
   }, [replyTo]);
 
   const fetchStats = async () => {
+    if (initialStats) {
+      setStats(initialStats);
+      return;
+    }
     try {
       const level = hierarchy.booth ? 'booth' : hierarchy.mandal ? 'mandal' : hierarchy.constituency ? 'constituency' : hierarchy.district ? 'district' : 'state';
       const code = hierarchy.booth || hierarchy.mandal || hierarchy.constituency || hierarchy.district || '';

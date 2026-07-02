@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import {
     ShieldCheck, User, Lock, Building2, MapPin,
-    ArrowRight, Globe, BadgeCheck, LayoutDashboard, Flag
+    ArrowRight, Globe, BadgeCheck, Flag
 } from 'lucide-react';
 import logo from '../../assets/logo.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { boothLoginAction } from '../../app/boothman/actions';
 
 export default function LoginPage() {
     const [view, setView] = useState('login');
@@ -60,7 +61,16 @@ export default function LoginPage() {
         try {
             if (portalMode === 'election') {
                 if (view === 'login') {
-                    await login(emailInput, passwordInput);
+                    if (selectedRole === 'Boothman') {
+                        const fd = new FormData();
+                        fd.append('partNumber', emailInput);
+                        fd.append('password', passwordInput);
+                        const res = await boothLoginAction(fd);
+                        if (res?.error) throw new Error(res.error);
+                        return; // Redirect is handled by the action
+                    } else {
+                        await login(emailInput, passwordInput);
+                    }
                 } else {
                     const role = userType;
                     const hierarchy = {
@@ -164,26 +174,7 @@ export default function LoginPage() {
                 <div style={{ maxWidth: '520px', width: '100%', margin: '0 auto', padding: '60px 0' }}>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
-                        <div style={{ display: 'flex', gap: '8px', background: slate50, padding: '4px', borderRadius: '12px', border: `1px solid ${slate100}` }}>
-                            <button
-                                onClick={() => { setPortalMode('admin'); setUserType('cm'); }}
-                                style={{
-                                    padding: '10px 16px', borderRadius: '10px', fontSize: '10px', fontWeight: 900, border: 'none', cursor: 'pointer',
-                                    backgroundColor: portalMode === 'admin' ? navy : 'transparent',
-                                    color: portalMode === 'admin' ? white : slate400,
-                                    boxShadow: portalMode === 'admin' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
-                                }}
-                            >ADMINISTRATION</button>
-                            <button
-                                onClick={() => setPortalMode('election')}
-                                style={{
-                                    padding: '10px 16px', borderRadius: '10px', fontSize: '10px', fontWeight: 900, border: 'none', cursor: 'pointer',
-                                    backgroundColor: portalMode === 'election' ? navy : 'transparent',
-                                    color: portalMode === 'election' ? white : slate400,
-                                    boxShadow: portalMode === 'election' ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
-                                }}
-                            >ELECTION MGMT</button>
-                        </div>
+
                         <button onClick={() => setView(view === 'login' ? 'signup' : 'login')} style={{ background: 'none', border: 'none', color: gold, fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', cursor: 'pointer' }}>
                             {view === 'login' ? 'Request Access →' : 'Back to Login'}
                         </button>
@@ -242,9 +233,14 @@ export default function LoginPage() {
                                                 <option value="Constituency Manager">Constituency Manager</option>
                                                 <option value="Mandal Manager">Mandal Manager</option>
                                                 <option value="Booth Manager">Booth Manager</option>
+                                                <option value="Boothman">Boothman</option>
                                             </select>
                                         </div>
-                                        <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
+                                        {selectedRole === 'Boothman' ? (
+                                            <FlatField label="Part Number" icon={<BadgeCheck size={16} />} placeholder="e.g. AC38-001" value={emailInput} onChange={setEmailInput} />
+                                        ) : (
+                                            <FlatField label="Authorized Email" icon={<User size={16} />} placeholder="Email address" value={emailInput} onChange={setEmailInput} />
+                                        )}
                                     </>
                                 )}
                                 <FlatField label="Security Key" icon={<Lock size={16} />} placeholder="••••••••" type="password" value={passwordInput} onChange={setPasswordInput} />
