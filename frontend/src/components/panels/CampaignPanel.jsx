@@ -575,7 +575,7 @@ const CampaignPanel = () => {
       />
 
       {/* Workspace columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 24, minHeight: 480 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 480px', gap: 24, minHeight: 480 }}>
         {/* Map Column */}
         <CampaignMap
           mode={mode}

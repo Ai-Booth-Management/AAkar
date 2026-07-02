@@ -105,7 +105,7 @@ const VoterFilterDrawer = ({ isOpen, onClose, onApply, onClear, loading }) => {
       {/* Drawer panel */}
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0,
-        width: 340, background: '#ffffff', zIndex: 1001,
+        width: 420, background: '#ffffff', zIndex: 1001,
         boxShadow: '-8px 0 40px rgba(4,18,46,0.18)',
         display: 'flex', flexDirection: 'column',
         fontFamily: '"Public Sans", "Inter", sans-serif',
