@@ -24,6 +24,7 @@ from app.api.v1.endpoints.export import router as export_router
 from app.api.v1.endpoints.intelligence import router as intelligence_router
 from app.api.v1.endpoints.voter_demographics import router as voter_demographics_router
 from app.api.v1.endpoints.ward_identity import router as ward_identity_router
+from app.api.v1.endpoints.forensics import router as forensics_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
@@ -161,6 +162,7 @@ app.include_router(export_router, prefix="/api/v1/export", tags=["Export"], depe
 app.include_router(intelligence_router, prefix="/api/v1/intelligence", tags=["Intelligence"])
 app.include_router(voter_demographics_router, prefix="/api/v1/voters", tags=["Voter Demographics"], dependencies=[Depends(get_current_user)])
 app.include_router(ward_identity_router,      prefix="/api/v1/voters", tags=["Ward Identity"],       dependencies=[Depends(get_current_user)])
+app.include_router(forensics_router,          prefix="/api/v1/forensics", tags=["Forensics"])
 
 
 @app.get("/")
