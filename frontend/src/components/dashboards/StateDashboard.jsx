@@ -40,6 +40,19 @@ export default function StateDashboard({ tab, hierarchy }) {
 
 function StateOverview({ state }) {
   const [stats, setStats] = useState(null);
+  const [intelligenceData, setIntelligenceData] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/v1/intelligence/overview', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) setIntelligenceData(data);
+      })
+      .catch(e => console.error("Error fetching intelligence:", e));
+  }, []);
+
   useEffect(() => {
     if (!state) return;
     fetch(`/api/v1/dashboard/stats?level=state&code=${encodeURIComponent(state)}`, {
@@ -177,6 +190,26 @@ function StateOverview({ state }) {
                   <span className="admin-badge" style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', fontWeight: 800 }}>18 Reports</span>
                 </div>
               </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: 'linear-gradient(to right, #f8fafc, #ffffff)', borderRadius: 8, border: '1px solid #e2e8f0', borderLeft: '4px solid #8b5cf6', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ fontWeight: 800, color: '#0f172a', fontSize: 14 }}>Welfare Scheme Delays</span>
+                  <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Multiple complaints from East Delhi</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="admin-badge" style={{ background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', fontWeight: 800 }}>14 Reports</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: 'linear-gradient(to right, #f8fafc, #ffffff)', borderRadius: 8, border: '1px solid #e2e8f0', borderLeft: '4px solid #14b8a6', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ fontWeight: 800, color: '#0f172a', fontSize: 14 }}>Transportation Bottlenecks</span>
+                  <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>Severe traffic reported in Central Delhi</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="admin-badge" style={{ background: '#f0fdfa', color: '#0f766e', border: '1px solid #99f6e4', fontWeight: 800 }}>9 Reports</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -190,23 +223,97 @@ function StateOverview({ state }) {
           </div>
           <div className="dash-section-body">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {stats?.districts_scores?.filter(d => d.score < 40 || d.coverage_pct < 30).slice(0, 3).map(d => (
+              {(stats?.districts_scores ? [...stats.districts_scores].sort((a,b) => a.score - b.score) : []).slice(0, 5).map(d => (
                 <div key={d.code} style={{ padding: 12, background: 'rgba(220, 38, 38, 0.05)', border: '1px solid rgba(220, 38, 38, 0.1)', borderRadius: 8 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontWeight: 800, color: 'var(--navy-900)' }}>{d.name}</span>
                     <span style={{ fontSize: 11, fontWeight: 900, color: '#dc2626' }}>IMMEDIATE INTERVENTION</span>
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--gray-500)', display: 'flex', gap: 12 }}>
-                    <span>Coverage: <b style={{ color: d.coverage_pct < 30 ? '#dc2626' : 'inherit' }}>{d.coverage_pct}%</b></span>
-                    <span>Strength: <b style={{ color: d.score < 40 ? '#dc2626' : 'inherit' }}>{d.score}</b></span>
+                    <span>Coverage: <b style={{ color: d.coverage_pct < 50 ? '#dc2626' : 'inherit' }}>{d.coverage_pct}%</b></span>
+                    <span>Strength: <b style={{ color: d.score < 50 ? '#dc2626' : 'inherit' }}>{d.score}</b></span>
                   </div>
                 </div>
               ))}
-              {(!stats?.districts_scores || stats.districts_scores.filter(d => d.score < 40 || d.coverage_pct < 30).length === 0) && (
-                <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12 }}>All districts performing above critical thresholds</div>
+              {(!stats?.districts_scores || stats.districts_scores.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)', fontSize: 12 }}>No district data available</div>
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Regional Intelligence Section */}
+      <div className="dash-section" style={{ marginTop: 24 }}>
+        <div className="dash-section-head" style={{ borderBottom: '1px solid var(--gray-100)', paddingBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 18, color: 'var(--navy-900)' }}>Regional Intelligence</h3>
+            <div style={{ fontSize: 12, color: 'var(--gray-500)', fontWeight: 600, marginTop: 4 }}>Latest verified news affecting Delhi</div>
+          </div>
+        </div>
+        <div className="dash-section-body" style={{ padding: '24px 0 0 0' }}>
+          {!intelligenceData || !intelligenceData.news || intelligenceData.news.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-500)', fontWeight: 600 }}>
+              No recent news available.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+              <div style={{ flex: '0 0 70%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {intelligenceData.news.map((item, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 16, background: '#fff', border: '1px solid var(--gray-100)', borderRadius: 8, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    {item.image && (
+                      <div style={{ flex: '0 0 160px', height: 120, borderRadius: 8, overflow: 'hidden', background: 'var(--gray-100)' }}>
+                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: 16, color: 'var(--navy-900)' }}>{item.title}</h4>
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {item.summary}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                        <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--gray-400)', fontWeight: 600 }}>
+                          <span style={{ color: 'var(--blue-600)' }}>{item.source}</span>
+                          <span>{new Date(item.published_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        </div>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 700, color: 'var(--blue-600)', textDecoration: 'none' }}>
+                          Read More &rarr;
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{ flex: '0 0 calc(30% - 24px)' }}>
+                <div style={{ background: 'var(--navy-900)', borderRadius: 12, padding: 20, color: '#fff' }}>
+                  <h4 style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--amber-500)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Quick Intelligence
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
+                      <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 4 }}>Total News Today</div>
+                      <div style={{ fontSize: 24, fontWeight: 800 }}>{intelligenceData.summary?.total_news || 0}</div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
+                      <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 4 }}>Trending Topic</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--blue-300)' }}>{intelligenceData.summary?.trending_topic || 'N/A'}</div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 12 }}>
+                      <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 4 }}>Most Mentioned District</div>
+                      <div style={{ fontSize: 14, fontWeight: 700 }}>{intelligenceData.summary?.most_mentioned_district || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 4 }}>Last Updated</div>
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{intelligenceData.last_updated ? new Date(intelligenceData.last_updated).toLocaleTimeString() : 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

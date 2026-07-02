@@ -21,6 +21,7 @@ from app.api.v1.endpoints.voter_ingestion import router as voter_ingestion_route
 from app.api.v1.endpoints.campaign import router as campaign_router
 from app.api.v1.endpoints.video_calls import router as video_calls_router
 from app.api.v1.endpoints.export import router as export_router
+from app.api.v1.endpoints.intelligence import router as intelligence_router
 from app.domain.services.seed_graph import seed
 from app.domain.models.user import User  # noqa: F401 – ensure table is registered
 from app.domain.models.volunteer import Volunteer, Task, ConversationState  # noqa: F401 – ensure tables are registered
@@ -155,6 +156,7 @@ app.include_router(voter_ingestion_router, prefix="/api/v1", tags=["Ingestion"],
 app.include_router(campaign_router, prefix="/api/v1/campaign", tags=["Campaign"], dependencies=[Depends(get_current_user)])
 app.include_router(video_calls_router, prefix="/api/v1/video-calls", tags=["Video Calls"], dependencies=[Depends(get_current_user)])
 app.include_router(export_router, prefix="/api/v1/export", tags=["Export"], dependencies=[Depends(get_current_user)])
+app.include_router(intelligence_router, prefix="/api/v1/intelligence", tags=["Intelligence"])
 
 
 @app.get("/")
