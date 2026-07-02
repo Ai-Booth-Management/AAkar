@@ -996,7 +996,19 @@ const CampaignMap = ({
 
     const layer = L.geoJSON(wardsData, {
       filter: (feature) => {
-        return feature.properties && feature.properties.Ward_No && feature.properties.Ward_Name;
+        if (!feature.properties || !feature.properties.Ward_No || !feature.properties.Ward_Name) return false;
+        const wNo = String(feature.properties.Ward_No);
+        if (lockWard && String(wNo) !== String(lockWard)) return false;
+        if (wardToConstit && wardToConstit.length) {
+          const mapping = wardToConstit.find(w => String(w.Ward_No) === String(wNo));
+          if (!mapping) return false;
+          if (lockConstituency && normConstit(mapping.Constituency) !== normConstit(lockConstituency)) return false;
+          if (lockDistrict) {
+            const allowed = CONSTITUENCIES[lockDistrict] || [];
+            if (!allowed.some(c => normConstit(c) === normConstit(mapping.Constituency))) return false;
+          }
+        }
+        return true;
       },
       style: (feature) => {
         const wNo = String(feature.properties.Ward_No || '');
@@ -1046,7 +1058,15 @@ const CampaignMap = ({
     }).addTo(map);
 
     identityLayerRef.current = layer;
-  }, [identityMode, identityData, wardsData, mapRef]);
+
+    if (lockDistrict || lockConstituency || lockWard) {
+      const bounds = layer.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds);
+        map.setMaxBounds(bounds);
+      }
+    }
+  }, [identityMode, identityData, wardsData, mapRef, lockWard, lockConstituency, lockDistrict, wardToConstit, CONSTITUENCIES]);
 
   return (
     <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 0 }}>
