@@ -493,35 +493,13 @@ async def receive_whatsapp_message(request: Request):
                     session.commit()
                     
                     try:
-                        json_path = os.path.join("data", "uploads", "volunteers.json")
-                        os.makedirs(os.path.dirname(json_path), exist_ok=True)
-                        vol_data = []
-                        if os.path.exists(json_path):
-                            with open(json_path, "r") as f:
-                                try:
-                                    vol_data = json.load(f)
-                                except json.JSONDecodeError:
-                                    pass
-                        vol_data.append({
-                            "phone": from_number,
-                            "name": name,
-                            "address": address,
-                            "pincode": pincode,
-                            "booth_id": booth_id,
-                            "area_name": area_name,
-                            "block": block,
-                            "district": district_name,
-                            "division": division,
-                            "region": region,
-                            "circle": circle,
-                            "state": state_name,
-                            "aadhar": aadhar,
-                            "registered_at": datetime.now(timezone.utc).isoformat()
-                        })
-                        with open(json_path, "w") as f:
-                            json.dump(vol_data, f, indent=2)
+                        from app.domain.services.volunteer_sync import append_volunteer_to_json
+                        # Re-fetch the volunteer object after commit so it has an id
+                        volunteer = session.exec(select(Volunteer).where(Volunteer.phone == from_number)).first()
+                        if volunteer:
+                            append_volunteer_to_json(volunteer)
                     except Exception as e:
-                        logger.error(f"Failed to save volunteer to JSON: {e}")
+                        logger.error(f"Failed to sync volunteer to JSON: {e}")
 
                     await send_text(
                         from_number,
